@@ -2,6 +2,8 @@ packages:
   - apps/*
   - packages/*
   - test
+allowBuilds:
+  esbuild: true
 
 catalog:
   "@biomejs/biome": "^2.4.13"

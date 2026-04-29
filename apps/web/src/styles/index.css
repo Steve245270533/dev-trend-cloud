@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dt-bg: 9 12 18;
+  --dt-surface: 14 18 28;
+  --dt-surface2: 18 24 36;
+  --dt-text: 235 242 255;
+  --dt-muted: 154 170 196;
+  --dt-brand: 34 211 238;
+  --dt-good: 34 197 94;
+  --dt-warn: 245 158 11;
+  --dt-bad: 239 68 68;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Manrope, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: rgb(var(--dt-bg));
+  color: rgb(var(--dt-text));
+}
+
+.dt-font-display {
+  font-family: Fraunces, ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
+}
+
+.dt-mono {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.el-popper {
+  font-family: inherit;
+}

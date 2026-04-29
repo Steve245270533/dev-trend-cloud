@@ -94,6 +94,12 @@ pnpm dev:api
 pnpm dev:worker
 ```
 
+启动 Web Console（Vite）：
+
+```bash
+pnpm --filter @devtrend/web dev
+```
+
 通过 Turbo 同时启动：
 
 ```bash

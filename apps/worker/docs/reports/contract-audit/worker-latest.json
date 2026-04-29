@@ -1,0 +1,813 @@
+[
+  {
+    "source": "stackoverflow",
+    "commandName": "hot",
+    "argv": [
+      "stackoverflow",
+      "hot",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli stackoverflow hot [options]\n\nHot Stack Overflow questions\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
+    "payload": [
+      {
+        "title": "Fusing row with previous row(s) depending on criteria",
+        "score": 1,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79933604/fusing-row-with-previous-rows-depending-on-criteria"
+      },
+      {
+        "title": "Get a constant value in struts-config.xml from Java class",
+        "score": 1,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933606/get-a-constant-value-in-struts-config-xml-from-java-class"
+      },
+      {
+        "title": "Create UI controls in own tab and present results there",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933618/create-ui-controls-in-own-tab-and-present-results-there"
+      },
+      {
+        "title": "Patroni bootstrap from leader failed: Timeout",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933634/patroni-bootstrap-from-leader-failed-timeout"
+      },
+      {
+        "title": "How to bypass the CPython abstraction tax for ultra-high-speed CSV ingestion (2GB/s+)?",
+        "score": -1,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79933626/how-to-bypass-the-cpython-abstraction-tax-for-ultra-high-speed-csv-ingestion-2g"
+      }
+    ]
+  },
+  {
+    "source": "stackoverflow",
+    "commandName": "unanswered",
+    "argv": [
+      "stackoverflow",
+      "unanswered",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli stackoverflow unanswered [options]\n\nTop voted unanswered questions on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
+    "payload": [
+      {
+        "title": "Android ndk gdb loaded shared libraries are missing *.oat",
+        "score": 123,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/48615324/android-ndk-gdb-loaded-shared-libraries-are-missing-oat"
+      },
+      {
+        "title": "How do I write a TDBCtrlGrid VCL Style custom class?",
+        "score": 74,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/11033956/how-do-i-write-a-tdbctrlgrid-vcl-style-custom-class"
+      },
+      {
+        "title": "Materialize the Value for a Type that has One Inhabitant",
+        "score": 68,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/32170982/materialize-the-value-for-a-type-that-has-one-inhabitant"
+      },
+      {
+        "title": "Per-element atomicity of vector load/store and gather/scatter?",
+        "score": 62,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/46012574/per-element-atomicity-of-vector-load-store-and-gather-scatter"
+      },
+      {
+        "title": "Accessibility service disabled upon each debug run",
+        "score": 62,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/34515361/accessibility-service-disabled-upon-each-debug-run"
+      }
+    ]
+  },
+  {
+    "source": "stackoverflow",
+    "commandName": "bounties",
+    "argv": [
+      "stackoverflow",
+      "bounties",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli stackoverflow bounties [options]\n\nActive bounties on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: bounty, title, score, answers, url",
+    "payload": [
+      {
+        "title": "Can I add a GitHub R package to a local CRAN libraries using miniCRAN?",
+        "bounty": 50,
+        "score": 4,
+        "answers": 3,
+        "url": "https://stackoverflow.com/questions/57314369/can-i-add-a-github-r-package-to-a-local-cran-libraries-using-minicran"
+      },
+      {
+        "title": "How can I order two SBT tasks so that one runs after another, but only if both are specified to be run?",
+        "bounty": 50,
+        "score": 2,
+        "answers": 2,
+        "url": "https://stackoverflow.com/questions/79927523/how-can-i-order-two-sbt-tasks-so-that-one-runs-after-another-but-only-if-both-a"
+      },
+      {
+        "title": "How to make my Timer fire in Release Build?",
+        "bounty": 100,
+        "score": 0,
+        "answers": 2,
+        "url": "https://stackoverflow.com/questions/79929762/how-to-make-my-timer-fire-in-release-build"
+      },
+      {
+        "title": "Restir implementation exibits strong ghosting",
+        "bounty": 50,
+        "score": 0,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79929794/restir-implementation-exibits-strong-ghosting"
+      }
+    ]
+  },
+  {
+    "source": "stackoverflow",
+    "commandName": "search",
+    "argv": [
+      "stackoverflow",
+      "search",
+      "mcp",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli stackoverflow search [options] <query>\n\nSearch Stack Overflow questions\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
+    "payload": [
+      {
+        "title": "Spring AI MCP Client not interacting with MCP Server",
+        "score": 0,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79725577/spring-ai-mcp-client-not-interacting-with-mcp-server"
+      },
+      {
+        "title": "How to pass data from an MCP client to an MCP server in Java with Spring AI?",
+        "score": 5,
+        "answers": 3,
+        "url": "https://stackoverflow.com/questions/79675247/how-to-pass-data-from-an-mcp-client-to-an-mcp-server-in-java-with-spring-ai"
+      },
+      {
+        "title": "Debugging MCP server",
+        "score": 1,
+        "answers": 3,
+        "url": "https://stackoverflow.com/questions/79584390/debugging-mcp-server"
+      },
+      {
+        "title": "MCP Messages Endpoint Returning 404",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79671125/mcp-messages-endpoint-returning-404"
+      },
+      {
+        "title": "MCP error -32001 (Request timed out) when connecting Claude to Node.js MCP server",
+        "score": 2,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79703292/mcp-error-32001-request-timed-out-when-connecting-claude-to-node-js-mcp-serve"
+      }
+    ]
+  },
+  {
+    "source": "hackernews",
+    "commandName": "ask",
+    "argv": [
+      "hackernews",
+      "ask",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli hackernews ask [options]\n\nHacker News Ask HN posts\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments",
+    "payload": [
+      {
+        "rank": 1,
+        "title": "Tell HN: An update from the new Tindie team",
+        "score": 56,
+        "author": "altairprime",
+        "comments": 36
+      },
+      {
+        "rank": 2,
+        "title": "Ask HN: If coding gets faster, where should architecture happen?",
+        "score": 2,
+        "author": "karlosh",
+        "comments": 0
+      },
+      {
+        "rank": 3,
+        "title": "Ask HN: Anyone else suddenly have Brawls Stars on their iPhone?",
+        "score": 3,
+        "author": "realberkeaslan",
+        "comments": 0
+      },
+      {
+        "rank": 4,
+        "title": "Ask HN: Can HN ban new accounts? or charge money?",
+        "score": 4,
+        "author": "randyrand",
+        "comments": 6
+      },
+      {
+        "rank": 5,
+        "title": "Tell HN: An app is silently installing itself on my iPhone every day",
+        "score": 584,
+        "author": "_-x-_",
+        "comments": 186
+      }
+    ]
+  },
+  {
+    "source": "hackernews",
+    "commandName": "top",
+    "argv": [
+      "hackernews",
+      "top",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli hackernews top [options]\n\nHacker News top stories\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments",
+    "payload": [
+      {
+        "rank": 1,
+        "title": "Soft launch of open-source code platform for government",
+        "score": 171,
+        "author": "e12e",
+        "comments": 68,
+        "url": "https://www.nldigitalgovernment.nl/news/soft-launch-for-government-open-source-code-platform/"
+      },
+      {
+        "rank": 2,
+        "title": "Ghostty is leaving GitHub",
+        "score": 2756,
+        "author": "WadeGrimridge",
+        "comments": 811,
+        "url": "https://mitchellh.com/writing/ghostty-leaving-github"
+      },
+      {
+        "rank": 3,
+        "title": "Bugs Rust won't catch",
+        "score": 358,
+        "author": "lwhsiao",
+        "comments": 176,
+        "url": "https://corrode.dev/blog/bugs-rust-wont-catch/"
+      },
+      {
+        "rank": 4,
+        "title": "Show HN: Rip.so – a graveyard for dead internet things",
+        "score": 79,
+        "author": "bozdemir",
+        "comments": 48,
+        "url": "https://rip.so"
+      },
+      {
+        "rank": 5,
+        "title": "HardenedBSD Is Now Officially on Radicle",
+        "score": 88,
+        "author": "lftherios",
+        "comments": 18,
+        "url": "https://hardenedbsd.org/article/shawn-webb/2026-04-26/hardenedbsd-officially-radicle"
+      }
+    ]
+  },
+  {
+    "source": "hackernews",
+    "commandName": "search",
+    "argv": [
+      "hackernews",
+      "search",
+      "vector database",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli hackernews search [options] <query>\n\nSearch Hacker News stories\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Number of results (default: \"20\")\n  --sort [value]      Sort by relevance or date (default: \"relevance\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\n  --sort: relevance, date  (default: relevance)\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments, url",
+    "payload": [
+      {
+        "rank": 1,
+        "title": "Vector Databases: A Technical Primer [pdf]",
+        "score": 557,
+        "author": "jide_tracc",
+        "comments": 105,
+        "url": "https://tge-data-web.nyc3.digitaloceanspaces.com/docs/Vector%20Databases%20-%20A%20Technical%20Primer.pdf"
+      },
+      {
+        "rank": 2,
+        "title": "Vector databases are the wrong abstraction",
+        "score": 493,
+        "author": "jascha_eng",
+        "comments": 90,
+        "url": "https://www.timescale.com/blog/vector-databases-are-the-wrong-abstraction/"
+      },
+      {
+        "rank": 3,
+        "title": "What is a Vector Database? (2021)",
+        "score": 409,
+        "author": "gk1",
+        "comments": 202,
+        "url": "https://www.pinecone.io/learn/vector-database/"
+      },
+      {
+        "rank": 4,
+        "title": "VectorDB: Vector Database Built by Kagi Search",
+        "score": 317,
+        "author": "promiseofbeans",
+        "comments": 93,
+        "url": "https://vectordb.com/"
+      },
+      {
+        "rank": 5,
+        "title": "Will Amazon S3 Vectors kill vector databases or save them?",
+        "score": 280,
+        "author": "Fendy",
+        "comments": 122,
+        "url": "https://zilliz.com/blog/will-amazon-s3-vectors-kill-vector-databases-or-save-them"
+      }
+    ]
+  },
+  {
+    "source": "devto",
+    "commandName": "top",
+    "argv": [
+      "devto",
+      "top",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli devto top [options]\n\nTop DEV.to articles of the day\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: dev.to\nOutput columns: rank, title, author, reactions, comments, tags",
+    "payload": [
+      {
+        "rank": 1,
+        "title": "How I used Gemini CLI to orchestrate a complex RAG migration",
+        "author": "rsamborski",
+        "reactions": 15,
+        "comments": 1,
+        "tags": "gemini, agents, programming, ai",
+        "url": "https://dev.to/googleai/how-i-used-gemini-cli-to-orchestrate-a-complex-rag-migration-43ga"
+      },
+      {
+        "rank": 2,
+        "title": "🗓️ Monthly Dev Report: April 2026",
+        "author": "francistrdev",
+        "reactions": 30,
+        "comments": 6,
+        "tags": "discuss, devjournal, programming, community",
+        "url": "https://dev.to/francistrdev/monthly-dev-report-april-2026-nak"
+      },
+      {
+        "rank": 3,
+        "title": "My Incredible Google Cloud Next 26 Experience as a GDE",
+        "author": "deraileddash",
+        "reactions": 18,
+        "comments": 0,
+        "tags": "googlecloud, googlecloudnext, gde, vegas",
+        "url": "https://dev.to/gde/my-incredible-google-cloud-next-26-experience-as-a-gde-17mo"
+      },
+      {
+        "rank": 4,
+        "title": "Automation is a trade-off",
+        "author": "suesmith",
+        "reactions": 7,
+        "comments": 1,
+        "tags": "ai, webdev, lowcode, automation",
+        "url": "https://dev.to/suesmith/automation-is-a-trade-off-2fh8"
+      },
+      {
+        "rank": 5,
+        "title": "The Startup Trap That Keeps MVPs From Launching",
+        "author": "vorniches",
+        "reactions": 0,
+        "comments": 0,
+        "tags": "ai, programming, mvp, startup",
+        "url": "https://dev.to/vorniches/founder-patterns-that-kill-a-launch-and-what-ai-has-to-do-with-it-4mf"
+      }
+    ]
+  },
+  {
+    "source": "devto",
+    "commandName": "tag",
+    "argv": [
+      "devto",
+      "tag",
+      "mcp",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli devto tag [options] <tag>\n\nLatest DEV.to articles for a specific tag\n\nArguments:\n  tag                 Tag name (e.g. javascript, python, webdev)\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: dev.to\nOutput columns: rank, title, author, reactions, comments, tags",
+    "payload": [
+      {
+        "rank": 1,
+        "title": "Flowise MCP RCE: What CVE-2026-40933 Teaches About Agent Security",
+        "author": "tokenmixai",
+        "reactions": 5,
+        "comments": 1,
+        "tags": "ai, security, devops, mcp",
+        "url": "https://dev.to/tokenmixai/flowise-mcp-rce-what-cve-2026-40933-teaches-about-agent-security-1p6g"
+      },
+      {
+        "rank": 2,
+        "title": "Why we built an MCP server for website health data instead of letting agents run the checks themselves",
+        "author": "tomfweb",
+        "reactions": 0,
+        "comments": 0,
+        "tags": "agents, architecture, mcp, monitoring",
+        "url": "https://dev.to/tomfweb/why-we-built-an-mcp-server-for-website-health-data-instead-of-letting-agents-run-the-checks-42jo"
+      },
+      {
+        "rank": 3,
+        "title": "Stop AI from hallucinating E2E test selectors — code analysis + live browser exploration via Claude Agent SDK and 2 MCP servers",
+        "author": "zoetaka38",
+        "reactions": 0,
+        "comments": 0,
+        "tags": "ai, claude, mcp, playwright",
+        "url": "https://dev.to/zoetaka38/stop-ai-from-hallucinating-e2e-test-selectors-code-analysis-live-browser-exploration-via-claude-1g3n"
+      },
+      {
+        "rank": 4,
+        "title": "[Free & Open Source] [Multi-Agent Hands-On] [How to Command Agents]: FCoP-MCP Brings Discipline to AI Teams",
+        "author": "joinwell52",
+        "reactions": 0,
+        "comments": 0,
+        "tags": "ai, mcp, cursor, tutorial",
+        "url": "https://dev.to/joinwell52/free-open-source-multi-agent-hands-on-how-to-command-agents-fcop-mcp-brings-discipline-to-1j3j"
+      },
+      {
+        "rank": 5,
+        "title": "I Indexed 67,000 Open-Source AI Agent Projects. Here's What's Actually Inside.",
+        "author": "gosailglobal",
+        "reactions": 0,
+        "comments": 0,
+        "tags": "ai, opensource, mcp, claude",
+        "url": "https://dev.to/gosailglobal/i-indexed-67000-open-source-ai-agent-projects-heres-whats-actually-inside-edg"
+      }
+    ]
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "trending",
+    "argv": [
+      "ossinsight",
+      "trending",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli ossinsight trending [options]\n\n获取 OSSInsight 热门仓库\n\nOptions:\n  --limit [value]     返回数量 (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_name, stars, language",
+    "payload": [
+      {
+        "repo_name": "warpdotdev/warp",
+        "language": "",
+        "stars": "1153"
+      },
+      {
+        "repo_name": "mattpocock/skills",
+        "language": "Shell",
+        "stars": "608"
+      },
+      {
+        "repo_name": "openai/symphony",
+        "language": "Elixir",
+        "stars": "143"
+      },
+      {
+        "repo_name": "microsoft/VibeVoice",
+        "language": "Python",
+        "stars": "119"
+      },
+      {
+        "repo_name": "Alishahryar1/free-claude-code",
+        "language": "Python",
+        "stars": "105"
+      }
+    ]
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "collections",
+    "argv": [
+      "ossinsight",
+      "collections",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli ossinsight collections [options]\n\n列出 OSSInsight 所有 collections\n\nOptions:\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: id, name",
+    "payload": [
+      {
+        "id": "1",
+        "name": "Static Site Generator"
+      },
+      {
+        "id": "2",
+        "name": "Open Source Database"
+      },
+      {
+        "id": "10001",
+        "name": "CSS Framework"
+      },
+      {
+        "id": "10002",
+        "name": "Google Analytics Alternative"
+      },
+      {
+        "id": "10003",
+        "name": "Low Code Development Tool"
+      }
+    ]
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "hot-collections",
+    "argv": [
+      "ossinsight",
+      "hot-collections",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli ossinsight hot-collections [options]\n\n列出 OSSInsight 热门 collections\n\nOptions:\n  --limit [value]     返回数量，默认 20 (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: id, name, repos, repo_name, current_rank, past_rank, rank_change",
+    "payload": [
+      {
+        "id": "2",
+        "name": "Open Source Database",
+        "repos": "40",
+        "repo_name": "duckdb/duckdb",
+        "current_rank": "2",
+        "past_rank": "1",
+        "rank_change": "-1"
+      },
+      {
+        "id": "2",
+        "name": "Open Source Database",
+        "repos": "40",
+        "repo_name": "ClickHouse/ClickHouse",
+        "current_rank": "3",
+        "past_rank": "2",
+        "rank_change": "-1"
+      },
+      {
+        "id": "2",
+        "name": "Open Source Database",
+        "repos": "40",
+        "repo_name": "milvus-io/milvus",
+        "current_rank": "1",
+        "past_rank": "5",
+        "rank_change": "4"
+      },
+      {
+        "id": "10013",
+        "name": "Game Engine",
+        "repos": "72",
+        "repo_name": "godotengine/godot",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10013",
+        "name": "Game Engine",
+        "repos": "72",
+        "repo_name": "bevyengine/bevy",
+        "current_rank": "3",
+        "past_rank": "2",
+        "rank_change": "-1"
+      }
+    ]
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "collection-repos",
+    "argv": [
+      "ossinsight",
+      "collection-repos",
+      "10004",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli ossinsight collection-repos [options] <collectionId>\n\n列出指定 collection 下的仓库\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --limit [value]     返回数量，默认 100 (default: \"100\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name",
+    "payload": [
+      {
+        "repo_id": "6296790",
+        "repo_name": "spring-projects/spring-boot"
+      },
+      {
+        "repo_id": "8514",
+        "repo_name": "rails/rails"
+      },
+      {
+        "repo_id": "1863329",
+        "repo_name": "laravel/laravel"
+      },
+      {
+        "repo_id": "458058",
+        "repo_name": "symfony/symfony"
+      },
+      {
+        "repo_id": "4164482",
+        "repo_name": "django/django"
+      }
+    ]
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "collection-issues",
+    "argv": [
+      "ossinsight",
+      "collection-issues",
+      "10004",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli ossinsight collection-issues [options] <collectionId>\n\n查看 collection 的 issue 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
+    "payload": [
+      {
+        "repo_id": "6296790",
+        "repo_name": "spring-projects/spring-boot",
+        "current_growth": "33",
+        "current_rank": "1",
+        "past_growth": "37",
+        "past_rank": "1",
+        "growth_pop": "-10.81",
+        "rank_pop": "0",
+        "total": "40715"
+      },
+      {
+        "repo_id": "327089870",
+        "repo_name": "payloadcms/payload",
+        "current_growth": "11",
+        "current_rank": "2",
+        "past_growth": "8",
+        "past_rank": "7",
+        "growth_pop": "37.50",
+        "rank_pop": "-5",
+        "total": "4217"
+      },
+      {
+        "repo_id": "1148753",
+        "repo_name": "spring-projects/spring-framework",
+        "current_growth": "9",
+        "current_rank": "3",
+        "past_growth": "11",
+        "past_rank": "4",
+        "growth_pop": "-18.18",
+        "rank_pop": "-1",
+        "total": "11295"
+      },
+      {
+        "repo_id": "348060227",
+        "repo_name": "withastro/astro",
+        "current_growth": "9",
+        "current_rank": "4",
+        "past_growth": "19",
+        "past_rank": "3",
+        "growth_pop": "-52.63",
+        "rank_pop": "1",
+        "total": "6162"
+      },
+      {
+        "repo_id": "458058",
+        "repo_name": "symfony/symfony",
+        "current_growth": "8",
+        "current_rank": "5",
+        "past_growth": "9",
+        "past_rank": "5",
+        "growth_pop": "-11.11",
+        "rank_pop": "0",
+        "total": "21043"
+      }
+    ]
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "stargazer-history",
+    "argv": [
+      "ossinsight",
+      "stargazer-history",
+      "fastify/fastify",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli ossinsight stargazer-history [options] <repo>\n\n查看 stargazer 趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, stargazers",
+    "payload": [
+      {
+        "date": "2016-10-01",
+        "stargazers": "27"
+      },
+      {
+        "date": "2016-11-01",
+        "stargazers": "34"
+      },
+      {
+        "date": "2016-12-01",
+        "stargazers": "48"
+      },
+      {
+        "date": "2017-01-01",
+        "stargazers": "114"
+      },
+      {
+        "date": "2017-02-01",
+        "stargazers": "115"
+      }
+    ]
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "issue-creator-history",
+    "argv": [
+      "ossinsight",
+      "issue-creator-history",
+      "langchain-ai/langchain",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli ossinsight issue-creator-history [options] <repo>\n\n查看 issue 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, issue_creators",
+    "payload": [
+      {
+        "date": "2022-10-01",
+        "issue_creators": "1"
+      },
+      {
+        "date": "2022-11-01",
+        "issue_creators": "12"
+      },
+      {
+        "date": "2022-12-01",
+        "issue_creators": "28"
+      },
+      {
+        "date": "2023-01-01",
+        "issue_creators": "76"
+      },
+      {
+        "date": "2023-02-01",
+        "issue_creators": "178"
+      }
+    ]
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "pr-creator-history",
+    "argv": [
+      "ossinsight",
+      "pr-creator-history",
+      "pgvector/pgvector",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli ossinsight pr-creator-history [options] <repo>\n\n查看 Pull Request 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, pull_request_creators",
+    "payload": [
+      {
+        "date": "2021-04-01",
+        "pull_request_creators": "1"
+      },
+      {
+        "date": "2021-07-01",
+        "pull_request_creators": "2"
+      },
+      {
+        "date": "2021-11-01",
+        "pull_request_creators": "3"
+      },
+      {
+        "date": "2022-03-01",
+        "pull_request_creators": "4"
+      },
+      {
+        "date": "2022-12-01",
+        "pull_request_creators": "5"
+      }
+    ]
+  }
+]
