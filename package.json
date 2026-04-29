@@ -1,24 +1,32 @@
 {
   "name": "dev-trend-cloud",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.2",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm clean && swc apps packages -d dist --copy-files --ignore '**/node_modules/**','**/*.test.*','**/*.spec.*','test/**'",
+    "clean": "rm -rf dist coverage .turbo",
+    "dev": "cross-env NODE_ENV=development turbo run dev --parallel --filter=@devtrend/api --filter=@devtrend/worker",
+    "dev:api": "cross-env NODE_ENV=development pnpm --filter @devtrend/api dev",
+    "dev:worker": "cross-env NODE_ENV=development pnpm --filter @devtrend/worker dev",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "cross-env NODE_ENV=test node --import tsx --test test/**/*.test.ts",
+    "db:migrate": "cross-env NODE_ENV=development node --import tsx packages/db/src/migrate.ts",
+    "db:seed": "cross-env NODE_ENV=development node --import tsx packages/db/src/seed.ts",
+    "audit:contracts": "cross-env NODE_ENV=development node --import tsx packages/sources/src/audit/run-contract-audit.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Steve245270533/dev-trend-cloud.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/Steve245270533/dev-trend-cloud/issues"
-  },
-  "homepage": "https://github.com/Steve245270533/dev-trend-cloud#readme"
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "cross-env": "catalog:",
+    "tsx": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
 }

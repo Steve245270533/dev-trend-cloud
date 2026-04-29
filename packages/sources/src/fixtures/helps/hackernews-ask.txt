@@ -1,0 +1,14 @@
+Usage: opencli hackernews ask [options]
+
+Hacker News Ask HN posts
+
+Options:
+  --limit [value]     Number of stories (default: "20")
+  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:
+                      "table")
+  -v, --verbose       Debug output (default: false)
+  -h, --help          display help for command
+
+Strategy: public | Browser: no | Domain: news.ycombinator.com
+Output columns: rank, title, score, author, comments
+

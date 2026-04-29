@@ -1,0 +1,9 @@
+{
+  "name": "@devtrend/config",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@sinclair/typebox": "catalog:",
+    "env-schema": "catalog:config"
+  }
+}

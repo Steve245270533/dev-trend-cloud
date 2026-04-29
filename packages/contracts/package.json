@@ -1,0 +1,8 @@
+{
+  "name": "@devtrend/contracts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@sinclair/typebox": "catalog:"
+  }
+}

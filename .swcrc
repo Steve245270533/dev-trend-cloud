@@ -1,0 +1,13 @@
+{
+  "jsc": {
+    "target": "es2023",
+    "parser": {
+      "syntax": "typescript"
+    }
+  },
+  "module": {
+    "type": "es6"
+  },
+  "sourceMaps": true,
+  "minify": false
+}

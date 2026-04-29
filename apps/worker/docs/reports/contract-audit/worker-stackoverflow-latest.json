@@ -1,0 +1,181 @@
+[
+  {
+    "source": "stackoverflow",
+    "commandName": "hot",
+    "argv": [
+      "stackoverflow",
+      "hot",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli stackoverflow hot [options]\n\nHot Stack Overflow questions\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
+    "payload": [
+      {
+        "title": "numba unsupported opcode FORMAT_WITH_SPEC",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933454/numba-unsupported-opcode-format-with-spec"
+      },
+      {
+        "title": "How to develop the APO driver for USB audio devices in Windows?",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933446/how-to-develop-the-apo-driver-for-usb-audio-devices-in-windows"
+      },
+      {
+        "title": "looking for embedded webrtc solution for ip camera?",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933438/looking-for-embedded-webrtc-solution-for-ip-camera"
+      },
+      {
+        "title": "In Django, where to define user",
+        "score": 0,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79933445/in-django-where-to-define-user"
+      },
+      {
+        "title": "swiftui state based view switching isn&#39;t switching",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933440/swiftui-state-based-view-switching-isnt-switching"
+      }
+    ]
+  },
+  {
+    "source": "stackoverflow",
+    "commandName": "unanswered",
+    "argv": [
+      "stackoverflow",
+      "unanswered",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli stackoverflow unanswered [options]\n\nTop voted unanswered questions on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
+    "payload": [
+      {
+        "title": "Android ndk gdb loaded shared libraries are missing *.oat",
+        "score": 123,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/48615324/android-ndk-gdb-loaded-shared-libraries-are-missing-oat"
+      },
+      {
+        "title": "How do I write a TDBCtrlGrid VCL Style custom class?",
+        "score": 74,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/11033956/how-do-i-write-a-tdbctrlgrid-vcl-style-custom-class"
+      },
+      {
+        "title": "Materialize the Value for a Type that has One Inhabitant",
+        "score": 68,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/32170982/materialize-the-value-for-a-type-that-has-one-inhabitant"
+      },
+      {
+        "title": "Per-element atomicity of vector load/store and gather/scatter?",
+        "score": 62,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/46012574/per-element-atomicity-of-vector-load-store-and-gather-scatter"
+      },
+      {
+        "title": "Accessibility service disabled upon each debug run",
+        "score": 62,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/34515361/accessibility-service-disabled-upon-each-debug-run"
+      }
+    ]
+  },
+  {
+    "source": "stackoverflow",
+    "commandName": "bounties",
+    "argv": [
+      "stackoverflow",
+      "bounties",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli stackoverflow bounties [options]\n\nActive bounties on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: bounty, title, score, answers, url",
+    "payload": [
+      {
+        "title": "Can I add a GitHub R package to a local CRAN libraries using miniCRAN?",
+        "bounty": 50,
+        "score": 4,
+        "answers": 2,
+        "url": "https://stackoverflow.com/questions/57314369/can-i-add-a-github-r-package-to-a-local-cran-libraries-using-minicran"
+      },
+      {
+        "title": "How can I order two SBT tasks so that one runs after another, but only if both are specified to be run?",
+        "bounty": 50,
+        "score": 2,
+        "answers": 2,
+        "url": "https://stackoverflow.com/questions/79927523/how-can-i-order-two-sbt-tasks-so-that-one-runs-after-another-but-only-if-both-a"
+      },
+      {
+        "title": "How to make my Timer fire in Release Build?",
+        "bounty": 100,
+        "score": 0,
+        "answers": 2,
+        "url": "https://stackoverflow.com/questions/79929762/how-to-make-my-timer-fire-in-release-build"
+      },
+      {
+        "title": "Restir implementation exibits strong ghosting",
+        "bounty": 50,
+        "score": 0,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79929794/restir-implementation-exibits-strong-ghosting"
+      }
+    ]
+  },
+  {
+    "source": "stackoverflow",
+    "commandName": "search",
+    "argv": [
+      "stackoverflow",
+      "search",
+      "mcp",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "helpOutput": "Usage: opencli stackoverflow search [options] <query>\n\nSearch Stack Overflow questions\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
+    "payload": [
+      {
+        "title": "Spring AI MCP Client not interacting with MCP Server",
+        "score": 0,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79725577/spring-ai-mcp-client-not-interacting-with-mcp-server"
+      },
+      {
+        "title": "How to pass data from an MCP client to an MCP server in Java with Spring AI?",
+        "score": 5,
+        "answers": 3,
+        "url": "https://stackoverflow.com/questions/79675247/how-to-pass-data-from-an-mcp-client-to-an-mcp-server-in-java-with-spring-ai"
+      },
+      {
+        "title": "Debugging MCP server",
+        "score": 1,
+        "answers": 3,
+        "url": "https://stackoverflow.com/questions/79584390/debugging-mcp-server"
+      },
+      {
+        "title": "MCP Messages Endpoint Returning 404",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79671125/mcp-messages-endpoint-returning-404"
+      },
+      {
+        "title": "MCP error -32001 (Request timed out) when connecting Claude to Node.js MCP server",
+        "score": 2,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79703292/mcp-error-32001-request-timed-out-when-connecting-claude-to-node-js-mcp-serve"
+      }
+    ]
+  }
+]

@@ -1,0 +1,14 @@
+Usage: opencli devto top [options]
+
+Top DEV.to articles of the day
+
+Options:
+  --limit [value]     Number of articles (default: "20")
+  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:
+                      "table")
+  -v, --verbose       Debug output (default: false)
+  -h, --help          display help for command
+
+Strategy: public | Browser: no | Domain: dev.to
+Output columns: rank, title, author, reactions, comments, tags
+

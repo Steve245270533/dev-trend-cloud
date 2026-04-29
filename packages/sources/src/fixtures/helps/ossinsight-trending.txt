@@ -1,0 +1,14 @@
+Usage: opencli ossinsight trending [options]
+
+获取 OSSInsight 热门仓库
+
+Options:
+  --limit [value]     返回数量 (default: "10")
+  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:
+                      "table")
+  -v, --verbose       Debug output (default: false)
+  -h, --help          display help for command
+
+Strategy: public | Browser: no | Domain: ossinsight.io
+Output columns: repo_name, stars, language
+

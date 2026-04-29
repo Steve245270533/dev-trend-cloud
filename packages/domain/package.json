@@ -1,0 +1,8 @@
+{
+  "name": "@devtrend/domain",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@devtrend/contracts": "workspace:*"
+  }
+}

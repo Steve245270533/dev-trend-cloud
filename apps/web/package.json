@@ -1,0 +1,8 @@
+{
+  "name": "@devtrend/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node -e \"console.log('apps/web is reserved for a future frontend implementation.')\""
+  }
+}

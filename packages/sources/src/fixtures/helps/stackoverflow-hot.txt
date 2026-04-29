@@ -1,0 +1,14 @@
+Usage: opencli stackoverflow hot [options]
+
+Hot Stack Overflow questions
+
+Options:
+  --limit [value]     Max number of results (default: "10")
+  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:
+                      "table")
+  -v, --verbose       Debug output (default: false)
+  -h, --help          display help for command
+
+Strategy: public | Browser: no | Domain: stackoverflow.com
+Output columns: title, score, answers, url
+

@@ -1,0 +1,12 @@
+{
+  "name": "@devtrend/db",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@devtrend/config": "workspace:*",
+    "@devtrend/contracts": "workspace:*",
+    "@devtrend/domain": "workspace:*",
+    "@devtrend/sources": "workspace:*",
+    "pg": "catalog:"
+  }
+}

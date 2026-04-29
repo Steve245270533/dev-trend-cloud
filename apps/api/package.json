@@ -1,0 +1,21 @@
+{
+  "name": "@devtrend/api",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@devtrend/config": "workspace:*",
+    "@devtrend/contracts": "workspace:*",
+    "@devtrend/db": "workspace:*",
+    "@fastify/postgres": "catalog:api",
+    "@fastify/redis": "catalog:api",
+    "@fastify/type-provider-typebox": "catalog:api",
+    "@sinclair/typebox": "catalog:",
+    "fastify": "catalog:api",
+    "fastify-plugin": "catalog:api",
+    "pino-pretty": "catalog:api"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node ../../dist/apps/api/src/server.js"
+  }
+}

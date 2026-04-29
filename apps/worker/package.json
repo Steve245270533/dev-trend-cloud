@@ -1,0 +1,19 @@
+{
+  "name": "@devtrend/worker",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@devtrend/config": "workspace:*",
+    "@devtrend/contracts": "workspace:*",
+    "@devtrend/db": "workspace:*",
+    "@devtrend/domain": "workspace:*",
+    "@devtrend/sources": "workspace:*",
+    "bullmq": "catalog:worker",
+    "ioredis": "catalog:worker",
+    "pg": "catalog:"
+  },
+  "scripts": {
+    "dev": "tsx watch src/worker.ts",
+    "start": "node ../../dist/apps/worker/src/worker.js"
+  }
+}
