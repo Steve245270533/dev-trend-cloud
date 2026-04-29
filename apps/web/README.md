@@ -1,5 +1,5 @@
 # apps/web
 
-This workspace is intentionally reserved for a future frontend implementation.
+该 workspace 在 Phase 0 + Phase 1 期间仅作为未来前端实现的占位。
 
-Phase 0 + Phase 1 do not ship a customer-facing web console.
+当前阶段不交付面向客户的 Web 控制台。

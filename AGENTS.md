@@ -1,114 +1,79 @@
-# Repository Agent Guide
+# Agent 入口（Repository Map）
 
-This file defines how coding agents should work inside `dev-trend-cloud`.
+本文件是智能体在 `dev-trend-cloud` 仓库内工作的入口与路由导航，目标是提供“地图”而不是“百科全书”：在这里确定边界与入口，然后跳转到更具体的文档与子包 AGENTS。
 
-## Source of Truth
+## 0. 元规则（优先执行）
 
-- Final product and scope reference:
-  [docs/plan/devtrend-cloud-practical-plan-2026-04-29-v4.md](/Users/lehuaixiaochen/Downloads/Project/dev-trend-cloud/docs/plan/devtrend-cloud-practical-plan-2026-04-29-v4.md)
-- Current delivery boundary:
-  `Phase 0 + Phase 1` only
+在开始任何任务前，先检查：
 
-If implementation details conflict with older notes, always follow the `2026-04-29 v4` plan.
+1. 你使用的技术栈/规范是否与项目当前实际情况一致？
+2. 若发现本文件或相关文档已过时，立即停止编码，先执行：
+   - 生成一份更新建议（格式：`[文件路径] 需要更新的部分 → 建议内容`）
+   - 等待用户确认后再更新文档，再继续编码
 
-## Required Build Order
+触发本规则的典型信号：新增/修改了子包中的模块但关联该模块索引的文档未记录、发现代码与规范文档描述不一致。
 
-Agents must implement in this order:
+## 事实源与范围
 
-1. documentation
-2. monorepo and toolchain
-3. database and seed catalog
-4. source collectors and contract audit
-5. domain pipeline
-6. API and worker
-7. tests and verification
+- 交付与范围事实源： [devtrend-cloud-practical-plan-2026-04-29-v4.md](./docs/plan/devtrend-cloud-practical-plan-2026-04-29-v4.md)
+- 当前交付边界：仅 `Phase 0 + Phase 1`
+- 若实现细节与旧文档冲突，以 `2026-04-29 v4` 方案为准
 
-Do not skip directly to Phase 2 behavior.
+## 强约束（禁止项）
 
-## Scope Guardrails
+本阶段禁止实现：
 
-Allowed in this repository now:
-
-- Question Pressure MVP
-- read-only API endpoints
-- OpenCLI public-source audit and collectors
-- topic/entity seed matching
-- rule-based clustering and scoring
-- Postgres + Redis runtime
-- BullMQ background processing
-
-Not allowed in this phase:
-
-- auth, API keys, RBAC
-- billing, usage accounting, quotas
-- watchlist CRUD API
-- digest, scheduled exports, webhook delivery
-- console UI beyond placeholder `apps/web`
+- 鉴权（API keys、RBAC）、计费/配额、团队账号
+- watchlist CRUD API、digest/webhook 交付、console UI（`apps/web` 仅占位）
 - GitHub API / GH Archive ingestion
-- social sources that require login or cookie flows
+- 需要登录态或 cookie 的数据源
 
-## Technical Expectations
+## 必须遵循的实现顺序
 
-- Use `pnpm` workspaces for package boundaries.
-- Use `TypeScript + SWC` for development and build flow.
-- Use Fastify conventions:
-  - `@fastify/type-provider-typebox`
-  - `env-schema`
-  - structured error responses
-  - health and readiness endpoints
-- Use BullMQ for scheduling and async orchestration.
-- Prefer deterministic rules over LLM-only behavior for pipeline decisions.
+1. 文档
+2. monorepo 与工具链
+3. 数据库与 seed catalog
+4. source collectors 与 contract audit
+5. domain pipeline
+6. API 与 worker
+7. 测试与验证
 
-## Data Pipeline Expectations
+不要跳到 Phase 2 行为。
 
-- `raw_snapshots` stores raw source payloads in `JSONB`.
-- contract audit should store:
-  - registry snapshot
-  - `--help` snapshot
-  - representative JSON fixture output
-- question clustering must stay rule-first:
-  - normalized title
-  - token overlap
-  - `pg_trgm` similarity
-  - topic/entity overlap
-  - time window grouping
-- `pgvector` may be enabled in infrastructure, but it is not the primary clustering dependency in this phase.
+## 全局工程偏好（Phase 0 + 1）
 
-## OpenCLI Rules
+- `pnpm` workspace + `TypeScript + SWC`
+- Fastify：`@fastify/type-provider-typebox` + `env-schema` + 结构化错误 + `healthz/readyz`
+- BullMQ 负责异步编排
+- pipeline 决策 rule-first（不要把核心决策外包给 LLM）
 
-- Do not rely on `opencli verify --smoke` as the primary smoke mechanism in this environment.
-- Execute real subcommands directly for contract audit and sample capture.
-- Current source set is limited to:
-  - Stack Overflow
-  - Hacker News
-  - DEV
-  - OSSInsight
+## 硬性约束
 
-## Testing Rules
+- lint 规范：所有代码必须通过 `pnpm lint`（当前为 Biome check，以 `package.json` 的 `lint` 脚本为准）
+- 类型安全：禁止使用 `any`（TypeScript），使用 `unknown` 或具体类型替代
+- 文档同步：新增业务模块必须同步更新对应文档
+- 配置/依赖变更需授权：涉及 `package.json`、构建配置、核心配置等变更时，必须先提交变更申请并获得用户明确许可
+- 技术栈演进允许：允许提出更优替代库或配置，并在获得授权后落地
 
-Minimum coverage should include:
+## OpenCLI 规则
 
-- normalizers
-- topic/entity matcher
-- question extraction
-- clusterer
-- scorer
-- source health and fallback handling
-- Fastify route integration with `inject()`
+- 不以 `opencli verify --smoke` 作为主要 smoke 机制
+- contract audit 与样本采集必须执行真实子命令
+- 允许的数据源：Stack Overflow / Hacker News / DEV / OSSInsight
 
-## File Ownership
+## 文档导航
 
-- `apps/api`: transport, schema, caching, API composition
-- `apps/worker`: jobs, scheduling, orchestration
-- `packages/config`: config schema and loaders
-- `packages/contracts`: shared DTOs and TypeBox schemas
-- `packages/db`: migrations, seeds, repository helpers
-- `packages/domain`: deterministic signal logic
-- `packages/sources`: OpenCLI command registry and source adapters
+- 顶层架构地图： [architecture.md](./architecture.md)
+- 开发与运行： [development.md](./docs/development.md)
+- API 路由与响应： [api.md](./docs/api.md)
 
-## Practical Defaults
+## 子包路由（按职责进入）
 
-- Keep the implementation backend-first and demoable.
-- Prefer simple SQL and JSONB over heavy ORM abstraction for this phase.
-- Prefer repository helpers and explicit queries over hidden magic.
-- Reserve `apps/web` only as a placeholder for future work.
+- API（Fastify 只读接口）： [apps/api/AGENTS.md](./apps/api/AGENTS.md)
+- Worker（BullMQ 编排与任务）： [apps/worker/AGENTS.md](./apps/worker/AGENTS.md)
+- Web（占位）： [apps/web/AGENTS.md](./apps/web/AGENTS.md)
+- Config（环境 schema）： [packages/config/AGENTS.md](./packages/config/AGENTS.md)
+- Contracts（TypeBox DTO）： [packages/contracts/AGENTS.md](./packages/contracts/AGENTS.md)
+- DB（migrations/seeds/repos）： [packages/db/AGENTS.md](./packages/db/AGENTS.md)
+- Domain（匹配/抽取/聚类/评分）： [packages/domain/AGENTS.md](./packages/domain/AGENTS.md)
+- Sources（OpenCLI registry/collectors/normalizers/audit）： [packages/sources/AGENTS.md](./packages/sources/AGENTS.md)
