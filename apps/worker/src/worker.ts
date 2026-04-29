@@ -7,6 +7,7 @@ import { collectLiveSourcePayloads } from "@devtrend/sources";
 import { Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
 import { QUEUES } from "./jobs/definitions.js";
+import { invalidateApiReadCaches } from "./services/cache.js";
 import { persistCollectedPayloads } from "./services/pipeline.js";
 
 const config = loadConfig();
@@ -144,7 +145,11 @@ new Worker(
 
 new Worker(
   QUEUES.score,
-  async (job) => persistCollectedPayloads(pool, job.data.payloads),
+  async (job) => {
+    const result = await persistCollectedPayloads(pool, job.data.payloads);
+    await invalidateApiReadCaches(redis);
+    return result;
+  },
   { connection: redis, prefix: config.QUEUE_PREFIX },
 );
 

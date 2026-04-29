@@ -13,6 +13,18 @@
     "helpOutput": "Usage: opencli stackoverflow hot [options]\n\nHot Stack Overflow questions\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
     "payload": [
       {
+        "title": "Have pandas warn when operation causes exception on some rows, but continue processing valid rows",
+        "score": 0,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79933644/have-pandas-warn-when-operation-causes-exception-on-some-rows-but-continue-proc"
+      },
+      {
+        "title": "If i had fast algorithm that prove P=NP then how many bitcoin should i mine per year",
+        "score": 0,
+        "answers": 4,
+        "url": "https://stackoverflow.com/questions/79933600/if-i-had-fast-algorithm-that-prove-p-np-then-how-many-bitcoin-should-i-mine-per"
+      },
+      {
         "title": "Fusing row with previous row(s) depending on criteria",
         "score": 1,
         "answers": 1,
@@ -29,18 +41,6 @@
         "score": 0,
         "answers": 0,
         "url": "https://stackoverflow.com/questions/79933618/create-ui-controls-in-own-tab-and-present-results-there"
-      },
-      {
-        "title": "Patroni bootstrap from leader failed: Timeout",
-        "score": 0,
-        "answers": 0,
-        "url": "https://stackoverflow.com/questions/79933634/patroni-bootstrap-from-leader-failed-timeout"
-      },
-      {
-        "title": "How to bypass the CPython abstraction tax for ultra-high-speed CSV ingestion (2GB/s+)?",
-        "score": -1,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79933626/how-to-bypass-the-cpython-abstraction-tax-for-ultra-high-speed-csv-ingestion-2g"
       }
     ]
   },
@@ -106,7 +106,7 @@
         "title": "Can I add a GitHub R package to a local CRAN libraries using miniCRAN?",
         "bounty": 50,
         "score": 4,
-        "answers": 3,
+        "answers": 2,
         "url": "https://stackoverflow.com/questions/57314369/can-i-add-a-github-r-package-to-a-local-cran-libraries-using-minicran"
       },
       {
@@ -193,38 +193,38 @@
     "payload": [
       {
         "rank": 1,
-        "title": "Tell HN: An update from the new Tindie team",
-        "score": 56,
-        "author": "altairprime",
-        "comments": 36
-      },
-      {
-        "rank": 2,
         "title": "Ask HN: If coding gets faster, where should architecture happen?",
-        "score": 2,
+        "score": 4,
         "author": "karlosh",
         "comments": 0
       },
       {
+        "rank": 2,
+        "title": "Ask HN: Can HN ban new accounts? or charge money?",
+        "score": 7,
+        "author": "randyrand",
+        "comments": 10
+      },
+      {
         "rank": 3,
         "title": "Ask HN: Anyone else suddenly have Brawls Stars on their iPhone?",
-        "score": 3,
+        "score": 4,
         "author": "realberkeaslan",
-        "comments": 0
+        "comments": 1
       },
       {
         "rank": 4,
-        "title": "Ask HN: Can HN ban new accounts? or charge money?",
-        "score": 4,
-        "author": "randyrand",
-        "comments": 6
-      },
-      {
-        "rank": 5,
         "title": "Tell HN: An app is silently installing itself on my iPhone every day",
         "score": 584,
         "author": "_-x-_",
         "comments": 186
+      },
+      {
+        "rank": 5,
+        "title": "Ask HN: Is it just me or is Claude Code getting worse?",
+        "score": 27,
+        "author": "e-nouri",
+        "comments": 16
       }
     ]
   },
@@ -244,42 +244,42 @@
       {
         "rank": 1,
         "title": "Soft launch of open-source code platform for government",
-        "score": 171,
+        "score": 205,
         "author": "e12e",
-        "comments": 68,
+        "comments": 73,
         "url": "https://www.nldigitalgovernment.nl/news/soft-launch-for-government-open-source-code-platform/"
       },
       {
         "rank": 2,
         "title": "Ghostty is leaving GitHub",
-        "score": 2756,
+        "score": 2797,
         "author": "WadeGrimridge",
-        "comments": 811,
+        "comments": 828,
         "url": "https://mitchellh.com/writing/ghostty-leaving-github"
       },
       {
         "rank": 3,
         "title": "Bugs Rust won't catch",
-        "score": 358,
+        "score": 381,
         "author": "lwhsiao",
-        "comments": 176,
+        "comments": 189,
         "url": "https://corrode.dev/blog/bugs-rust-wont-catch/"
       },
       {
         "rank": 4,
-        "title": "Show HN: Rip.so – a graveyard for dead internet things",
-        "score": 79,
-        "author": "bozdemir",
-        "comments": 48,
-        "url": "https://rip.so"
+        "title": "HashiCorp co-founder says GitHub 'no longer a place for serious work'",
+        "score": 62,
+        "author": "terminalbraid",
+        "comments": 13,
+        "url": "https://www.theregister.com/2026/04/29/mitchell_hashimoto_ghostty_quitting_github/"
       },
       {
         "rank": 5,
-        "title": "HardenedBSD Is Now Officially on Radicle",
-        "score": 88,
-        "author": "lftherios",
-        "comments": 18,
-        "url": "https://hardenedbsd.org/article/shawn-webb/2026-04-26/hardenedbsd-officially-radicle"
+        "title": "How ChatGPT serves ads",
+        "score": 389,
+        "author": "lmbbuchodi",
+        "comments": 256,
+        "url": "https://www.buchodi.com/how-chatgpt-serves-ads-heres-the-full-attribution-loop/"
       }
     ]
   },
@@ -383,7 +383,7 @@
         "rank": 4,
         "title": "Automation is a trade-off",
         "author": "suesmith",
-        "reactions": 7,
+        "reactions": 8,
         "comments": 1,
         "tags": "ai, webdev, lowcode, automation",
         "url": "https://dev.to/suesmith/automation-is-a-trade-off-2fh8"
@@ -451,12 +451,12 @@
       },
       {
         "rank": 5,
-        "title": "I Indexed 67,000 Open-Source AI Agent Projects. Here's What's Actually Inside.",
-        "author": "gosailglobal",
+        "title": "Should You Be Building on MCP in 2026?",
+        "author": "riddhesh",
         "reactions": 0,
         "comments": 0,
-        "tags": "ai, opensource, mcp, claude",
-        "url": "https://dev.to/gosailglobal/i-indexed-67000-open-source-ai-agent-projects-heres-whats-actually-inside-edg"
+        "tags": "ai, agents, machinelearning, mcp",
+        "url": "https://dev.to/riddhesh/should-you-be-building-on-mcp-in-2026-47lc"
       }
     ]
   },
@@ -648,13 +648,13 @@
       {
         "repo_id": "6296790",
         "repo_name": "spring-projects/spring-boot",
-        "current_growth": "33",
+        "current_growth": "32",
         "current_rank": "1",
         "past_growth": "37",
         "past_rank": "1",
-        "growth_pop": "-10.81",
+        "growth_pop": "-13.51",
         "rank_pop": "0",
-        "total": "40715"
+        "total": "40714"
       },
       {
         "repo_id": "327089870",
@@ -730,11 +730,11 @@
       },
       {
         "date": "2017-01-01",
-        "stargazers": "114"
+        "stargazers": "113"
       },
       {
         "date": "2017-02-01",
-        "stargazers": "115"
+        "stargazers": "114"
       }
     ]
   },

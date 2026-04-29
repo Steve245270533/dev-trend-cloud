@@ -43,7 +43,7 @@
         "rank": 4,
         "title": "Automation is a trade-off",
         "author": "suesmith",
-        "reactions": 7,
+        "reactions": 8,
         "comments": 1,
         "tags": "ai, webdev, lowcode, automation",
         "url": "https://dev.to/suesmith/automation-is-a-trade-off-2fh8"
@@ -111,12 +111,12 @@
       },
       {
         "rank": 5,
-        "title": "I Indexed 67,000 Open-Source AI Agent Projects. Here's What's Actually Inside.",
-        "author": "gosailglobal",
+        "title": "Should You Be Building on MCP in 2026?",
+        "author": "riddhesh",
         "reactions": 0,
         "comments": 0,
-        "tags": "ai, opensource, mcp, claude",
-        "url": "https://dev.to/gosailglobal/i-indexed-67000-open-source-ai-agent-projects-heres-whats-actually-inside-edg"
+        "tags": "ai, agents, machinelearning, mcp",
+        "url": "https://dev.to/riddhesh/should-you-be-building-on-mcp-in-2026-47lc"
       }
     ]
   }

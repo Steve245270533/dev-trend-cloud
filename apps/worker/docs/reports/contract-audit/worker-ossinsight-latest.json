@@ -207,26 +207,26 @@
         "total": "4217"
       },
       {
-        "repo_id": "1148753",
-        "repo_name": "spring-projects/spring-framework",
-        "current_growth": "9",
-        "current_rank": "3",
-        "past_growth": "11",
-        "past_rank": "4",
-        "growth_pop": "-18.18",
-        "rank_pop": "-1",
-        "total": "11295"
-      },
-      {
         "repo_id": "348060227",
         "repo_name": "withastro/astro",
         "current_growth": "9",
-        "current_rank": "4",
+        "current_rank": "3",
         "past_growth": "19",
         "past_rank": "3",
         "growth_pop": "-52.63",
-        "rank_pop": "1",
+        "rank_pop": "0",
         "total": "6162"
+      },
+      {
+        "repo_id": "1148753",
+        "repo_name": "spring-projects/spring-framework",
+        "current_growth": "9",
+        "current_rank": "4",
+        "past_growth": "11",
+        "past_rank": "4",
+        "growth_pop": "-18.18",
+        "rank_pop": "0",
+        "total": "11295"
       },
       {
         "repo_id": "458058",
@@ -269,11 +269,11 @@
       },
       {
         "date": "2017-01-01",
-        "stargazers": "114"
+        "stargazers": "113"
       },
       {
         "date": "2017-02-01",
-        "stargazers": "115"
+        "stargazers": "114"
       }
     ]
   },
