@@ -1,4 +1,4 @@
-import type { SourceKey } from "../../../contracts/src/index.js";
+import type { SourceKey } from "@devtrend/contracts";
 import {
   type SourceCommandDefinition,
   sourceCommands,

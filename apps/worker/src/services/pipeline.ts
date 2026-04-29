@@ -1,4 +1,3 @@
-import type { Pool } from "pg";
 import {
   getSourceStatusMap,
   insertSourceStatus,
@@ -7,10 +6,11 @@ import {
   replaceDerivedPipelineOutput,
   replaceSourceItems,
   withTransaction,
-} from "../../../../packages/db/src/index.js";
-import { buildQuestionPressurePipeline } from "../../../../packages/domain/src/index.js";
-import type { CollectedSourcePayload } from "../../../../packages/sources/src/collectors/index.js";
-import { normalizeCollectedPayloads } from "../../../../packages/sources/src/index.js";
+} from "@devtrend/db";
+import { buildQuestionPressurePipeline } from "@devtrend/domain";
+import type { CollectedSourcePayload } from "@devtrend/sources";
+import { normalizeCollectedPayloads } from "@devtrend/sources";
+import type { Pool } from "pg";
 
 export async function persistCollectedPayloads(
   pool: Pool,

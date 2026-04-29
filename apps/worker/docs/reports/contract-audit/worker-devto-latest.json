@@ -14,12 +14,12 @@
     "payload": [
       {
         "rank": 1,
-        "title": "How I used Gemini CLI to orchestrate a complex RAG migration",
-        "author": "rsamborski",
-        "reactions": 15,
-        "comments": 1,
-        "tags": "gemini, agents, programming, ai",
-        "url": "https://dev.to/googleai/how-i-used-gemini-cli-to-orchestrate-a-complex-rag-migration-43ga"
+        "title": "🗓️ Monthly Dev Report: April 2026",
+        "author": "francistrdev",
+        "reactions": 30,
+        "comments": 6,
+        "tags": "discuss, devjournal, programming, community",
+        "url": "https://dev.to/francistrdev/monthly-dev-report-april-2026-nak"
       },
       {
         "rank": 2,
@@ -32,30 +32,30 @@
       },
       {
         "rank": 3,
-        "title": "🗓️ Monthly Dev Report: April 2026",
-        "author": "francistrdev",
-        "reactions": 24,
-        "comments": 5,
-        "tags": "discuss, devjournal, programming, community",
-        "url": "https://dev.to/francistrdev/monthly-dev-report-april-2026-nak"
+        "title": "How I used Gemini CLI to orchestrate a complex RAG migration",
+        "author": "rsamborski",
+        "reactions": 15,
+        "comments": 1,
+        "tags": "gemini, agents, programming, ai",
+        "url": "https://dev.to/googleai/how-i-used-gemini-cli-to-orchestrate-a-complex-rag-migration-43ga"
       },
       {
         "rank": 4,
         "title": "My Incredible Google Cloud Next 26 Experience as a GDE",
         "author": "deraileddash",
-        "reactions": 13,
+        "reactions": 18,
         "comments": 0,
         "tags": "googlecloud, googlecloudnext, gde, vegas",
         "url": "https://dev.to/gde/my-incredible-google-cloud-next-26-experience-as-a-gde-17mo"
       },
       {
         "rank": 5,
-        "title": "Founder Patterns That Kill a Launch – And What AI Has To Do With It",
-        "author": "vorniches",
-        "reactions": 0,
-        "comments": 0,
-        "tags": "ai, programming, mvp, startup",
-        "url": "https://dev.to/vorniches/founder-patterns-that-kill-a-launch-and-what-ai-has-to-do-with-it-4mf"
+        "title": "Automation is a trade-off",
+        "author": "suesmith",
+        "reactions": 7,
+        "comments": 1,
+        "tags": "ai, webdev, lowcode, automation",
+        "url": "https://dev.to/suesmith/automation-is-a-trade-off-2fh8"
       }
     ]
   },
@@ -93,30 +93,30 @@
       },
       {
         "rank": 3,
-        "title": "I built a read-only MCP server for Akamai",
-        "author": "desty2k",
-        "reactions": 0,
-        "comments": 0,
-        "tags": "ai, mcp, python, productivity",
-        "url": "https://dev.to/desty2k/i-built-a-read-only-mcp-server-for-akamai-3398"
+        "title": "Flowise MCP RCE: What CVE-2026-40933 Teaches About Agent Security",
+        "author": "tokenmixai",
+        "reactions": 5,
+        "comments": 1,
+        "tags": "ai, security, devops, mcp",
+        "url": "https://dev.to/tokenmixai/flowise-mcp-rce-what-cve-2026-40933-teaches-about-agent-security-1p6g"
       },
       {
         "rank": 4,
-        "title": "Running Claude Code in a Loop: The Script That Turns It Into a Persistent Agent",
-        "author": "agentdm",
+        "title": "I Indexed 67,000 Open-Source AI Agent Projects. Here's What's Actually Inside.",
+        "author": "gosailglobal",
         "reactions": 0,
         "comments": 0,
-        "tags": "ai, mcp, claude, agents",
-        "url": "https://dev.to/agentdm/running-claude-code-in-a-loop-the-script-that-turns-it-into-a-persistent-agent-4i3f"
+        "tags": "ai, opensource, mcp, claude",
+        "url": "https://dev.to/gosailglobal/i-indexed-67000-open-source-ai-agent-projects-heres-whats-actually-inside-edg"
       },
       {
         "rank": 5,
-        "title": "Kairo: A Local-First Terminal Task Manager with Lua Plugins, Git Sync, and an MCP Server",
-        "author": "programmersd21",
-        "reactions": 5,
-        "comments": 1,
-        "tags": "programming, automation, go, mcp",
-        "url": "https://dev.to/programmersd21/kairo-a-local-first-terminal-task-manager-with-lua-plugins-git-sync-and-an-mcp-server-36h0"
+        "title": "Public order books were built for humans. AI traders need a different market structure.",
+        "author": "barissozen",
+        "reactions": 1,
+        "comments": 0,
+        "tags": "mcp, ai, cryptocurrency, blockchain",
+        "url": "https://dev.to/barissozen/public-order-books-were-built-for-humans-ai-traders-need-a-different-market-structure-4ep8"
       }
     ]
   }

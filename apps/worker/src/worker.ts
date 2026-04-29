@@ -1,11 +1,11 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { loadConfig } from "@devtrend/config";
+import type { SourceKey } from "@devtrend/contracts";
+import { createPool } from "@devtrend/db";
+import { collectLiveSourcePayloads } from "@devtrend/sources";
 import { Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
-import { loadConfig } from "../../../packages/config/src/index.js";
-import type { SourceKey } from "../../../packages/contracts/src/index.js";
-import { createPool } from "../../../packages/db/src/index.js";
-import { collectLiveSourcePayloads } from "../../../packages/sources/src/index.js";
 import { QUEUES } from "./jobs/definitions.js";
 import { persistCollectedPayloads } from "./services/pipeline.js";
 

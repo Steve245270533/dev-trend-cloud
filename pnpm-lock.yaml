@@ -212,6 +212,27 @@ importers:
         specifier: workspace:*
         version: link:../contracts
 
+  test:
+    dependencies:
+      '@devtrend/api':
+        specifier: workspace:*
+        version: link:../apps/api
+      '@devtrend/db':
+        specifier: workspace:*
+        version: link:../packages/db
+      '@devtrend/domain':
+        specifier: workspace:*
+        version: link:../packages/domain
+      '@devtrend/sources':
+        specifier: workspace:*
+        version: link:../packages/sources
+      '@devtrend/worker':
+        specifier: workspace:*
+        version: link:../apps/worker
+      pg:
+        specifier: 'catalog:'
+        version: 8.20.0
+
 packages:
 
   '@biomejs/biome@2.4.13':

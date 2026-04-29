@@ -2,6 +2,9 @@
   "name": "@devtrend/api",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
     "@devtrend/config": "workspace:*",
     "@devtrend/contracts": "workspace:*",
@@ -16,6 +19,6 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "node ../../dist/apps/api/src/server.js"
+    "start": "tsx src/server.ts"
   }
 }

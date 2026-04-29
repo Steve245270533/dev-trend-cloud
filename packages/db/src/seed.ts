@@ -1,12 +1,11 @@
-import { loadConfig } from "../../config/src/index.js";
+import { loadConfig } from "@devtrend/config";
 import {
   buildQuestionPressurePipeline,
   entitySeeds,
   topicSeeds,
   watchlistSeeds,
-} from "../../domain/src/index.js";
-import { sourceCommands } from "../../sources/src/command-registry.js";
-import { normalizedDemoItems } from "../../sources/src/index.js";
+} from "@devtrend/domain";
+import { normalizedDemoItems, sourceCommands } from "@devtrend/sources";
 import { createPool, withTransaction } from "./client.js";
 import {
   insertPipelineOutput,

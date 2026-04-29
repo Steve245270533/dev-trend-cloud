@@ -1,4 +1,3 @@
-import type { FastifyInstance } from "fastify";
 import {
   getQuestionCluster,
   getQuestionEvidence,
@@ -6,7 +5,8 @@ import {
   listFeed,
   listQuestionPressureSignals,
   pingDatabase,
-} from "../../../../packages/db/src/index.js";
+} from "@devtrend/db";
+import type { FastifyInstance } from "fastify";
 import type { ReadServices } from "./types.js";
 
 function cacheKey(prefix: string, value: object): string {

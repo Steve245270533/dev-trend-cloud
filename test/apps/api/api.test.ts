@@ -1,10 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildApp } from "../../../apps/api/src/app.js";
+import { buildApp } from "@devtrend/api";
+import { buildQuestionPressurePipeline } from "@devtrend/domain";
+import { normalizedDemoItems, sourceCommands } from "@devtrend/sources";
 import type { ReadServices } from "../../../apps/api/src/services/types.js";
-import { buildQuestionPressurePipeline } from "../../../packages/domain/src/index.js";
-import { sourceCommands } from "../../../packages/sources/src/command-registry.js";
-import { normalizedDemoItems } from "../../../packages/sources/src/index.js";
 
 const sourceStatus = {
   stackoverflow: {

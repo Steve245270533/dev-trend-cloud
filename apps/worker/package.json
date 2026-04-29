@@ -2,6 +2,9 @@
   "name": "@devtrend/worker",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
     "@devtrend/config": "workspace:*",
     "@devtrend/contracts": "workspace:*",
@@ -14,6 +17,6 @@
   },
   "scripts": {
     "dev": "tsx watch src/worker.ts",
-    "start": "node ../../dist/apps/worker/src/worker.js"
+    "start": "tsx src/worker.ts"
   }
 }

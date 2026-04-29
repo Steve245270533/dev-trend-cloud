@@ -10,9 +10,9 @@ import type {
   QuestionPressureQuery,
   QuestionPressureSignal,
   SourceStatus,
-} from "../../contracts/src/index.js";
-import type { PipelineOutput } from "../../domain/src/index.js";
-import type { CollectedSourcePayload } from "../../sources/src/collectors/index.js";
+} from "@devtrend/contracts";
+import type { PipelineOutput } from "@devtrend/domain";
+import type { CollectedSourcePayload } from "@devtrend/sources";
 import type { Queryable } from "./client.js";
 
 interface ItemRow {

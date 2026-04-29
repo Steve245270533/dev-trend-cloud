@@ -51,6 +51,7 @@
 
 - lint 规范：所有代码必须通过 `pnpm lint`（当前为 Biome check，以 `package.json` 的 `lint` 脚本为准）
 - 类型安全：禁止使用 `any`（TypeScript），使用 `unknown` 或具体类型替代
+- 跨包引用：workspace 子包之间只能通过包名顶级入口导入（例如 `@devtrend/contracts`），禁止跨包相对路径或深导入 `packages/<pkg>/src/**`
 - 文档同步：新增业务模块必须同步更新对应文档
 - 配置/依赖变更需授权：涉及 `package.json`、构建配置、核心配置等变更时，必须先提交变更申请并获得用户明确许可
 - 技术栈演进允许：允许提出更优替代库或配置，并在获得授权后落地

@@ -1,9 +1,6 @@
+import { type AppConfig, loadConfig } from "@devtrend/config";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import Fastify from "fastify";
-import {
-  type AppConfig,
-  loadConfig,
-} from "../../../packages/config/src/index.js";
 import { configPlugin, dataPlugin } from "./plugins/app-plugins.js";
 import { createRoutes } from "./routes/index.js";
 import { createDatabaseServices } from "./services/database-services.js";

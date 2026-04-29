@@ -1,8 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type {
-  NormalizedItem,
-  SourceKey,
-} from "../../../contracts/src/index.js";
+import type { NormalizedItem, SourceKey } from "@devtrend/contracts";
 
 function toIsoDate(value: unknown): string {
   if (typeof value === "string" && !Number.isNaN(Date.parse(value))) {

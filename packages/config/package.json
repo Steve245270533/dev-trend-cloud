@@ -2,6 +2,9 @@
   "name": "@devtrend/config",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
     "@sinclair/typebox": "catalog:",
     "env-schema": "catalog:config"

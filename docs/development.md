@@ -16,6 +16,12 @@
 - DEV
 - OSSInsight
 
+## 工程约束
+
+- workspace 子包之间引用只能使用包名顶级入口：`import { ... } from "@devtrend/<pkg>"`
+- 禁止跨包相对路径或深导入 `packages/<pkg>/src/**`（例如 `../../contracts/src/index.js`）
+- 新增对外 API 必须通过对应包的 `src/index.ts` 导出
+
 ## 基础设施
 
 本项目扩展 `/Users/lehuaixiaochen/Downloads/Project/Docker/docker-compose.yml`。

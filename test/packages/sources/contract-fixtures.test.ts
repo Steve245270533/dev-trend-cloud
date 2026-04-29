@@ -3,8 +3,9 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import test from "node:test";
 
+const repoRoot = resolve(process.cwd(), "..");
 const registryPath = resolve(
-  process.cwd(),
+  repoRoot,
   "packages/sources/src/fixtures/opencli-registry.yaml",
 );
 const helpPaths = [
@@ -26,18 +27,12 @@ test("contract fixtures exist and are non-empty", async () => {
   assert.ok(registry.includes("ossinsight"));
 
   for (const relativePath of helpPaths) {
-    const content = await readFile(
-      resolve(process.cwd(), relativePath),
-      "utf8",
-    );
+    const content = await readFile(resolve(repoRoot, relativePath), "utf8");
     assert.ok(content.length > 0);
   }
 
   for (const relativePath of samplePaths) {
-    const content = await readFile(
-      resolve(process.cwd(), relativePath),
-      "utf8",
-    );
+    const content = await readFile(resolve(repoRoot, relativePath), "utf8");
     assert.ok(content.length > 0);
     assert.doesNotThrow(() => JSON.parse(content));
   }

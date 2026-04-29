@@ -1,5 +1,3 @@
-import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
-import { Type } from "@sinclair/typebox";
 import {
   ClusterParamsSchema,
   createResponseSchema,
@@ -13,7 +11,9 @@ import {
   QuestionPressureQuerySchema,
   QuestionPressureSignalSchema,
   type SourceStatus,
-} from "../../../../packages/contracts/src/index.js";
+} from "@devtrend/contracts";
+import type { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
+import { Type } from "@sinclair/typebox";
 import type { ReadServices } from "../services/types.js";
 
 function buildMeta(sourceStatus: Record<string, SourceStatus>) {

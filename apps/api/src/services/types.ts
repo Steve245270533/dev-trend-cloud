@@ -6,7 +6,7 @@ import type {
   QuestionPressureQuery,
   QuestionPressureSignal,
   SourceStatus,
-} from "../../../../packages/contracts/src/index.js";
+} from "@devtrend/contracts";
 
 export interface ReadServices {
   checkHealth: () => Promise<boolean>;

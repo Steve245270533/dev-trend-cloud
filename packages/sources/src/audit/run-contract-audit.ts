@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { loadConfig } from "../../../config/src/index.js";
+import { loadConfig } from "@devtrend/config";
 import { collectLiveSourcePayloads } from "../collectors/index.js";
 import { sourceCommands } from "../command-registry.js";
 

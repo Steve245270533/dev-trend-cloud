@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { persistCollectedPayloads } from "@devtrend/worker";
 import type { Pool, PoolClient, QueryResult } from "pg";
-import { persistCollectedPayloads } from "../../../apps/worker/src/services/pipeline.js";
 
 interface FakeItemRow {
   id: string;

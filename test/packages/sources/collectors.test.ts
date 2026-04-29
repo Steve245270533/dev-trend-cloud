@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveSourceCommandArgv } from "../../../packages/sources/src/collectors/index.js";
-import { sourceCommands } from "../../../packages/sources/src/command-registry.js";
+import { resolveSourceCommandArgv, sourceCommands } from "@devtrend/sources";
 
 const collectionReposCommand = sourceCommands.find(
   (command) =>

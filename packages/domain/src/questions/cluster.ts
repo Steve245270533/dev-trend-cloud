@@ -1,8 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import type {
-  QuestionCluster,
-  QuestionEvidence,
-} from "../../../contracts/src/index.js";
+import type { QuestionCluster, QuestionEvidence } from "@devtrend/contracts";
 import type { EnrichedItem } from "./extract.js";
 
 export interface ClusteredQuestion {

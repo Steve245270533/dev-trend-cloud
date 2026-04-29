@@ -2,6 +2,9 @@
   "name": "@devtrend/domain",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
     "@devtrend/contracts": "workspace:*"
   }

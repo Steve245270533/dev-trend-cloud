@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { QueryResult } from "pg";
 import {
   listFeed,
   listQuestionPressureSignals,
   replaceSourceItems,
-} from "../../../packages/db/src/repository.js";
+} from "@devtrend/db";
+import type { QueryResult } from "pg";
 
 test("listFeed pushes topic and entity filters into SQL before LIMIT", async () => {
   const calls: { text: string; params?: unknown[] }[] = [];

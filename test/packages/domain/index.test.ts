@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildQuestionPressurePipeline } from "../../../packages/domain/src/index.js";
-import { sourceCommands } from "../../../packages/sources/src/command-registry.js";
-import { normalizedDemoItems } from "../../../packages/sources/src/index.js";
+import { buildQuestionPressurePipeline } from "@devtrend/domain";
+import { normalizedDemoItems, sourceCommands } from "@devtrend/sources";
 
 test("question pressure pipeline returns feed, signals, and evidence", () => {
   const sourceStatus = {

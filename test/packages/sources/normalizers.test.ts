@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { demoCommandPayloads } from "../../../packages/sources/src/fixtures/demo-fixtures.js";
-import { normalizeSourcePayload } from "../../../packages/sources/src/normalizers/index.js";
+import { demoCommandPayloads, normalizeSourcePayload } from "@devtrend/sources";
 
 test("normalize source payload creates normalized items for Stack Overflow", () => {
   const items = normalizeSourcePayload(

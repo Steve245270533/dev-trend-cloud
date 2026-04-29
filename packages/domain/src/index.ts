@@ -4,7 +4,7 @@ import type {
   QuestionEvidence,
   QuestionPressureSignal,
   SourceStatus,
-} from "../../contracts/src/index.js";
+} from "@devtrend/contracts";
 import { matchCatalog } from "./matching/matcher.js";
 import { clusterQuestionItems } from "./questions/cluster.js";
 import { extractQuestionFeatures } from "./questions/extract.js";

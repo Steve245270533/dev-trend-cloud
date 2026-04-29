@@ -2,7 +2,7 @@ import type {
   MatchedEntity,
   MatchedTopic,
   NormalizedItem,
-} from "../../../contracts/src/index.js";
+} from "@devtrend/contracts";
 import {
   type EntitySeed,
   entitySeeds,

@@ -1,8 +1,8 @@
+import type { AppConfig } from "@devtrend/config";
 import fastifyPostgres from "@fastify/postgres";
 import fastifyRedis from "@fastify/redis";
 import type { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
-import type { AppConfig } from "../../../../packages/config/src/index.js";
 
 declare module "fastify" {
   interface FastifyInstance {

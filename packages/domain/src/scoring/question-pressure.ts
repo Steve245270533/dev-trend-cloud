@@ -1,7 +1,4 @@
-import type {
-  QuestionPressureSignal,
-  SourceStatus,
-} from "../../../contracts/src/index.js";
+import type { QuestionPressureSignal, SourceStatus } from "@devtrend/contracts";
 import type { ClusteredQuestion } from "../questions/cluster.js";
 
 function recommendedAction(cluster: ClusteredQuestion): string {

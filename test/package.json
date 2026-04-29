@@ -1,0 +1,18 @@
+{
+  "name": "@devtrend/test",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@devtrend/api": "workspace:*",
+    "@devtrend/db": "workspace:*",
+    "@devtrend/domain": "workspace:*",
+    "@devtrend/sources": "workspace:*",
+    "@devtrend/worker": "workspace:*",
+    "pg": "catalog:"
+  },
+  "scripts": {
+    "test": "cross-env NODE_ENV=test node --import tsx --test **/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
+
