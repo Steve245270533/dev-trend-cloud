@@ -4,6 +4,7 @@ import type { QueryResult } from "pg";
 import {
   listFeed,
   listQuestionPressureSignals,
+  replaceSourceItems,
 } from "../../../packages/db/src/repository.js";
 
 test("listFeed pushes topic and entity filters into SQL before LIMIT", async () => {
@@ -51,4 +52,28 @@ test("listQuestionPressureSignals filters in SQL before LIMIT", async () => {
   assert.match(calls[0].text, /\$1 = ANY\(qc\.affected_topics\)/);
   assert.match(calls[0].text, /\$2 = ANY\(qc\.affected_entities\)/);
   assert.deepEqual(calls[0].params, ["mcp", "fastify", 10]);
+});
+
+test("replaceSourceItems scopes replacement to the requested sources", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      return { rows: [] } as unknown as QueryResult;
+    },
+  };
+
+  await replaceSourceItems(
+    db,
+    {
+      feed: [],
+      signals: [],
+      evidenceByClusterId: {},
+    },
+    ["devto"],
+  );
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].text, /DELETE FROM items WHERE source = ANY/);
+  assert.deepEqual(calls[0].params, [["devto"]]);
 });

@@ -334,12 +334,8 @@ export async function insertSourceStatus(
   }
 }
 
-export async function insertPipelineOutput(
-  db: Queryable,
-  pipeline: PipelineOutput,
-  sourceStatus: Record<string, SourceStatus>,
-) {
-  for (const feedItem of pipeline.feed) {
+async function upsertFeedItems(db: Queryable, feed: FeedItem[]) {
+  for (const feedItem of feed) {
     await db.query(
       `
         INSERT INTO items (
@@ -460,12 +456,35 @@ export async function insertPipelineOutput(
       );
     }
   }
+}
 
+export async function replaceSourceItems(
+  db: Queryable,
+  pipeline: PipelineOutput,
+  sources: string[],
+) {
+  if (sources.length > 0) {
+    await db.query("DELETE FROM items WHERE source = ANY($1::text[])", [
+      sources,
+    ]);
+  }
+
+  await upsertFeedItems(db, pipeline.feed);
+}
+
+export async function resetDerivedTables(db: Queryable) {
   await db.query("DELETE FROM signal_evidence");
   await db.query("DELETE FROM signals");
   await db.query("DELETE FROM question_cluster_items");
   await db.query("DELETE FROM question_clusters");
+}
 
+export async function replaceDerivedPipelineOutput(
+  db: Queryable,
+  pipeline: PipelineOutput,
+  sourceStatus: Record<string, SourceStatus>,
+) {
+  await resetDerivedTables(db);
   for (const signal of pipeline.signals) {
     const clusterKey = signal.canonicalQuestion
       .toLowerCase()
@@ -590,6 +609,29 @@ export async function insertPipelineOutput(
       );
     }
   }
+}
+
+export async function insertPipelineOutput(
+  db: Queryable,
+  pipeline: PipelineOutput,
+  sourceStatus: Record<string, SourceStatus>,
+) {
+  await upsertFeedItems(db, pipeline.feed);
+  await replaceDerivedPipelineOutput(db, pipeline, sourceStatus);
+}
+
+export async function listAllNormalizedItems(
+  db: Queryable,
+): Promise<NormalizedItem[]> {
+  const result = await db.query(
+    `
+      SELECT i.*
+      FROM items i
+      ORDER BY published_at DESC
+    `,
+  );
+
+  return result.rows.map((row: unknown) => mapItemRow(row as ItemRow));
 }
 
 export async function listFeed(

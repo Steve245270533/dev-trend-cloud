@@ -1,9 +1,11 @@
 import type { Pool } from "pg";
 import {
-  insertPipelineOutput,
+  getSourceStatusMap,
   insertSourceStatus,
+  listAllNormalizedItems,
   recordCollectionArtifacts,
-  resetRuntimeTables,
+  replaceDerivedPipelineOutput,
+  replaceSourceItems,
   withTransaction,
 } from "../../../../packages/db/src/index.js";
 import { buildQuestionPressurePipeline } from "../../../../packages/domain/src/index.js";
@@ -25,17 +27,28 @@ export async function persistCollectedPayloads(
   }, {});
 
   const items = normalizeCollectedPayloads(payloads);
-  const pipeline = buildQuestionPressurePipeline(items, sourceStatus);
+  const sourcePipeline = buildQuestionPressurePipeline(items, sourceStatus);
 
   await withTransaction(pool, async (client) => {
     await recordCollectionArtifacts(client, payloads);
-    await resetRuntimeTables(client);
     await insertSourceStatus(client, sourceStatus);
-    await insertPipelineOutput(client, pipeline, sourceStatus);
+    await replaceSourceItems(client, sourcePipeline, Object.keys(sourceStatus));
+
+    const fullItems = await listAllNormalizedItems(client);
+    const fullSourceStatus = await getSourceStatusMap(client);
+    const globalPipeline = buildQuestionPressurePipeline(
+      fullItems,
+      fullSourceStatus,
+    );
+    await replaceDerivedPipelineOutput(
+      client,
+      globalPipeline,
+      fullSourceStatus,
+    );
   });
 
   return {
-    items: pipeline.feed.length,
-    signals: pipeline.signals.length,
+    items: sourcePipeline.feed.length,
+    signals: sourcePipeline.signals.length,
   };
 }
