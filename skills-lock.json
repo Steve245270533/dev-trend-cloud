@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "fastify-best-practices": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "skillPath": "skills/fastify/SKILL.md",
+      "computedHash": "269924684709b8c6f50a569ef988e66031efb822ef92cba6c8dfa160e54ed4d4"
+    },
+    "opencli-adapter-author": {
+      "source": "git@github.com:jackwener/OpenCLI.git",
+      "sourceType": "git",
+      "skillPath": "skills/opencli-adapter-author/SKILL.md",
+      "computedHash": "b8c01c032ba1d130c32433e4740b93e395ed56b7c89c06308fecf0bfb18a4fd9"
+    },
+    "opencli-autofix": {
+      "source": "git@github.com:jackwener/OpenCLI.git",
+      "sourceType": "git",
+      "skillPath": "skills/opencli-autofix/SKILL.md",
+      "computedHash": "cf75a29ded3e92156a9896cc7fe44d3986f68752c9badd0f13477c94723516ef"
+    },
+    "opencli-browser": {
+      "source": "git@github.com:jackwener/OpenCLI.git",
+      "sourceType": "git",
+      "skillPath": "skills/opencli-browser/SKILL.md",
+      "computedHash": "cb38347b7862152629de879162f7793ceaba62d255d1a3e0a3be68cd0ff87c78"
+    },
+    "opencli-usage": {
+      "source": "git@github.com:jackwener/OpenCLI.git",
+      "sourceType": "git",
+      "skillPath": "skills/opencli-usage/SKILL.md",
+      "computedHash": "df2a675c42cbe4787930455f92e9599995022ac18862fb1f702ceb7856f44266"
+    },
+    "smart-search": {
+      "source": "git@github.com:jackwener/OpenCLI.git",
+      "sourceType": "git",
+      "skillPath": "skills/smart-search/SKILL.md",
+      "computedHash": "61a26736228394d2f017b38570c221a5005b9bab47b1b52053e9fbd7047bc970"
+    }
+  }
+}
