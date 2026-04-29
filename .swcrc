@@ -9,5 +9,5 @@
     "type": "es6"
   },
   "sourceMaps": true,
-  "minify": false
+  "minify": true
 }
