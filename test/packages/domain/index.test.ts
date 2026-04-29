@@ -38,6 +38,31 @@ test("question pressure pipeline returns feed, signals, and evidence", () => {
       ),
     ),
   );
+  assert.equal(
+    pipeline.feed.some(
+      (item) =>
+        item.title ===
+          "Why does vector similarity search return unstable results in pgvector?" &&
+        item.topics.some((topic) => topic.slug === "typescript"),
+    ),
+    false,
+  );
+  assert.equal(
+    pipeline.signals.some((signal) => signal.evidenceCount >= 3),
+    true,
+  );
+  assert.equal(
+    pipeline.signals.some(
+      (signal) => Object.keys(signal.sourceDistribution).length >= 2,
+    ),
+    true,
+  );
+  assert.equal(
+    pipeline.signals
+      .filter((signal) => signal.evidenceCount < 3)
+      .every((signal) => signal.confidenceScore <= 0.45),
+    true,
+  );
 
   const secondPipeline = buildQuestionPressurePipeline(
     normalizedDemoItems(sourceCommands),

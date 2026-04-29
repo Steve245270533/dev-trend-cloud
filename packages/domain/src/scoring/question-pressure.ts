@@ -93,14 +93,16 @@ export function scoreClusters(
       affectedEntityWeight +
       sourceHealthWeight;
 
+    const baseConfidence = Math.min(
+      1,
+      0.2 +
+        cluster.cluster.evidenceCount * 0.1 +
+        crossSourceMentions * 0.15 +
+        sourceHealthWeight * 0.15,
+    );
+    const confidenceCap = cluster.cluster.evidenceCount < 3 ? 0.45 : 1;
     const confidenceScore = Number(
-      Math.min(
-        1,
-        0.2 +
-          cluster.cluster.evidenceCount * 0.1 +
-          crossSourceMentions * 0.15 +
-          sourceHealthWeight * 0.15,
-      ).toFixed(3),
+      Math.min(baseConfidence, confidenceCap).toFixed(3),
     );
 
     return {

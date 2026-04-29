@@ -64,6 +64,12 @@ export const demoCommandPayloads: Record<string, Record<string, unknown>[]> = {
       author: "bob",
       comments: 18,
     },
+    {
+      title: "Ask HN: How are you validating MCP tool calling schemas?",
+      score: 23,
+      author: "cory",
+      comments: 16,
+    },
   ],
   "hackernews:top": [
     {
@@ -89,6 +95,14 @@ export const demoCommandPayloads: Record<string, Record<string, unknown>[]> = {
       comments: 9,
       url: "https://example.com/agent-workflow-evals",
     },
+    {
+      title:
+        "Why does pgvector similarity search keep returning unstable results?",
+      score: 19,
+      author: "fiona",
+      comments: 13,
+      url: "https://example.com/pgvector-similarity-results",
+    },
   ],
   "devto:top": [
     {
@@ -109,6 +123,16 @@ export const demoCommandPayloads: Record<string, Record<string, unknown>[]> = {
       url: "https://dev.to/example/pgvector-rag",
       published_at: "2026-04-28T12:00:00.000Z",
     },
+    {
+      title:
+        "Why is pgvector returning unstable similarity search results for RAG?",
+      author: "gina",
+      reactions: 28,
+      comments: 6,
+      tags: ["pgvector", "postgres", "rag"],
+      url: "https://dev.to/example/pgvector-similarity-rag",
+      published_at: "2026-04-28T14:30:00.000Z",
+    },
   ],
   "devto:tag": [
     {
@@ -119,6 +143,15 @@ export const demoCommandPayloads: Record<string, Record<string, unknown>[]> = {
       tags: ["mcp", "ai", "developer-tools"],
       url: "https://dev.to/example/mcp-guide",
       published_at: "2026-04-28T08:00:00.000Z",
+    },
+    {
+      title: "How are teams validating MCP tool calling schemas?",
+      author: "ivy",
+      reactions: 35,
+      comments: 8,
+      tags: ["mcp", "tool-calling", "typescript"],
+      url: "https://dev.to/example/mcp-schema-validation",
+      published_at: "2026-04-28T09:30:00.000Z",
     },
   ],
   "ossinsight:trending": [

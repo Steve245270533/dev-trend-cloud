@@ -38,10 +38,16 @@ function daysSince(dateIso: string): number {
   return Math.floor(elapsedMs / (1000 * 60 * 60 * 24));
 }
 
-function normalizeSignature(title: string): string {
+export function normalizeQuestionTitle(title: string): string {
   return title
     .toLowerCase()
     .replaceAll(/[^a-z0-9 ]/g, " ")
+    .replaceAll(/\s+/g, " ")
+    .trim();
+}
+
+export function normalizeSignature(title: string): string {
+  return normalizeQuestionTitle(title)
     .replaceAll(/\b(the|a|an|with|for|and|or|to|of|in)\b/g, " ")
     .replaceAll(/\s+/g, " ")
     .trim()
