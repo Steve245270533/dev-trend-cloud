@@ -7,9 +7,14 @@ import {
   recordCollectionArtifacts,
   replaceDerivedPipelineOutput,
   replaceSourceItems,
+  upsertCatalog,
   withTransaction,
 } from "@devtrend/db";
-import { buildQuestionPressurePipeline } from "@devtrend/domain";
+import {
+  buildQuestionPressurePipeline,
+  entitySeeds,
+  topicSeeds,
+} from "@devtrend/domain";
 import type { CollectedSourcePayload } from "@devtrend/sources";
 import { normalizeCollectedPayloads } from "@devtrend/sources";
 import type { Pool } from "pg";
@@ -196,6 +201,7 @@ export async function persistCollectedPayloads(
     persistedItems = sourcePipeline.feed.length;
     persistedSignals = sourcePipeline.signals.length;
 
+    await upsertCatalog(client, topicSeeds, entitySeeds);
     await insertSourceStatus(client, sourceStatus);
     await replaceSourceItems(
       client,

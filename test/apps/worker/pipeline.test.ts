@@ -125,6 +125,14 @@ function createStatefulPool(): StatefulPool {
         return { rows: [] } as unknown as QueryResult;
       }
 
+      if (text.includes("INSERT INTO topics")) {
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO entities")) {
+        return { rows: [] } as unknown as QueryResult;
+      }
+
       if (text.includes("INSERT INTO source_runs")) {
         sourceRuns.push({
           id: String(params?.[0]),
@@ -392,6 +400,10 @@ test("persistCollectedPayloads keeps prior sources and rebuilds global signals",
     "hackernews",
     "stackoverflow",
   ]);
+  assert.ok(state.executed.some((text) => text.includes("INSERT INTO topics")));
+  assert.ok(
+    state.executed.some((text) => text.includes("INSERT INTO entities")),
+  );
   assert.equal(state.sourceRuns.length, 2);
   assert.equal(state.rawSnapshots.length, 2);
   assert.ok(

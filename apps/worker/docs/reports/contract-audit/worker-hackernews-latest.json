@@ -10,26 +10,26 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T14:20:12.094Z",
-    "finishedAt": "2026-04-29T14:20:17.154Z",
-    "latencyMs": 5060,
+    "startedAt": "2026-04-29T15:40:19.098Z",
+    "finishedAt": "2026-04-29T15:40:23.579Z",
+    "latencyMs": 4481,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli hackernews ask [options]\n\nHacker News Ask HN posts\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments",
     "payload": [
       {
         "rank": 1,
-        "title": "Tell HN: An update from the new Tindie team",
-        "score": 69,
-        "author": "altairprime",
-        "comments": 41
+        "title": "Ask HN: Is it still worth it to try to get a job in IT",
+        "score": 3,
+        "author": "morpheos137",
+        "comments": 5
       },
       {
         "rank": 2,
-        "title": "Ask HN: Can HN ban new accounts? or charge money?",
-        "score": 17,
-        "author": "randyrand",
-        "comments": 32
+        "title": "Tell HN: An update from the new Tindie team",
+        "score": 75,
+        "author": "altairprime",
+        "comments": 46
       },
       {
         "rank": 3,
@@ -65,52 +65,52 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T14:20:17.154Z",
-    "finishedAt": "2026-04-29T14:20:22.812Z",
-    "latencyMs": 5658,
+    "startedAt": "2026-04-29T15:40:23.579Z",
+    "finishedAt": "2026-04-29T15:40:28.182Z",
+    "latencyMs": 4603,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli hackernews top [options]\n\nHacker News top stories\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments",
     "payload": [
       {
         "rank": 1,
-        "title": "Tangled – We need a federation of forges",
-        "score": 53,
-        "author": "icy",
-        "comments": 12,
-        "url": "https://blog.tangled.org/federation/"
+        "title": "Zed is 1.0",
+        "score": 304,
+        "author": "salkahfi",
+        "comments": 100,
+        "url": "https://zed.dev/blog/zed-1-0"
       },
       {
         "rank": 2,
-        "title": "Soft launch of open-source code platform for government",
-        "score": 331,
-        "author": "e12e",
-        "comments": 100,
-        "url": "https://www.nldigitalgovernment.nl/news/soft-launch-for-government-open-source-code-platform/"
+        "title": "Tangled – We need a federation of forges",
+        "score": 200,
+        "author": "icy",
+        "comments": 120,
+        "url": "https://blog.tangled.org/federation/"
       },
       {
         "rank": 3,
-        "title": "Ghostty is leaving GitHub",
-        "score": 2958,
-        "author": "WadeGrimridge",
-        "comments": 886,
-        "url": "https://mitchellh.com/writing/ghostty-leaving-github"
+        "title": "Why AI companies want you to be afraid of them",
+        "score": 18,
+        "author": "rolph",
+        "comments": 9,
+        "url": "https://www.bbc.com/future/article/20260428-ai-companies-want-you-to-be-afraid-of-them"
       },
       {
         "rank": 4,
-        "title": "HashiCorp co-founder says GitHub 'no longer a place for serious work'",
-        "score": 277,
-        "author": "terminalbraid",
-        "comments": 144,
-        "url": "https://www.theregister.com/2026/04/29/mitchell_hashimoto_ghostty_quitting_github/"
+        "title": "Soft launch of open-source code platform for government",
+        "score": 383,
+        "author": "e12e",
+        "comments": 105,
+        "url": "https://www.nldigitalgovernment.nl/news/soft-launch-for-government-open-source-code-platform/"
       },
       {
         "rank": 5,
-        "title": "Letting AI play my game – building an agentic test harness to help play-testing",
-        "score": 22,
-        "author": "jschomay",
-        "comments": 1,
-        "url": "https://blog.jeffschomay.com/letting-ai-play-my-game"
+        "title": "Ghostty is leaving GitHub",
+        "score": 3077,
+        "author": "WadeGrimridge",
+        "comments": 916,
+        "url": "https://mitchellh.com/writing/ghostty-leaving-github"
       }
     ]
   },
@@ -126,9 +126,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T14:20:22.812Z",
-    "finishedAt": "2026-04-29T14:20:26.477Z",
-    "latencyMs": 3665,
+    "startedAt": "2026-04-29T15:40:28.182Z",
+    "finishedAt": "2026-04-29T15:40:29.728Z",
+    "latencyMs": 1546,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli hackernews search [options] <query>\n\nSearch Hacker News stories\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Number of results (default: \"20\")\n  --sort [value]      Sort by relevance or date (default: \"relevance\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\n  --sort: relevance, date  (default: relevance)\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments, url",
