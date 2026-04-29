@@ -40,6 +40,7 @@ function daysSince(dateIso: string): number {
 
 export function normalizeQuestionTitle(title: string): string {
   return title
+    .replaceAll(/^(ask hn:|tell hn:)\s*/gi, "")
     .toLowerCase()
     .replaceAll(/[^a-z0-9 ]/g, " ")
     .replaceAll(/\s+/g, " ")
@@ -70,7 +71,8 @@ export function extractQuestionFeatures(
     (item.answerCount === 0 ||
       item.contentType === "bounty" ||
       item.contentType === "unanswered");
-  const questionish = explicitQuestion || stackOverflowSignal;
+  const questionish =
+    item.isQuestion || explicitQuestion || stackOverflowSignal;
   const unresolvedVolume = Math.max(
     0,
     (item.answerCount === 0 ? 2 : 0) +

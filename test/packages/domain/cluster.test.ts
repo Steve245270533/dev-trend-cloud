@@ -51,6 +51,8 @@ function buildNormalizedItem(
     summary: "",
     url: `https://example.com/${source}/${encodeURIComponent(title)}`,
     publishedAt: "2026-04-29T00:00:00.000Z",
+    collectedAt: "2026-04-29T00:05:00.000Z",
+    timestampOrigin: "source",
     score: 10,
     answerCount: 0,
     commentCount: 5,
@@ -166,5 +168,59 @@ test("cluster ids stay stable across repeated runs", () => {
   assert.deepEqual(
     firstRun.map((cluster) => cluster.cluster.clusterId).sort(),
     secondRun.map((cluster) => cluster.cluster.clusterId).sort(),
+  );
+});
+
+test("clusters related questions when entity anchors and significant title tokens overlap", () => {
+  const items = [
+    buildEnrichedItem(
+      "stackoverflow",
+      "How to pass data from an MCP client to an MCP server in Java?",
+      ["mcp"],
+      ["mcp-protocol"],
+    ),
+    buildEnrichedItem(
+      "hackernews",
+      "Ask HN: What MCP servers/apps are you using as a dev?",
+      ["mcp"],
+      ["mcp-protocol"],
+    ),
+    buildEnrichedItem(
+      "devto",
+      "Why we built an MCP server for website health data",
+      ["mcp"],
+      ["mcp-protocol"],
+    ),
+  ];
+
+  const clusters = clusterQuestionItems(items);
+
+  assert.equal(clusters.length, 1);
+  assert.equal(clusters[0]?.cluster.evidenceCount, 3);
+});
+
+test("Tell HN titles do not become question evidence unless they are actual questions", () => {
+  const tellCluster = clusterQuestionItems([
+    buildEnrichedItem(
+      "hackernews",
+      "Tell HN: One Medical Is a Nightmare",
+      ["docs-quality"],
+      [],
+      {
+        isQuestion: false,
+      },
+    ),
+    buildEnrichedItem(
+      "hackernews",
+      "Ask HN: Why is MCP tool calling so brittle in production?",
+      ["mcp"],
+      ["mcp-protocol"],
+    ),
+  ]);
+
+  assert.equal(tellCluster.length, 1);
+  assert.equal(
+    tellCluster[0]?.cluster.canonicalQuestion,
+    "Ask HN: Why is MCP tool calling so brittle in production?",
   );
 });

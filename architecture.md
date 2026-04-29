@@ -27,7 +27,9 @@
 ```text
 OpenCLI public sources
   -> contract audit (registry/help/sample fixtures)
-  -> collectors (raw snapshots JSONB)
+  -> collectors (per-command attempts, partial success allowed)
+  -> worker fallback (reuse last successful raw snapshot for the same source+command)
+  -> raw snapshots JSONB
   -> normalizers (canonical items)
   -> topic/entity matcher (seed catalog)
   -> question extractor (rule-first)
@@ -51,10 +53,12 @@ BullMQ worker
 ### Source 层（packages/sources）
 
 - 目标：把“外部站点能力”收敛为可审计的 OpenCLI 命令合约 + 稳定的采集/归一化输出。
+- 目标：把“外部站点能力”收敛为可审计的 OpenCLI 命令合约 + 稳定的采集/归一化输出。
 - 合约审计产物：
   - OpenCLI registry 快照
   - `--help` 快照
   - 代表性 JSON 样本（fixtures）
+- collector 允许按 command 记录失败，不以“单命令失败 = 整轮失败”作为默认行为。
 - 注意：本阶段只允许 public sources（无需登录态）。
 
 ### Domain 层（packages/domain）
@@ -79,6 +83,8 @@ BullMQ worker
 
 - Postgres 是事实源（system of record）
 - `raw_snapshots` 存储原始 payload（JSONB）
+- `source_runs` 记录每次 command 尝试；fallback 只复用历史 snapshot，不复制 payload。
+- `item_sources` 负责把 item 追到 `source_runs` 和 `raw_snapshots`，供 evidence drilldown 使用。
 - repository helpers 用显式 SQL 查询表达数据访问，不引入重 ORM 抽象
 
 ### Transport 层（apps/api）
@@ -90,7 +96,7 @@ BullMQ worker
 ### Orchestration 层（apps/worker）
 
 - BullMQ 负责调度与异步任务编排
-- worker 调用 sources + domain + db，产出可被 API 读取的持久化与缓存结果
+- worker 调用 sources + domain + db，负责 source-level fallback、source health rollup、持久化和缓存结果产出
 
 ## 代码库地图
 

@@ -9,18 +9,34 @@ const sourceStatus = {
   stackoverflow: {
     status: "healthy" as const,
     lastSuccessAt: "2026-04-29T00:00:00.000Z",
+    lastErrorAt: null,
+    lastErrorText: null,
+    fallbackUsed: false,
+    lastLatencyMs: 100,
   },
   hackernews: {
     status: "healthy" as const,
     lastSuccessAt: "2026-04-29T00:00:00.000Z",
+    lastErrorAt: null,
+    lastErrorText: null,
+    fallbackUsed: false,
+    lastLatencyMs: 120,
   },
   devto: {
-    status: "healthy" as const,
+    status: "degraded" as const,
     lastSuccessAt: "2026-04-29T00:00:00.000Z",
+    lastErrorAt: "2026-04-29T00:10:00.000Z",
+    lastErrorText: "timeout",
+    fallbackUsed: true,
+    lastLatencyMs: 5000,
   },
   ossinsight: {
     status: "healthy" as const,
     lastSuccessAt: "2026-04-29T00:00:00.000Z",
+    lastErrorAt: null,
+    lastErrorText: null,
+    fallbackUsed: false,
+    lastLatencyMs: 130,
   },
 };
 
@@ -102,6 +118,11 @@ test("GET /signals/question-pressure returns metadata and signals", async () => 
   assert.ok(Array.isArray(response.json().data));
   assert.ok(response.json().meta.generatedAt);
   assert.ok(response.json().meta.sourceStatus.stackoverflow);
+  assert.equal(response.json().meta.fallbackUsed, true);
+  assert.equal(
+    response.json().meta.sourceStatus.devto.lastErrorText,
+    "timeout",
+  );
   await app.close();
 });
 
@@ -134,5 +155,10 @@ test("GET /question-clusters/:id/evidence returns evidence rows", async () => {
 
   assert.equal(response.statusCode, 200);
   assert.ok(response.json().data.length > 0);
+  assert.ok(response.json().data[0].collectedAt);
+  assert.equal(
+    typeof response.json().data[0].sourceRunId !== "undefined",
+    true,
+  );
   await app.close();
 });

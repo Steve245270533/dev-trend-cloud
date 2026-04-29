@@ -1,5 +1,6 @@
 export { createPool, withTransaction } from "./client.js";
 export {
+  getLatestSuccessfulSnapshot,
   getQuestionCluster,
   getQuestionEvidence,
   getSourceStatusMap,

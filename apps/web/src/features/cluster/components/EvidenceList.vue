@@ -10,6 +10,10 @@ function formatDate(value) {
   return date.toLocaleString();
 }
 
+function hasLink(item) {
+  return typeof item?.url === "string" && item.url.length > 0;
+}
+
 const props = defineProps({
   items: { type: Array, default: () => [] },
 });
@@ -17,13 +21,19 @@ const props = defineProps({
 
 <template>
   <div class="grid grid-cols-1 gap-3">
-    <a
+    <component
+      :is="hasLink(item) ? 'a' : 'div'"
       v-for="item in props.items"
       :key="item.id"
-      :href="item.url"
-      target="_blank"
-      rel="noreferrer"
-      class="group rounded-xl2 border border-white/10 bg-surface/70 p-4 shadow-bento backdrop-blur transition hover:border-white/20 hover:bg-surface2/70"
+      :href="hasLink(item) ? item.url : undefined"
+      :target="hasLink(item) ? '_blank' : undefined"
+      :rel="hasLink(item) ? 'noreferrer' : undefined"
+      :class="[
+        'group rounded-xl2 border border-white/10 bg-surface/70 p-4 shadow-bento backdrop-blur transition',
+        hasLink(item)
+          ? 'hover:border-white/20 hover:bg-surface2/70'
+          : 'cursor-default',
+      ]"
     >
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0 flex-1">
@@ -42,8 +52,8 @@ const props = defineProps({
         />
       </div>
       <div class="mt-2 text-xs text-muted">
-        {{ item.url }}
+        {{ item.url || "无可用原始链接" }}
       </div>
-    </a>
+    </component>
   </div>
 </template>

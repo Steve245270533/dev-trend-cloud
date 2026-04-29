@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { CollectedSourcePayload } from "@devtrend/sources";
 import { persistCollectedPayloads } from "@devtrend/worker";
 import type { Pool, PoolClient, QueryResult } from "pg";
 
@@ -25,24 +26,82 @@ interface FakeSourceHealthRow {
   source: string;
   status: "healthy" | "degraded" | "failed";
   last_success_at: string | null;
+  last_error_at: string | null;
+  last_error_text: string | null;
+  fallback_used: boolean;
+  last_latency_ms: number;
+}
+
+interface FakeSnapshotRow {
+  snapshot_id: string;
+  source_run_id: string;
+  source: string;
+  command: string;
+  collected_at: string;
+  payload: Record<string, unknown>[];
+}
+
+interface FakeSourceRunRow {
+  id: string;
+  source: string;
+  command: string;
+  status: string;
+  error_text: string | null;
+  fallback_used: boolean;
+  records_count: number;
+}
+
+interface FakeItemSourceRow {
+  item_id: string;
+  source: string;
+  source_item_id: string;
+  command: string;
+  source_run_id: string | null;
+  snapshot_id: string | null;
+  raw_payload: Record<string, unknown>;
+  collected_at: string;
 }
 
 interface StatefulPool {
   executed: string[];
   items: FakeItemRow[];
   signalPayloads: Record<string, unknown>[];
-  sourceRuns: number;
-  rawSnapshots: number;
+  sourceRuns: FakeSourceRunRow[];
+  rawSnapshots: FakeSnapshotRow[];
+  itemSources: FakeItemSourceRow[];
+  sourceHealth: FakeSourceHealthRow[];
   pool: Pool;
+}
+
+function buildCollectedPayload(
+  source: CollectedSourcePayload["source"],
+  commandName: string,
+  payload: Record<string, unknown>[],
+  overrides: Partial<CollectedSourcePayload> = {},
+): CollectedSourcePayload {
+  return {
+    source,
+    commandName,
+    argv: [source, commandName, "--limit", "5", "-f", "json"],
+    startedAt: "2026-04-29T00:00:00.000Z",
+    finishedAt: "2026-04-29T00:00:02.000Z",
+    latencyMs: 2000,
+    status: "success",
+    errorText: null,
+    helpOutput: "usage",
+    payload,
+    ...overrides,
+  };
 }
 
 function createStatefulPool(): StatefulPool {
   const executed: string[] = [];
   const items = new Map<string, FakeItemRow>();
   const sourceHealth = new Map<string, FakeSourceHealthRow>();
+  const rawSnapshots: FakeSnapshotRow[] = [];
+  const sourceRuns: FakeSourceRunRow[] = [];
+  const itemSources = new Map<string, FakeItemSourceRow>();
   let signalPayloads: Record<string, unknown>[] = [];
-  let sourceRuns = 0;
-  let rawSnapshots = 0;
 
   const client = {
     async query(text: string, params?: unknown[]) {
@@ -55,7 +114,6 @@ function createStatefulPool(): StatefulPool {
         text.includes("DELETE FROM signal_evidence") ||
         text.includes("DELETE FROM question_cluster_items") ||
         text.includes("DELETE FROM question_clusters") ||
-        text.includes("INSERT INTO item_sources") ||
         text.includes("DELETE FROM item_topics") ||
         text.includes("DELETE FROM item_entities") ||
         text.includes("INSERT INTO item_topics") ||
@@ -68,13 +126,58 @@ function createStatefulPool(): StatefulPool {
       }
 
       if (text.includes("INSERT INTO source_runs")) {
-        sourceRuns += 1;
+        sourceRuns.push({
+          id: String(params?.[0]),
+          source: String(params?.[1]),
+          command: String(params?.[2]),
+          status: String(params?.[3]),
+          error_text:
+            typeof params?.[6] === "string" ? String(params[6]) : null,
+          fallback_used: params?.[7] === true,
+          records_count: Number(params?.[8] ?? 0),
+        });
         return { rows: [] } as unknown as QueryResult;
       }
 
       if (text.includes("INSERT INTO raw_snapshots")) {
-        rawSnapshots += 1;
+        rawSnapshots.push({
+          snapshot_id: String(params?.[0]),
+          source_run_id: String(params?.[1]),
+          source: String(params?.[2]),
+          command: String(params?.[3]),
+          collected_at: String(params?.[6]),
+          payload:
+            typeof params?.[5] === "string"
+              ? (JSON.parse(String(params[5])) as Record<string, unknown>[])
+              : [],
+        });
         return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("FROM raw_snapshots rs")) {
+        const source = String(params?.[0]);
+        const commandName = String(params?.[1]);
+        const snapshot = [...rawSnapshots]
+          .filter(
+            (entry) => entry.source === source && entry.command === commandName,
+          )
+          .sort((left, right) =>
+            left.collected_at.localeCompare(right.collected_at),
+          )
+          .at(-1);
+
+        return {
+          rows: snapshot
+            ? [
+                {
+                  snapshot_id: snapshot.snapshot_id,
+                  source_run_id: snapshot.source_run_id,
+                  collected_at: snapshot.collected_at,
+                  payload: snapshot.payload,
+                },
+              ]
+            : [],
+        } as unknown as QueryResult;
       }
 
       if (text.includes("DELETE FROM items WHERE source = ANY")) {
@@ -83,6 +186,7 @@ function createStatefulPool(): StatefulPool {
         for (const [key, item] of items.entries()) {
           if (sources.includes(item.source)) {
             items.delete(key);
+            itemSources.delete(key);
           }
         }
 
@@ -96,11 +200,17 @@ function createStatefulPool(): StatefulPool {
           status: params?.[1] as FakeSourceHealthRow["status"],
           last_success_at:
             typeof params?.[2] === "string" ? String(params[2]) : null,
+          last_error_at:
+            typeof params?.[3] === "string" ? String(params[3]) : null,
+          last_error_text:
+            typeof params?.[4] === "string" ? String(params[4]) : null,
+          fallback_used: params?.[5] === true,
+          last_latency_ms: Number(params?.[6] ?? 0),
         });
         return { rows: [] } as unknown as QueryResult;
       }
 
-      if (text.includes("SELECT source, status, last_success_at")) {
+      if (text.includes("FROM source_health")) {
         return {
           rows: [...sourceHealth.values()],
         } as unknown as QueryResult;
@@ -129,6 +239,26 @@ function createStatefulPool(): StatefulPool {
         };
 
         items.set(`${row.source}:${row.source_item_id}`, row);
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO item_sources")) {
+        const key = `${String(params?.[2])}:${String(params?.[3])}`;
+        itemSources.set(key, {
+          item_id: String(params?.[1]),
+          source: String(params?.[2]),
+          source_item_id: String(params?.[3]),
+          command: String(params?.[4]),
+          source_run_id:
+            typeof params?.[5] === "string" ? String(params[5]) : null,
+          snapshot_id:
+            typeof params?.[6] === "string" ? String(params[6]) : null,
+          raw_payload:
+            typeof params?.[7] === "string"
+              ? (JSON.parse(String(params[7])) as Record<string, unknown>)
+              : {},
+          collected_at: String(params?.[8]),
+        });
         return { rows: [] } as unknown as QueryResult;
       }
 
@@ -171,6 +301,12 @@ function createStatefulPool(): StatefulPool {
     get rawSnapshots() {
       return rawSnapshots;
     },
+    get itemSources() {
+      return [...itemSources.values()];
+    },
+    get sourceHealth() {
+      return [...sourceHealth.values()];
+    },
     pool: {
       async connect() {
         return client;
@@ -202,20 +338,14 @@ test("persistCollectedPayloads rolls back the transaction on replacement failure
 
   await assert.rejects(
     persistCollectedPayloads(pool, [
-      {
-        source: "stackoverflow",
-        commandName: "hot",
-        argv: ["stackoverflow", "hot", "--limit", "5", "-f", "json"],
-        helpOutput: "usage",
-        payload: [
-          {
-            title: "How do I debug Model Context Protocol tool registration?",
-            score: 12,
-            answers: 0,
-            url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
-          },
-        ],
-      },
+      buildCollectedPayload("stackoverflow", "hot", [
+        {
+          title: "How do I debug Model Context Protocol tool registration?",
+          score: 12,
+          answers: 0,
+          url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
+        },
+      ]),
     ]),
   );
 
@@ -228,54 +358,42 @@ test("persistCollectedPayloads rolls back the transaction on replacement failure
     ),
   );
   assert.ok(executed.includes("ROLLBACK"));
-  assert.ok(!executed.includes("COMMIT"));
+  assert.equal(executed.at(-1), "ROLLBACK");
 });
 
 test("persistCollectedPayloads keeps prior sources and rebuilds global signals", async () => {
   const state = createStatefulPool();
 
   await persistCollectedPayloads(state.pool, [
-    {
-      source: "stackoverflow",
-      commandName: "hot",
-      argv: ["stackoverflow", "hot", "--limit", "5", "-f", "json"],
-      helpOutput: "usage",
-      payload: [
-        {
-          title:
-            "How do I debug Model Context Protocol tool registration in Fastify?",
-          score: 12,
-          answers: 0,
-          url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
-        },
-      ],
-    },
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title:
+          "How do I debug Model Context Protocol tool registration in Fastify?",
+        score: 12,
+        answers: 0,
+        url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
+      },
+    ]),
   ]);
 
   await persistCollectedPayloads(state.pool, [
-    {
-      source: "hackernews",
-      commandName: "ask",
-      argv: ["hackernews", "ask", "--limit", "5", "-f", "json"],
-      helpOutput: "usage",
-      payload: [
-        {
-          title:
-            "How do I debug Model Context Protocol tool registration in Fastify?",
-          score: 29,
-          author: "bob",
-          comments: 18,
-        },
-      ],
-    },
+    buildCollectedPayload("hackernews", "ask", [
+      {
+        title:
+          "How do I debug Model Context Protocol tool registration in Fastify?",
+        score: 29,
+        author: "bob",
+        comments: 18,
+      },
+    ]),
   ]);
 
   assert.deepEqual(state.items.map((item) => item.source).sort(), [
     "hackernews",
     "stackoverflow",
   ]);
-  assert.equal(state.sourceRuns, 2);
-  assert.equal(state.rawSnapshots, 2);
+  assert.equal(state.sourceRuns.length, 2);
+  assert.equal(state.rawSnapshots.length, 2);
   assert.ok(
     state.signalPayloads.some((signal) => {
       const distribution = signal.sourceDistribution as Record<string, number>;
@@ -288,4 +406,64 @@ test("persistCollectedPayloads keeps prior sources and rebuilds global signals",
       return distribution.hackernews === 1;
     }),
   );
+});
+
+test("persistCollectedPayloads reuses prior snapshots as fallback and degrades source health", async () => {
+  const state = createStatefulPool();
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title:
+          "How do I debug Model Context Protocol tool registration in Fastify?",
+        score: 12,
+        answers: 0,
+        url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
+      },
+    ]),
+  ]);
+
+  const firstSnapshotId = state.rawSnapshots[0]?.snapshot_id;
+  assert.ok(firstSnapshotId);
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [], {
+      status: "failed",
+      errorText: "timeout",
+      finishedAt: "2026-04-29T01:00:02.000Z",
+      latencyMs: 8000,
+    }),
+  ]);
+
+  assert.equal(state.sourceRuns.length, 2);
+  assert.equal(state.rawSnapshots.length, 1);
+  assert.equal(state.sourceRuns[1]?.status, "fallback");
+  assert.equal(state.sourceHealth[0]?.status, "degraded");
+  assert.equal(state.sourceHealth[0]?.fallback_used, true);
+  assert.equal(state.sourceHealth[0]?.last_error_text, "timeout");
+
+  const itemSource = state.itemSources[0];
+  assert.equal(itemSource?.source_run_id, state.sourceRuns[1]?.id);
+  assert.equal(itemSource?.snapshot_id, firstSnapshotId);
+});
+
+test("persistCollectedPayloads records failed sources when no fallback snapshot exists", async () => {
+  const state = createStatefulPool();
+
+  const result = await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("devto", "tag", [], {
+      status: "failed",
+      errorText: "command timed out",
+      finishedAt: "2026-04-29T02:00:02.000Z",
+      latencyMs: 6000,
+    }),
+  ]);
+
+  assert.equal(result.items, 0);
+  assert.equal(state.sourceRuns.length, 1);
+  assert.equal(state.sourceRuns[0]?.status, "failed");
+  assert.equal(state.rawSnapshots.length, 0);
+  assert.equal(state.sourceHealth[0]?.status, "failed");
+  assert.equal(state.sourceHealth[0]?.fallback_used, false);
+  assert.equal(state.items.length, 0);
 });

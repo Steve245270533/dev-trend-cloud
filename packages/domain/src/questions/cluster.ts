@@ -6,6 +6,29 @@ import { normalizeQuestionTitle } from "./extract.js";
 const CLUSTER_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 const MIN_TOKEN_JACCARD = 0.3;
 const MIN_TRIGRAM_DICE = 0.4;
+const TITLE_STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "for",
+  "how",
+  "i",
+  "in",
+  "is",
+  "it",
+  "of",
+  "on",
+  "or",
+  "the",
+  "to",
+  "we",
+  "what",
+  "why",
+  "with",
+  "you",
+]);
 
 export interface ClusteredQuestion {
   cluster: QuestionCluster;
@@ -67,6 +90,25 @@ function trigramSet(item: EnrichedItem): Set<string> {
   return trigrams;
 }
 
+function normalizeClusterToken(token: string): string {
+  if (token.length > 4 && token.endsWith("s")) {
+    return token.slice(0, -1);
+  }
+
+  return token;
+}
+
+function significantTitleTokens(item: EnrichedItem): string[] {
+  return normalizeQuestionTitle(item.item.title)
+    .split(" ")
+    .map(normalizeClusterToken)
+    .filter((token) => token.length > 2 && !TITLE_STOPWORDS.has(token));
+}
+
+function normalizedTags(item: EnrichedItem): string[] {
+  return item.item.tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean);
+}
+
 function jaccardSimilarity(left: Set<string>, right: Set<string>): number {
   if (left.size === 0 || right.size === 0) {
     return 0;
@@ -118,11 +160,21 @@ function comparePair(
     left.topics.map((topic) => topic.slug),
     right.topics.map((topic) => topic.slug),
   );
+  const sharedTags = overlapCount(normalizedTags(left), normalizedTags(right));
+  const sharedSignificantTokens = overlapCount(
+    significantTitleTokens(left),
+    significantTitleTokens(right),
+  );
   const titleMatches =
     exactSignature ||
-    (tokenJaccard >= MIN_TOKEN_JACCARD && trigramDice >= MIN_TRIGRAM_DICE);
+    (tokenJaccard >= MIN_TOKEN_JACCARD && trigramDice >= MIN_TRIGRAM_DICE) ||
+    (sharedSignificantTokens >= 2 &&
+      (sharedEntities > 0 || sharedTopics > 0 || sharedTags > 0));
   const anchorMatches =
-    sharedEntities > 0 || sharedTopics > 0 || exactSignature;
+    sharedEntities > 0 ||
+    sharedTopics > 0 ||
+    exactSignature ||
+    (sharedTags > 0 && trigramDice >= MIN_TRIGRAM_DICE);
 
   if (!titleMatches || !anchorMatches) {
     return null;
@@ -133,6 +185,8 @@ function comparePair(
       (exactSignature ? 100 : 0) +
       sharedEntities * 10 +
       sharedTopics * 5 +
+      sharedTags * 3 +
+      sharedSignificantTokens * 4 +
       trigramDice * 3 +
       tokenJaccard * 2,
   };
@@ -273,6 +327,15 @@ export function clusterQuestionItems(
       label: item.item.contentType,
       score: item.item.score,
       publishedAt: item.item.publishedAt,
+      collectedAt: item.item.collectedAt,
+      sourceRunId:
+        typeof item.item.rawMeta.sourceRunId === "string"
+          ? item.item.rawMeta.sourceRunId
+          : null,
+      snapshotId:
+        typeof item.item.rawMeta.snapshotId === "string"
+          ? item.item.rawMeta.snapshotId
+          : null,
     }));
     const clusterKey = buildClusterFingerprint(group);
 

@@ -10,37 +10,42 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:20:00.097Z",
+    "finishedAt": "2026-04-29T14:20:05.799Z",
+    "latencyMs": 5702,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow hot [options]\n\nHot Stack Overflow questions\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
     "payload": [
       {
-        "title": "numba unsupported opcode FORMAT_WITH_SPEC",
-        "score": 0,
+        "title": "Readonly Ubuntu 26.06 Desktop with browser",
+        "score": -4,
         "answers": 0,
-        "url": "https://stackoverflow.com/questions/79933454/numba-unsupported-opcode-format-with-spec"
+        "url": "https://stackoverflow.com/questions/79933689/readonly-ubuntu-26-06-desktop-with-browser"
       },
       {
-        "title": "How to develop the APO driver for USB audio devices in Windows?",
-        "score": 0,
+        "title": "Ubuntu 26.04 terminal contains unwanted key=values list in the command line prompts",
+        "score": -1,
         "answers": 0,
-        "url": "https://stackoverflow.com/questions/79933446/how-to-develop-the-apo-driver-for-usb-audio-devices-in-windows"
+        "url": "https://stackoverflow.com/questions/79933688/ubuntu-26-04-terminal-contains-unwanted-key-values-list-in-the-command-line-prom"
       },
       {
-        "title": "looking for embedded webrtc solution for ip camera?",
+        "title": "OSError: [WinError 1114] when importing a library in python",
         "score": 0,
         "answers": 0,
-        "url": "https://stackoverflow.com/questions/79933438/looking-for-embedded-webrtc-solution-for-ip-camera"
+        "url": "https://stackoverflow.com/questions/79933663/oserror-winerror-1114-when-importing-a-library-in-python"
       },
       {
-        "title": "In Django, where to define user",
-        "score": 0,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79933445/in-django-where-to-define-user"
-      },
-      {
-        "title": "swiftui state based view switching isn&#39;t switching",
+        "title": "Metamodel generator loses generic type parameter for Set&lt;String&gt; in Hibernate 7",
         "score": 0,
         "answers": 0,
-        "url": "https://stackoverflow.com/questions/79933440/swiftui-state-based-view-switching-isnt-switching"
+        "url": "https://stackoverflow.com/questions/79933665/metamodel-generator-loses-generic-type-parameter-for-setstring-in-hibernate-7"
+      },
+      {
+        "title": "Does anyone know how I could make a lambda calculus compiler",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933668/does-anyone-know-how-i-could-make-a-lambda-calculus-compiler"
       }
     ]
   },
@@ -55,6 +60,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:20:05.799Z",
+    "finishedAt": "2026-04-29T14:20:07.177Z",
+    "latencyMs": 1378,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow unanswered [options]\n\nTop voted unanswered questions on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
     "payload": [
       {
@@ -100,6 +110,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:20:07.177Z",
+    "finishedAt": "2026-04-29T14:20:10.570Z",
+    "latencyMs": 3393,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow bounties [options]\n\nActive bounties on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: bounty, title, score, answers, url",
     "payload": [
       {
@@ -144,6 +159,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:20:10.570Z",
+    "finishedAt": "2026-04-29T14:20:12.086Z",
+    "latencyMs": 1516,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow search [options] <query>\n\nSearch Stack Overflow questions\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
     "payload": [
       {

@@ -24,18 +24,34 @@ async function main() {
       stackoverflow: {
         status: "healthy",
         lastSuccessAt: new Date().toISOString(),
+        lastErrorAt: null,
+        lastErrorText: null,
+        fallbackUsed: false,
+        lastLatencyMs: 0,
       },
       hackernews: {
         status: "healthy",
         lastSuccessAt: new Date().toISOString(),
+        lastErrorAt: null,
+        lastErrorText: null,
+        fallbackUsed: false,
+        lastLatencyMs: 0,
       },
       devto: {
         status: "healthy",
         lastSuccessAt: new Date().toISOString(),
+        lastErrorAt: null,
+        lastErrorText: null,
+        fallbackUsed: false,
+        lastLatencyMs: 0,
       },
       ossinsight: {
         status: "healthy",
         lastSuccessAt: new Date().toISOString(),
+        lastErrorAt: null,
+        lastErrorText: null,
+        fallbackUsed: false,
+        lastLatencyMs: 0,
       },
     } as const;
 

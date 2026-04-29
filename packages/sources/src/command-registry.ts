@@ -55,7 +55,7 @@ export const sourceCommands: SourceCommandDefinition[] = [
   {
     source: "hackernews",
     name: "search",
-    args: ["vector database", "--limit", "5", "-f", "json"],
+    args: ["ask hn mcp", "--limit", "5", "-f", "json"],
     helpArgv: ["hackernews", "search", "--help"],
     category: "search",
   },

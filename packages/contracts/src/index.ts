@@ -19,9 +19,20 @@ export const SourceStatusSchema = Type.Object({
     Type.String({ format: "date-time" }),
     Type.Null(),
   ]),
+  lastErrorAt: Type.Union([Type.String({ format: "date-time" }), Type.Null()]),
+  lastErrorText: Type.Union([Type.String(), Type.Null()]),
+  fallbackUsed: Type.Boolean(),
+  lastLatencyMs: Type.Integer({ minimum: 0 }),
 });
 
 export type SourceStatus = Static<typeof SourceStatusSchema>;
+
+export const TimestampOriginSchema = Type.Union([
+  Type.Literal("source"),
+  Type.Literal("collected"),
+]);
+
+export type TimestampOrigin = Static<typeof TimestampOriginSchema>;
 
 export const ResponseMetaSchema = Type.Object({
   generatedAt: Type.String({ format: "date-time" }),
@@ -64,6 +75,8 @@ export const NormalizedItemSchema = Type.Object({
   url: Type.String(),
   author: Type.Optional(Type.String()),
   publishedAt: Type.String({ format: "date-time" }),
+  collectedAt: Type.String({ format: "date-time" }),
+  timestampOrigin: TimestampOriginSchema,
   score: Type.Number(),
   answerCount: Type.Integer(),
   commentCount: Type.Integer(),
@@ -94,6 +107,9 @@ export const QuestionEvidenceSchema = Type.Object({
   label: Type.String(),
   score: Type.Number(),
   publishedAt: Type.String({ format: "date-time" }),
+  collectedAt: Type.String({ format: "date-time" }),
+  sourceRunId: Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+  snapshotId: Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
 });
 
 export type QuestionEvidence = Static<typeof QuestionEvidenceSchema>;

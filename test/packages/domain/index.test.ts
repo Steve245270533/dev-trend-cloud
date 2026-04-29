@@ -8,18 +8,34 @@ test("question pressure pipeline returns feed, signals, and evidence", () => {
     stackoverflow: {
       status: "healthy" as const,
       lastSuccessAt: "2026-04-29T00:00:00.000Z",
+      lastErrorAt: null,
+      lastErrorText: null,
+      fallbackUsed: false,
+      lastLatencyMs: 120,
     },
     hackernews: {
       status: "healthy" as const,
       lastSuccessAt: "2026-04-29T00:00:00.000Z",
+      lastErrorAt: null,
+      lastErrorText: null,
+      fallbackUsed: false,
+      lastLatencyMs: 120,
     },
     devto: {
       status: "healthy" as const,
       lastSuccessAt: "2026-04-29T00:00:00.000Z",
+      lastErrorAt: null,
+      lastErrorText: null,
+      fallbackUsed: false,
+      lastLatencyMs: 120,
     },
     ossinsight: {
       status: "healthy" as const,
       lastSuccessAt: "2026-04-29T00:00:00.000Z",
+      lastErrorAt: null,
+      lastErrorText: null,
+      fallbackUsed: false,
+      lastLatencyMs: 120,
     },
   };
 

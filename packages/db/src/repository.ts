@@ -33,12 +33,34 @@ interface ItemRow {
   raw_meta: Record<string, unknown>;
 }
 
+interface CollectionArtifactRef {
+  sourceRunId: string;
+  snapshotId: string | null;
+  collectedAt: string;
+  fallbackUsed: boolean;
+}
+
+interface FallbackSnapshotRecord {
+  sourceRunId: string;
+  snapshotId: string;
+  collectedAt: string;
+  payload: Record<string, unknown>[];
+}
+
+type PersistedSourceStatus = SourceStatus & {
+  metadata?: Record<string, unknown>;
+};
+
 function canonicalKey(item: NormalizedItem): string {
   return item.title
     .toLowerCase()
     .replaceAll(/[^a-z0-9 ]/g, " ")
     .replaceAll(/\s+/g, " ")
     .trim();
+}
+
+function buildArtifactKey(source: string, commandName: string): string {
+  return `${source}:${commandName}`;
 }
 
 async function getItemTopics(
@@ -96,6 +118,13 @@ async function getItemEntities(
 }
 
 function mapItemRow(row: ItemRow): NormalizedItem {
+  const collectedAt =
+    typeof row.raw_meta?.collectedAt === "string"
+      ? row.raw_meta.collectedAt
+      : new Date(row.published_at).toISOString();
+  const timestampOrigin =
+    row.raw_meta?.timestampOrigin === "collected" ? "collected" : "source";
+
   return {
     id: row.id,
     source: row.source as NormalizedItem["source"],
@@ -105,6 +134,8 @@ function mapItemRow(row: ItemRow): NormalizedItem {
     url: row.url,
     author: row.author ?? undefined,
     publishedAt: new Date(row.published_at).toISOString(),
+    collectedAt,
+    timestampOrigin,
     score: Number(row.score),
     answerCount: row.answer_count,
     commentCount: row.comment_count,
@@ -164,11 +195,14 @@ export async function resetSeedTables(db: Queryable) {
 export async function recordCollectionArtifacts(
   db: Queryable,
   payloads: CollectedSourcePayload[],
-) {
+): Promise<Record<string, CollectionArtifactRef>> {
+  const artifacts: Record<string, CollectionArtifactRef> = {};
+
   for (const payload of payloads) {
     const sourceRunId = randomUUID();
-    const snapshotId = randomUUID();
-    const now = new Date().toISOString();
+    let snapshotId: string | null = null;
+    let collectedAt = payload.finishedAt;
+    const fallbackUsed = payload.status === "fallback";
 
     await db.query(
       `
@@ -179,46 +213,76 @@ export async function recordCollectionArtifacts(
           status,
           started_at,
           finished_at,
+          error_text,
+          fallback_used,
           records_count,
           metadata
         )
-        VALUES ($1, $2, $3, 'success', $4, $5, $6, $7)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       `,
       [
         sourceRunId,
         payload.source,
         payload.commandName,
-        now,
-        now,
+        payload.status,
+        payload.startedAt,
+        payload.finishedAt,
+        payload.errorText,
+        fallbackUsed,
         payload.payload.length,
-        JSON.stringify({ argv: payload.argv, helpOutput: payload.helpOutput }),
+        JSON.stringify({
+          argv: payload.argv,
+          helpOutput: payload.helpOutput,
+          fallbackSourceRunId: payload.fallbackSourceRunId ?? null,
+          fallbackSnapshotId: payload.fallbackSnapshotId ?? null,
+          fallbackCollectedAt: payload.fallbackCollectedAt ?? null,
+        }),
       ],
     );
 
-    await db.query(
-      `
-        INSERT INTO raw_snapshots (
-          id,
-          source_run_id,
-          source,
-          command,
-          snapshot_key,
-          payload,
-          collected_at
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-      `,
-      [
-        snapshotId,
-        sourceRunId,
-        payload.source,
-        payload.commandName,
-        `${payload.source}:${payload.commandName}:${now}`,
-        JSON.stringify(payload.payload),
-        now,
-      ],
-    );
+    if (payload.status === "success") {
+      snapshotId = randomUUID();
+      collectedAt = payload.finishedAt;
+
+      await db.query(
+        `
+          INSERT INTO raw_snapshots (
+            id,
+            source_run_id,
+            source,
+            command,
+            snapshot_key,
+            payload,
+            collected_at
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `,
+        [
+          snapshotId,
+          sourceRunId,
+          payload.source,
+          payload.commandName,
+          `${payload.source}:${payload.commandName}:${payload.finishedAt}`,
+          JSON.stringify(payload.payload),
+          payload.finishedAt,
+        ],
+      );
+    }
+
+    if (payload.status === "fallback") {
+      snapshotId = payload.fallbackSnapshotId ?? null;
+      collectedAt = payload.fallbackCollectedAt ?? payload.finishedAt;
+    }
+
+    artifacts[buildArtifactKey(payload.source, payload.commandName)] = {
+      sourceRunId,
+      snapshotId,
+      collectedAt,
+      fallbackUsed,
+    };
   }
+
+  return artifacts;
 }
 
 export async function upsertCatalog(
@@ -310,7 +374,7 @@ export async function upsertWatchlists(
 
 export async function insertSourceStatus(
   db: Queryable,
-  sourceStatus: Record<string, SourceStatus>,
+  sourceStatus: Record<string, PersistedSourceStatus>,
 ) {
   for (const [source, status] of Object.entries(sourceStatus)) {
     await db.query(
@@ -319,23 +383,48 @@ export async function insertSourceStatus(
           source,
           status,
           last_success_at,
+          last_error_at,
+          last_error_text,
           fallback_used,
           last_latency_ms,
           metadata
         )
-        VALUES ($1, $2, $3, FALSE, 0, '{}'::jsonb)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (source) DO UPDATE
         SET status = EXCLUDED.status,
             last_success_at = EXCLUDED.last_success_at,
-            fallback_used = EXCLUDED.fallback_used
+            last_error_at = EXCLUDED.last_error_at,
+            last_error_text = EXCLUDED.last_error_text,
+            fallback_used = EXCLUDED.fallback_used,
+            last_latency_ms = EXCLUDED.last_latency_ms,
+            metadata = EXCLUDED.metadata
       `,
-      [source, status.status, status.lastSuccessAt],
+      [
+        source,
+        status.status,
+        status.lastSuccessAt,
+        status.lastErrorAt,
+        status.lastErrorText,
+        status.fallbackUsed,
+        status.lastLatencyMs,
+        JSON.stringify(status.metadata ?? {}),
+      ],
     );
   }
 }
 
-async function upsertFeedItems(db: Queryable, feed: FeedItem[]) {
+async function upsertFeedItems(
+  db: Queryable,
+  feed: FeedItem[],
+  artifactMap: Record<string, CollectionArtifactRef> = {},
+) {
   for (const feedItem of feed) {
+    const rawMeta: Record<string, unknown> = {
+      ...feedItem.rawMeta,
+      collectedAt: feedItem.collectedAt,
+      timestampOrigin: feedItem.timestampOrigin,
+    };
+
     await db.query(
       `
         INSERT INTO items (
@@ -387,9 +476,16 @@ async function upsertFeedItems(db: Queryable, feed: FeedItem[]) {
         feedItem.tags,
         feedItem.contentType,
         feedItem.isQuestion,
-        JSON.stringify(feedItem.rawMeta),
+        JSON.stringify(rawMeta),
       ],
     );
+
+    const commandName =
+      typeof rawMeta.commandName === "string"
+        ? rawMeta.commandName
+        : feedItem.contentType;
+    const artifact =
+      artifactMap[buildArtifactKey(feedItem.source, commandName)];
 
     await db.query(
       `
@@ -399,12 +495,16 @@ async function upsertFeedItems(db: Queryable, feed: FeedItem[]) {
           source,
           source_item_id,
           command,
+          source_run_id,
+          snapshot_id,
           raw_payload,
           collected_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         ON CONFLICT (source, source_item_id) DO UPDATE
         SET command = EXCLUDED.command,
+            source_run_id = EXCLUDED.source_run_id,
+            snapshot_id = EXCLUDED.snapshot_id,
             raw_payload = EXCLUDED.raw_payload,
             collected_at = EXCLUDED.collected_at
       `,
@@ -413,9 +513,11 @@ async function upsertFeedItems(db: Queryable, feed: FeedItem[]) {
         feedItem.id,
         feedItem.source,
         feedItem.sourceItemId,
-        feedItem.contentType,
-        JSON.stringify(feedItem.rawMeta),
-        feedItem.publishedAt,
+        commandName,
+        artifact?.sourceRunId ?? null,
+        artifact?.snapshotId ?? null,
+        JSON.stringify(rawMeta),
+        artifact?.collectedAt ?? feedItem.collectedAt,
       ],
     );
 
@@ -462,6 +564,7 @@ export async function replaceSourceItems(
   db: Queryable,
   pipeline: PipelineOutput,
   sources: string[],
+  artifactMap: Record<string, CollectionArtifactRef> = {},
 ) {
   if (sources.length > 0) {
     await db.query("DELETE FROM items WHERE source = ANY($1::text[])", [
@@ -469,7 +572,7 @@ export async function replaceSourceItems(
     ]);
   }
 
-  await upsertFeedItems(db, pipeline.feed);
+  await upsertFeedItems(db, pipeline.feed, artifactMap);
 }
 
 export async function resetDerivedTables(db: Queryable) {
@@ -615,9 +718,48 @@ export async function insertPipelineOutput(
   db: Queryable,
   pipeline: PipelineOutput,
   sourceStatus: Record<string, SourceStatus>,
+  artifactMap: Record<string, CollectionArtifactRef> = {},
 ) {
-  await upsertFeedItems(db, pipeline.feed);
+  await upsertFeedItems(db, pipeline.feed, artifactMap);
   await replaceDerivedPipelineOutput(db, pipeline, sourceStatus);
+}
+
+export async function getLatestSuccessfulSnapshot(
+  db: Queryable,
+  source: string,
+  commandName: string,
+): Promise<FallbackSnapshotRecord | null> {
+  const result = await db.query(
+    `
+      SELECT
+        rs.id AS snapshot_id,
+        rs.source_run_id,
+        rs.collected_at,
+        rs.payload
+      FROM raw_snapshots rs
+      JOIN source_runs sr ON sr.id = rs.source_run_id
+      WHERE rs.source = $1
+        AND rs.command = $2
+        AND sr.status = 'success'
+      ORDER BY rs.collected_at DESC
+      LIMIT 1
+    `,
+    [source, commandName],
+  );
+
+  const row = result.rows[0] as Record<string, unknown> | undefined;
+  if (!row) {
+    return null;
+  }
+
+  return {
+    sourceRunId: String(row.source_run_id),
+    snapshotId: String(row.snapshot_id),
+    collectedAt: new Date(String(row.collected_at)).toISOString(),
+    payload: Array.isArray(row.payload)
+      ? row.payload.map((entry) => entry as Record<string, unknown>)
+      : [],
+  };
 }
 
 export async function listAllNormalizedItems(
@@ -800,7 +942,14 @@ export async function getSourceStatusMap(
 ): Promise<Record<string, SourceStatus>> {
   const result = await db.query(
     `
-      SELECT source, status, last_success_at
+      SELECT
+        source,
+        status,
+        last_success_at,
+        last_error_at,
+        last_error_text,
+        fallback_used,
+        last_latency_ms
       FROM source_health
     `,
   );
@@ -812,6 +961,13 @@ export async function getSourceStatusMap(
         lastSuccessAt: row.last_success_at
           ? new Date(String(row.last_success_at)).toISOString()
           : null,
+        lastErrorAt: row.last_error_at
+          ? new Date(String(row.last_error_at)).toISOString()
+          : null,
+        lastErrorText:
+          typeof row.last_error_text === "string" ? row.last_error_text : null,
+        fallbackUsed: row.fallback_used === true,
+        lastLatencyMs: Number(row.last_latency_ms ?? 0),
       };
       return accumulator;
     },

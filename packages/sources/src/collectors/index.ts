@@ -10,8 +10,16 @@ export interface CollectedSourcePayload {
   source: string;
   commandName: string;
   argv: string[];
+  startedAt: string;
+  finishedAt: string;
+  latencyMs: number;
+  status: "success" | "fallback" | "failed";
+  errorText: string | null;
   helpOutput: string;
   payload: Record<string, unknown>[];
+  fallbackSourceRunId?: string;
+  fallbackSnapshotId?: string;
+  fallbackCollectedAt?: string;
 }
 
 interface CollectionIdentity {
@@ -121,36 +129,88 @@ export async function collectLiveSourcePayloads(
       : sourceCommands.filter((command) => sources.includes(command.source));
 
   for (const command of commands) {
-    const argv = await resolveSourceCommandArgv(
-      command,
-      openCliBin,
-      timeoutMs,
-      collectionCache,
-      runJson,
-    );
-    const [helpOutput, payload] = await Promise.all([
-      runText(openCliBin, command.helpArgv, timeoutMs),
-      runJson(openCliBin, argv, timeoutMs),
-    ]);
+    const startedAt = new Date().toISOString();
 
-    results.push({
-      source: command.source,
-      commandName: command.name,
-      argv,
-      helpOutput,
-      payload,
-    });
+    try {
+      const argv = await resolveSourceCommandArgv(
+        command,
+        openCliBin,
+        timeoutMs,
+        collectionCache,
+        runJson,
+      );
+      const [helpResult, payloadResult] = await Promise.allSettled([
+        runText(openCliBin, command.helpArgv, timeoutMs),
+        runJson(openCliBin, argv, timeoutMs),
+      ]);
+      const finishedAt = new Date().toISOString();
+      const latencyMs =
+        new Date(finishedAt).getTime() - new Date(startedAt).getTime();
+
+      if (payloadResult.status === "fulfilled") {
+        const helpOutput =
+          helpResult.status === "fulfilled" ? helpResult.value : "";
+        const errorText =
+          helpResult.status === "rejected" ? String(helpResult.reason) : null;
+
+        results.push({
+          source: command.source,
+          commandName: command.name,
+          argv,
+          startedAt,
+          finishedAt,
+          latencyMs,
+          status: "success",
+          errorText,
+          helpOutput,
+          payload: payloadResult.value,
+        });
+        continue;
+      }
+
+      results.push({
+        source: command.source,
+        commandName: command.name,
+        argv,
+        startedAt,
+        finishedAt,
+        latencyMs,
+        status: "failed",
+        errorText: String(payloadResult.reason),
+        helpOutput: helpResult.status === "fulfilled" ? helpResult.value : "",
+        payload: [],
+      });
+    } catch (error) {
+      const finishedAt = new Date().toISOString();
+      results.push({
+        source: command.source,
+        commandName: command.name,
+        argv: buildStaticArgv(command),
+        startedAt,
+        finishedAt,
+        latencyMs:
+          new Date(finishedAt).getTime() - new Date(startedAt).getTime(),
+        status: "failed",
+        errorText: error instanceof Error ? error.message : String(error),
+        helpOutput: "",
+        payload: [],
+      });
+    }
   }
 
   return results;
 }
 
 export function normalizeCollectedPayloads(payloads: CollectedSourcePayload[]) {
-  return payloads.flatMap((payload) =>
-    normalizeSourcePayload(
+  return payloads.flatMap((payload) => {
+    if (payload.status === "failed") {
+      return [];
+    }
+
+    return normalizeSourcePayload(
       payload.source as never,
       payload.commandName,
       payload.payload,
-    ),
-  );
+    );
+  });
 }

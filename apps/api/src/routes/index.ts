@@ -30,7 +30,9 @@ function buildMeta(sourceStatus: Record<string, SourceStatus>) {
       0,
       Math.floor((Date.now() - oldestSuccess) / (1000 * 60)),
     ),
-    fallbackUsed: false,
+    fallbackUsed: Object.values(sourceStatus).some(
+      (status) => status.fallbackUsed,
+    ),
     sourceStatus,
   };
 }

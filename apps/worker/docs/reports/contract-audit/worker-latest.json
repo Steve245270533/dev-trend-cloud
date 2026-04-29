@@ -10,37 +10,42 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:23.322Z",
+    "finishedAt": "2026-04-29T14:31:26.479Z",
+    "latencyMs": 3157,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow hot [options]\n\nHot Stack Overflow questions\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
     "payload": [
       {
-        "title": "Have pandas warn when operation causes exception on some rows, but continue processing valid rows",
-        "score": 0,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79933644/have-pandas-warn-when-operation-causes-exception-on-some-rows-but-continue-proc"
-      },
-      {
-        "title": "If i had fast algorithm that prove P=NP then how many bitcoin should i mine per year",
-        "score": 0,
-        "answers": 4,
-        "url": "https://stackoverflow.com/questions/79933600/if-i-had-fast-algorithm-that-prove-p-np-then-how-many-bitcoin-should-i-mine-per"
-      },
-      {
-        "title": "Fusing row with previous row(s) depending on criteria",
-        "score": 1,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79933604/fusing-row-with-previous-rows-depending-on-criteria"
-      },
-      {
-        "title": "Get a constant value in struts-config.xml from Java class",
-        "score": 1,
+        "title": "Readonly Ubuntu 26.06 Desktop with browser",
+        "score": -5,
         "answers": 0,
-        "url": "https://stackoverflow.com/questions/79933606/get-a-constant-value-in-struts-config-xml-from-java-class"
+        "url": "https://stackoverflow.com/questions/79933689/readonly-ubuntu-26-06-desktop-with-browser"
       },
       {
-        "title": "Create UI controls in own tab and present results there",
+        "title": "Ubuntu 26.04 terminal contains unwanted key=values list in the command line prompts",
+        "score": -3,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933688/ubuntu-26-04-terminal-contains-unwanted-key-values-list-in-the-command-line-prom"
+      },
+      {
+        "title": "OSError: [WinError 1114] when importing a library in python",
         "score": 0,
         "answers": 0,
-        "url": "https://stackoverflow.com/questions/79933618/create-ui-controls-in-own-tab-and-present-results-there"
+        "url": "https://stackoverflow.com/questions/79933663/oserror-winerror-1114-when-importing-a-library-in-python"
+      },
+      {
+        "title": "Metamodel generator loses generic type parameter for Set&lt;String&gt; in Hibernate 7",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933665/metamodel-generator-loses-generic-type-parameter-for-setstring-in-hibernate-7"
+      },
+      {
+        "title": "Does anyone know how I could make a lambda calculus compiler",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79933668/does-anyone-know-how-i-could-make-a-lambda-calculus-compiler"
       }
     ]
   },
@@ -55,6 +60,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:26.479Z",
+    "finishedAt": "2026-04-29T14:31:34.885Z",
+    "latencyMs": 8406,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow unanswered [options]\n\nTop voted unanswered questions on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
     "payload": [
       {
@@ -100,6 +110,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:34.885Z",
+    "finishedAt": "2026-04-29T14:31:35.896Z",
+    "latencyMs": 1011,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow bounties [options]\n\nActive bounties on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: bounty, title, score, answers, url",
     "payload": [
       {
@@ -144,6 +159,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:35.896Z",
+    "finishedAt": "2026-04-29T14:31:38.371Z",
+    "latencyMs": 2475,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow search [options] <query>\n\nSearch Stack Overflow questions\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
     "payload": [
       {
@@ -189,42 +209,47 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:38.371Z",
+    "finishedAt": "2026-04-29T14:31:43.824Z",
+    "latencyMs": 5453,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli hackernews ask [options]\n\nHacker News Ask HN posts\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments",
     "payload": [
       {
         "rank": 1,
-        "title": "Ask HN: If coding gets faster, where should architecture happen?",
-        "score": 4,
-        "author": "karlosh",
-        "comments": 0
+        "title": "Tell HN: An update from the new Tindie team",
+        "score": 70,
+        "author": "altairprime",
+        "comments": 42
       },
       {
         "rank": 2,
         "title": "Ask HN: Can HN ban new accounts? or charge money?",
-        "score": 7,
+        "score": 17,
         "author": "randyrand",
-        "comments": 10
+        "comments": 37
       },
       {
         "rank": 3,
+        "title": "Ask HN: If coding gets faster, where should architecture happen?",
+        "score": 4,
+        "author": "karlosh",
+        "comments": 1
+      },
+      {
+        "rank": 4,
         "title": "Ask HN: Anyone else suddenly have Brawls Stars on their iPhone?",
         "score": 4,
         "author": "realberkeaslan",
         "comments": 1
       },
       {
-        "rank": 4,
+        "rank": 5,
         "title": "Tell HN: An app is silently installing itself on my iPhone every day",
         "score": 584,
         "author": "_-x-_",
         "comments": 186
-      },
-      {
-        "rank": 5,
-        "title": "Ask HN: Is it just me or is Claude Code getting worse?",
-        "score": 27,
-        "author": "e-nouri",
-        "comments": 16
       }
     ]
   },
@@ -239,47 +264,52 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:43.824Z",
+    "finishedAt": "2026-04-29T14:31:47.735Z",
+    "latencyMs": 3911,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli hackernews top [options]\n\nHacker News top stories\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments",
     "payload": [
       {
         "rank": 1,
-        "title": "Soft launch of open-source code platform for government",
-        "score": 205,
-        "author": "e12e",
-        "comments": 73,
-        "url": "https://www.nldigitalgovernment.nl/news/soft-launch-for-government-open-source-code-platform/"
+        "title": "Tangled – We need a federation of forges",
+        "score": 76,
+        "author": "icy",
+        "comments": 31,
+        "url": "https://blog.tangled.org/federation/"
       },
       {
         "rank": 2,
-        "title": "Ghostty is leaving GitHub",
-        "score": 2797,
-        "author": "WadeGrimridge",
-        "comments": 828,
-        "url": "https://mitchellh.com/writing/ghostty-leaving-github"
+        "title": "Soft launch of open-source code platform for government",
+        "score": 341,
+        "author": "e12e",
+        "comments": 101,
+        "url": "https://www.nldigitalgovernment.nl/news/soft-launch-for-government-open-source-code-platform/"
       },
       {
         "rank": 3,
-        "title": "Bugs Rust won't catch",
-        "score": 381,
-        "author": "lwhsiao",
-        "comments": 189,
-        "url": "https://corrode.dev/blog/bugs-rust-wont-catch/"
+        "title": "Ghostty is leaving GitHub",
+        "score": 2978,
+        "author": "WadeGrimridge",
+        "comments": 894,
+        "url": "https://mitchellh.com/writing/ghostty-leaving-github"
       },
       {
         "rank": 4,
-        "title": "HashiCorp co-founder says GitHub 'no longer a place for serious work'",
-        "score": 62,
-        "author": "terminalbraid",
-        "comments": 13,
-        "url": "https://www.theregister.com/2026/04/29/mitchell_hashimoto_ghostty_quitting_github/"
+        "title": "Letting AI play my game – building an agentic test harness to help play-testing",
+        "score": 30,
+        "author": "jschomay",
+        "comments": 1,
+        "url": "https://blog.jeffschomay.com/letting-ai-play-my-game"
       },
       {
         "rank": 5,
-        "title": "How ChatGPT serves ads",
-        "score": 389,
-        "author": "lmbbuchodi",
-        "comments": 256,
-        "url": "https://www.buchodi.com/how-chatgpt-serves-ads-heres-the-full-attribution-loop/"
+        "title": "HashiCorp co-founder says GitHub 'no longer a place for serious work'",
+        "score": 293,
+        "author": "terminalbraid",
+        "comments": 152,
+        "url": "https://www.theregister.com/2026/04/29/mitchell_hashimoto_ghostty_quitting_github/"
       }
     ]
   },
@@ -289,53 +319,53 @@
     "argv": [
       "hackernews",
       "search",
-      "vector database",
+      "ask hn mcp",
       "--limit",
       "5",
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:47.735Z",
+    "finishedAt": "2026-04-29T14:31:52.496Z",
+    "latencyMs": 4761,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli hackernews search [options] <query>\n\nSearch Hacker News stories\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Number of results (default: \"20\")\n  --sort [value]      Sort by relevance or date (default: \"relevance\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\n  --sort: relevance, date  (default: relevance)\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments, url",
     "payload": [
       {
         "rank": 1,
-        "title": "Vector Databases: A Technical Primer [pdf]",
-        "score": 557,
-        "author": "jide_tracc",
-        "comments": 105,
-        "url": "https://tge-data-web.nyc3.digitaloceanspaces.com/docs/Vector%20Databases%20-%20A%20Technical%20Primer.pdf"
+        "title": "Ask HN: Will MCP replace GUI interacting with back end via RESTful APIs?",
+        "score": 7,
+        "author": "kwancloudli",
+        "comments": 3
       },
       {
         "rank": 2,
-        "title": "Vector databases are the wrong abstraction",
-        "score": 493,
-        "author": "jascha_eng",
-        "comments": 90,
-        "url": "https://www.timescale.com/blog/vector-databases-are-the-wrong-abstraction/"
+        "title": "Ask HN: Is MCP mature enough to use safely?",
+        "score": 6,
+        "author": "Rooster61",
+        "comments": 3
       },
       {
         "rank": 3,
-        "title": "What is a Vector Database? (2021)",
-        "score": 409,
-        "author": "gk1",
-        "comments": 202,
-        "url": "https://www.pinecone.io/learn/vector-database/"
+        "title": "Ask HN: MCP/API search vs. vector search – what's winning for you?",
+        "score": 4,
+        "author": "ngkw",
+        "comments": 1
       },
       {
         "rank": 4,
-        "title": "VectorDB: Vector Database Built by Kagi Search",
-        "score": 317,
-        "author": "promiseofbeans",
-        "comments": 93,
-        "url": "https://vectordb.com/"
+        "title": "Ask HN: Why MCP instead of just HTTP?",
+        "score": 3,
+        "author": "bschmidt44",
+        "comments": 2
       },
       {
         "rank": 5,
-        "title": "Will Amazon S3 Vectors kill vector databases or save them?",
-        "score": 280,
-        "author": "Fendy",
-        "comments": 122,
-        "url": "https://zilliz.com/blog/will-amazon-s3-vectors-kill-vector-databases-or-save-them"
+        "title": "Ask HN: What MCP servers/apps are you using as a dev?",
+        "score": 3,
+        "author": "trevorLane",
+        "comments": 0
       }
     ]
   },
@@ -350,52 +380,57 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:52.496Z",
+    "finishedAt": "2026-04-29T14:31:57.406Z",
+    "latencyMs": 4910,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli devto top [options]\n\nTop DEV.to articles of the day\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: dev.to\nOutput columns: rank, title, author, reactions, comments, tags",
     "payload": [
       {
         "rank": 1,
-        "title": "How I used Gemini CLI to orchestrate a complex RAG migration",
-        "author": "rsamborski",
-        "reactions": 15,
+        "title": "Fine-Tuning Gemma 4 with Cloud Run Jobs: Serverless GPUs (NVIDIA RTX 6000 Pro) for pet breed classification 🐈🐕",
+        "author": "shirmeirlador",
+        "reactions": 36,
         "comments": 1,
-        "tags": "gemini, agents, programming, ai",
-        "url": "https://dev.to/googleai/how-i-used-gemini-cli-to-orchestrate-a-complex-rag-migration-43ga"
+        "tags": "gemma, machinelearning, googlecloud, cloudrun",
+        "url": "https://dev.to/googleai/fine-tuning-gemma-4-with-cloud-run-jobs-serverless-gpus-nvidia-rtx-6000-pro-for-pet-breed-45ib"
       },
       {
         "rank": 2,
         "title": "🗓️ Monthly Dev Report: April 2026",
         "author": "francistrdev",
-        "reactions": 30,
-        "comments": 6,
+        "reactions": 35,
+        "comments": 7,
         "tags": "discuss, devjournal, programming, community",
         "url": "https://dev.to/francistrdev/monthly-dev-report-april-2026-nak"
       },
       {
         "rank": 3,
-        "title": "My Incredible Google Cloud Next 26 Experience as a GDE",
-        "author": "deraileddash",
-        "reactions": 18,
-        "comments": 0,
-        "tags": "googlecloud, googlecloudnext, gde, vegas",
-        "url": "https://dev.to/gde/my-incredible-google-cloud-next-26-experience-as-a-gde-17mo"
-      },
-      {
-        "rank": 4,
         "title": "Automation is a trade-off",
         "author": "suesmith",
-        "reactions": 8,
+        "reactions": 38,
         "comments": 1,
         "tags": "ai, webdev, lowcode, automation",
         "url": "https://dev.to/suesmith/automation-is-a-trade-off-2fh8"
       },
       {
-        "rank": 5,
+        "rank": 4,
         "title": "The Startup Trap That Keeps MVPs From Launching",
         "author": "vorniches",
         "reactions": 0,
         "comments": 0,
         "tags": "ai, programming, mvp, startup",
         "url": "https://dev.to/vorniches/founder-patterns-that-kill-a-launch-and-what-ai-has-to-do-with-it-4mf"
+      },
+      {
+        "rank": 5,
+        "title": "From Pixels to Prescriptions: Engineering OCR Pipelines for Medical Report Simplification Using MongoDB",
+        "author": "k-deepak-544",
+        "reactions": 0,
+        "comments": 0,
+        "tags": "ai, ocr, medical, mongodb",
+        "url": "https://dev.to/k-deepak-544/from-pixels-to-prescriptions-engineering-ocr-pipelines-for-medical-report-simplification-using-oia"
       }
     ]
   },
@@ -411,6 +446,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:57.406Z",
+    "finishedAt": "2026-04-29T14:31:59.487Z",
+    "latencyMs": 2081,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli devto tag [options] <tag>\n\nLatest DEV.to articles for a specific tag\n\nArguments:\n  tag                 Tag name (e.g. javascript, python, webdev)\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: dev.to\nOutput columns: rank, title, author, reactions, comments, tags",
     "payload": [
       {
@@ -471,6 +511,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:31:59.488Z",
+    "finishedAt": "2026-04-29T14:32:04.094Z",
+    "latencyMs": 4606,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli ossinsight trending [options]\n\n获取 OSSInsight 热门仓库\n\nOptions:\n  --limit [value]     返回数量 (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_name, stars, language",
     "payload": [
       {
@@ -511,6 +556,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:32:04.094Z",
+    "finishedAt": "2026-04-29T14:32:05.427Z",
+    "latencyMs": 1333,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli ossinsight collections [options]\n\n列出 OSSInsight 所有 collections\n\nOptions:\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: id, name",
     "payload": [
       {
@@ -546,6 +596,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:32:05.427Z",
+    "finishedAt": "2026-04-29T14:32:09.613Z",
+    "latencyMs": 4186,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli ossinsight hot-collections [options]\n\n列出 OSSInsight 热门 collections\n\nOptions:\n  --limit [value]     返回数量，默认 20 (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: id, name, repos, repo_name, current_rank, past_rank, rank_change",
     "payload": [
       {
@@ -607,6 +662,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:32:09.613Z",
+    "finishedAt": "2026-04-29T14:32:12.783Z",
+    "latencyMs": 3170,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli ossinsight collection-repos [options] <collectionId>\n\n列出指定 collection 下的仓库\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --limit [value]     返回数量，默认 100 (default: \"100\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name",
     "payload": [
       {
@@ -643,6 +703,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:32:12.783Z",
+    "finishedAt": "2026-04-29T14:32:15.388Z",
+    "latencyMs": 2605,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli ossinsight collection-issues [options] <collectionId>\n\n查看 collection 的 issue 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
     "payload": [
       {
@@ -668,26 +733,26 @@
         "total": "4217"
       },
       {
-        "repo_id": "1148753",
-        "repo_name": "spring-projects/spring-framework",
-        "current_growth": "9",
-        "current_rank": "3",
-        "past_growth": "11",
-        "past_rank": "4",
-        "growth_pop": "-18.18",
-        "rank_pop": "-1",
-        "total": "11295"
-      },
-      {
         "repo_id": "348060227",
         "repo_name": "withastro/astro",
         "current_growth": "9",
-        "current_rank": "4",
+        "current_rank": "3",
         "past_growth": "19",
         "past_rank": "3",
         "growth_pop": "-52.63",
-        "rank_pop": "1",
+        "rank_pop": "0",
         "total": "6162"
+      },
+      {
+        "repo_id": "1148753",
+        "repo_name": "spring-projects/spring-framework",
+        "current_growth": "9",
+        "current_rank": "4",
+        "past_growth": "11",
+        "past_rank": "4",
+        "growth_pop": "-18.18",
+        "rank_pop": "0",
+        "total": "11295"
       },
       {
         "repo_id": "458058",
@@ -714,27 +779,32 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:32:15.388Z",
+    "finishedAt": "2026-04-29T14:32:18.123Z",
+    "latencyMs": 2735,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli ossinsight stargazer-history [options] <repo>\n\n查看 stargazer 趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, stargazers",
     "payload": [
       {
         "date": "2016-10-01",
-        "stargazers": "27"
+        "stargazers": "28"
       },
       {
         "date": "2016-11-01",
-        "stargazers": "34"
+        "stargazers": "35"
       },
       {
         "date": "2016-12-01",
-        "stargazers": "48"
+        "stargazers": "49"
       },
       {
         "date": "2017-01-01",
-        "stargazers": "113"
+        "stargazers": "116"
       },
       {
         "date": "2017-02-01",
-        "stargazers": "114"
+        "stargazers": "117"
       }
     ]
   },
@@ -750,6 +820,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:32:18.123Z",
+    "finishedAt": "2026-04-29T14:32:20.260Z",
+    "latencyMs": 2137,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli ossinsight issue-creator-history [options] <repo>\n\n查看 issue 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, issue_creators",
     "payload": [
       {
@@ -786,6 +861,11 @@
       "-f",
       "json"
     ],
+    "startedAt": "2026-04-29T14:32:20.260Z",
+    "finishedAt": "2026-04-29T14:32:22.322Z",
+    "latencyMs": 2062,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli ossinsight pr-creator-history [options] <repo>\n\n查看 Pull Request 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, pull_request_creators",
     "payload": [
       {

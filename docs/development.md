@@ -130,6 +130,35 @@ pnpm test
 pnpm audit:contracts
 ```
 
+## 验证口径
+
+本阶段真实验证优先级：
+
+1. `pnpm lint`
+2. `pnpm typecheck`
+3. `pnpm test`
+4. `pnpm db:migrate`
+5. `pnpm db:seed`
+6. `pnpm audit:contracts`
+
+采集失败与 fallback 的预期行为：
+
+- 单个 command 失败不能拖垮整轮采集。
+- worker 会优先尝试 live payload；失败时只允许回退到同一个 `source + command` 最近一次成功 `raw_snapshot`。
+- `source_health` 必须能看到 `status`、`last_success_at`、`last_error_at`、`last_error_text`、`fallback_used`、`last_latency_ms`。
+
+traceability 的核验点：
+
+- `item_sources.source_run_id` 必须关联当前采集尝试对应的 `source_runs.id`。
+- `item_sources.snapshot_id` 在 live success 时指向本轮新写入的 `raw_snapshots.id`，fallback 时指向被复用的历史 `raw_snapshots.id`。
+- `/question-clusters/:clusterId/evidence` 必须直接返回 `sourceRunId` 和 `snapshotId`。
+
+时间字段规则：
+
+- `publishedAt` 优先来自源站时间字段。
+- 当源站不给发布时间时，`publishedAt` 回退到 `collectedAt`，同时 `timestampOrigin = "collected"`。
+- 依赖 freshness / novelty 的逻辑一律读取 `publishedAt`，不要把 `collectedAt` 当成真实发布时间。
+
 ## 种子数据
 
 仓库默认写入一批用于演示的 watchlists 与 topic/entity catalog，用于 Phase 0 + Phase 1 的匹配与 demo。

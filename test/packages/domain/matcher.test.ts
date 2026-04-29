@@ -16,6 +16,8 @@ function buildItem(overrides: Partial<NormalizedItem> = {}): NormalizedItem {
     summary: "",
     url: "https://example.com/item",
     publishedAt: "2026-04-29T00:00:00.000Z",
+    collectedAt: "2026-04-29T00:05:00.000Z",
+    timestampOrigin: "source",
     score: 1,
     answerCount: 0,
     commentCount: 0,
