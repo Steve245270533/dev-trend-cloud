@@ -16,6 +16,7 @@
     "test": "pnpm --filter @devtrend/test test",
     "db:migrate": "cross-env NODE_ENV=development node --import tsx packages/db/src/migrate.ts",
     "db:seed": "cross-env NODE_ENV=development node --import tsx packages/db/src/seed.ts",
+    "db:reset": "cross-env NODE_ENV=development node --import tsx apps/worker/src/scripts/db-reset.ts",
     "audit:contracts": "cross-env NODE_ENV=development node --import tsx packages/sources/src/audit/run-contract-audit.ts"
   },
   "devDependencies": {
