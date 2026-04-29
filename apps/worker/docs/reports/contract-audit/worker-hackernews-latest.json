@@ -15,30 +15,30 @@
       {
         "rank": 1,
         "title": "Tell HN: An update from the new Tindie team",
-        "score": 56,
+        "score": 59,
         "author": "altairprime",
-        "comments": 36
+        "comments": 38
       },
       {
         "rank": 2,
         "title": "Ask HN: If coding gets faster, where should architecture happen?",
-        "score": 2,
+        "score": 4,
         "author": "karlosh",
         "comments": 0
       },
       {
         "rank": 3,
-        "title": "Ask HN: Anyone else suddenly have Brawls Stars on their iPhone?",
-        "score": 3,
-        "author": "realberkeaslan",
-        "comments": 0
+        "title": "Ask HN: Can HN ban new accounts? or charge money?",
+        "score": 6,
+        "author": "randyrand",
+        "comments": 9
       },
       {
         "rank": 4,
-        "title": "Ask HN: Can HN ban new accounts? or charge money?",
+        "title": "Ask HN: Anyone else suddenly have Brawls Stars on their iPhone?",
         "score": 4,
-        "author": "randyrand",
-        "comments": 6
+        "author": "realberkeaslan",
+        "comments": 1
       },
       {
         "rank": 5,
@@ -65,42 +65,42 @@
       {
         "rank": 1,
         "title": "Soft launch of open-source code platform for government",
-        "score": 169,
+        "score": 191,
         "author": "e12e",
-        "comments": 68,
+        "comments": 70,
         "url": "https://www.nldigitalgovernment.nl/news/soft-launch-for-government-open-source-code-platform/"
       },
       {
         "rank": 2,
         "title": "Ghostty is leaving GitHub",
-        "score": 2756,
+        "score": 2784,
         "author": "WadeGrimridge",
-        "comments": 810,
+        "comments": 822,
         "url": "https://mitchellh.com/writing/ghostty-leaving-github"
       },
       {
         "rank": 3,
-        "title": "Show HN: Rip.so – a graveyard for dead internet things",
-        "score": 79,
-        "author": "bozdemir",
-        "comments": 47,
-        "url": "https://rip.so"
-      },
-      {
-        "rank": 4,
         "title": "Bugs Rust won't catch",
-        "score": 358,
+        "score": 376,
         "author": "lwhsiao",
-        "comments": 176,
+        "comments": 183,
         "url": "https://corrode.dev/blog/bugs-rust-wont-catch/"
       },
       {
+        "rank": 4,
+        "title": "HashiCorp co-founder says GitHub 'no longer a place for serious work'",
+        "score": 41,
+        "author": "terminalbraid",
+        "comments": 9,
+        "url": "https://www.theregister.com/2026/04/29/mitchell_hashimoto_ghostty_quitting_github/"
+      },
+      {
         "rank": 5,
-        "title": "HardenedBSD Is Now Officially on Radicle",
-        "score": 88,
-        "author": "lftherios",
-        "comments": 18,
-        "url": "https://hardenedbsd.org/article/shawn-webb/2026-04-26/hardenedbsd-officially-radicle"
+        "title": "How ChatGPT serves ads",
+        "score": 386,
+        "author": "lmbbuchodi",
+        "comments": 255,
+        "url": "https://www.buchodi.com/how-chatgpt-serves-ads-heres-the-full-attribution-loop/"
       }
     ]
   },
