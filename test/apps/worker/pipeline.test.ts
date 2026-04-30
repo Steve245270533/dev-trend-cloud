@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { CollectedSourcePayload } from "@devtrend/sources";
-import { persistCollectedPayloads } from "@devtrend/worker";
+import {
+  loadRuntimeTopics,
+  persistCollectedPayloads,
+  planWorkerBootstrap,
+  refreshRuntimeTopicSeeds,
+} from "@devtrend/worker";
 import type { Pool, PoolClient, QueryResult } from "pg";
 
 interface FakeItemRow {
@@ -62,6 +67,37 @@ interface FakeItemSourceRow {
   collected_at: string;
 }
 
+interface FakeTopicRow {
+  id: string;
+  slug: string;
+  name: string;
+  keywords: string[];
+  repo_patterns: string[];
+}
+
+interface FakeRuntimeTopicSeedRunRow {
+  id: string;
+  status: string;
+  fallback_used: boolean;
+  error_text: string | null;
+}
+
+interface FakeRuntimeTopicSeedRow {
+  run_id: string;
+  slug: string;
+  name: string;
+  keywords: string[];
+  source_priority: number;
+  sources: string[];
+  collection_id: string | null;
+  devto_tags: string[];
+  score: number;
+  active: boolean;
+  refreshed_at: string;
+  expires_at: string;
+  metadata: Record<string, unknown>;
+}
+
 interface StatefulPool {
   executed: string[];
   items: FakeItemRow[];
@@ -70,6 +106,8 @@ interface StatefulPool {
   rawSnapshots: FakeSnapshotRow[];
   itemSources: FakeItemSourceRow[];
   sourceHealth: FakeSourceHealthRow[];
+  runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[];
+  runtimeTopicSeeds: FakeRuntimeTopicSeedRow[];
   pool: Pool;
 }
 
@@ -101,6 +139,9 @@ function createStatefulPool(): StatefulPool {
   const rawSnapshots: FakeSnapshotRow[] = [];
   const sourceRuns: FakeSourceRunRow[] = [];
   const itemSources = new Map<string, FakeItemSourceRow>();
+  const topics = new Map<string, FakeTopicRow>();
+  let runtimeTopicSeeds: FakeRuntimeTopicSeedRow[] = [];
+  const runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[] = [];
   let signalPayloads: Record<string, unknown>[] = [];
 
   const client = {
@@ -125,7 +166,105 @@ function createStatefulPool(): StatefulPool {
         return { rows: [] } as unknown as QueryResult;
       }
 
+      if (text.includes("INSERT INTO runtime_topic_seed_runs")) {
+        runtimeTopicSeedRuns.push({
+          id: String(params?.[0]),
+          status: String(params?.[1]),
+          fallback_used: params?.[4] === true,
+          error_text:
+            typeof params?.[5] === "string" ? String(params[5]) : null,
+        });
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (
+        text.includes(
+          "UPDATE runtime_topic_seeds SET active = FALSE WHERE active = TRUE",
+        )
+      ) {
+        runtimeTopicSeeds = runtimeTopicSeeds.map((seed) => ({
+          ...seed,
+          active: false,
+        }));
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO runtime_topic_seeds")) {
+        runtimeTopicSeeds.push({
+          run_id: String(params?.[0]),
+          slug: String(params?.[1]),
+          name: String(params?.[2]),
+          keywords: Array.isArray(params?.[3]) ? params[3].map(String) : [],
+          source_priority: Number(params?.[4] ?? 0),
+          sources:
+            typeof params?.[5] === "string"
+              ? (JSON.parse(String(params[5])) as string[])
+              : [],
+          collection_id:
+            typeof params?.[6] === "string" ? String(params[6]) : null,
+          devto_tags: Array.isArray(params?.[7]) ? params[7].map(String) : [],
+          score: Number(params?.[8] ?? 0),
+          active: params?.[9] === true,
+          refreshed_at: String(params?.[10]),
+          expires_at: String(params?.[11]),
+          metadata:
+            typeof params?.[12] === "string"
+              ? (JSON.parse(String(params[12])) as Record<string, unknown>)
+              : {},
+        });
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (
+        text.includes("SELECT run_id") &&
+        text.includes("FROM runtime_topic_seeds")
+      ) {
+        const latest = [...runtimeTopicSeeds]
+          .sort((left, right) =>
+            right.refreshed_at.localeCompare(left.refreshed_at),
+          )
+          .at(0);
+        return {
+          rows: latest ? [{ run_id: latest.run_id }] : [],
+        } as unknown as QueryResult;
+      }
+
+      if (
+        text.includes("FROM runtime_topic_seeds") &&
+        text.includes("WHERE run_id = $1")
+      ) {
+        return {
+          rows: runtimeTopicSeeds
+            .filter((seed) => seed.run_id === String(params?.[0]))
+            .sort((left, right) => right.score - left.score),
+        } as unknown as QueryResult;
+      }
+
+      if (
+        text.includes("FROM runtime_topic_seeds") &&
+        text.includes("WHERE active = TRUE")
+      ) {
+        return {
+          rows: runtimeTopicSeeds
+            .filter(
+              (seed) =>
+                seed.active === true &&
+                new Date(seed.expires_at).getTime() > Date.now(),
+            )
+            .sort((left, right) => right.score - left.score),
+        } as unknown as QueryResult;
+      }
+
       if (text.includes("INSERT INTO topics")) {
+        topics.set(String(params?.[1]), {
+          id: String(params?.[0]),
+          slug: String(params?.[1]),
+          name: String(params?.[2]),
+          keywords: Array.isArray(params?.[3]) ? params[3].map(String) : [],
+          repo_patterns: Array.isArray(params?.[4])
+            ? params[4].map(String)
+            : [],
+        });
         return { rows: [] } as unknown as QueryResult;
       }
 
@@ -276,6 +415,26 @@ function createStatefulPool(): StatefulPool {
         } as unknown as QueryResult;
       }
 
+      if (text.includes("FROM topics") && text.includes("fallback-topics")) {
+        return {
+          rows: [...topics.values()].map((topic) => ({
+            run_id: "00000000-0000-5000-8000-000000000000",
+            slug: topic.slug,
+            name: topic.name,
+            keywords: topic.keywords,
+            source_priority: 10,
+            sources: ["fallback-topics"],
+            collection_id: null,
+            devto_tags: [],
+            score: 10,
+            active: true,
+            refreshed_at: "2026-04-29T00:00:00.000Z",
+            expires_at: "2026-04-29T02:00:00.000Z",
+            metadata: { fallback: true, source: "topics" },
+          })),
+        } as unknown as QueryResult;
+      }
+
       if (text.includes("DELETE FROM signals")) {
         signalPayloads = [];
         return { rows: [] } as unknown as QueryResult;
@@ -314,6 +473,12 @@ function createStatefulPool(): StatefulPool {
     },
     get sourceHealth() {
       return [...sourceHealth.values()];
+    },
+    get runtimeTopicSeedRuns() {
+      return runtimeTopicSeedRuns;
+    },
+    get runtimeTopicSeeds() {
+      return runtimeTopicSeeds;
     },
     pool: {
       async connect() {
@@ -478,4 +643,188 @@ test("persistCollectedPayloads records failed sources when no fallback snapshot 
   assert.equal(state.sourceHealth[0]?.status, "failed");
   assert.equal(state.sourceHealth[0]?.fallback_used, false);
   assert.equal(state.items.length, 0);
+});
+
+test("refreshRuntimeTopicSeeds stores a merged runtime topic snapshot", async () => {
+  const state = createStatefulPool();
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title:
+          "How do I debug Model Context Protocol tool registration in Fastify?",
+        score: 12,
+        answers: 0,
+        url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
+      },
+    ]),
+  ]);
+
+  const result = await refreshRuntimeTopicSeeds(
+    state.pool,
+    "opencli",
+    1000,
+    async () => ({
+      candidates: [
+        {
+          slug: "artificial-intelligence",
+          name: "Artificial Intelligence",
+          keywords: ["artificial intelligence", "ai"],
+          sourcePriority: 100,
+          sources: ["ossinsight-hot"],
+          collectionId: "10010",
+          devtoTags: ["ai"],
+          score: 104,
+          metadata: {},
+        },
+      ],
+      sourceStatuses: [
+        {
+          source: "ossinsight",
+          status: "success",
+          errorText: null,
+          candidateCount: 1,
+        },
+        {
+          source: "devto",
+          status: "failed",
+          errorText: "timeout",
+          candidateCount: 0,
+        },
+      ],
+    }),
+  );
+
+  const runtimeTopics = await loadRuntimeTopics(state.pool);
+
+  assert.equal(result.status, "degraded");
+  assert.equal(result.fallbackUsed, true);
+  assert.equal(state.runtimeTopicSeedRuns.length, 1);
+  assert.ok(
+    state.runtimeTopicSeeds.some(
+      (seed) =>
+        seed.slug === "artificial-intelligence" &&
+        seed.collection_id === "10010",
+    ),
+  );
+  assert.ok(
+    runtimeTopics.some((topic) => topic.slug === "artificial-intelligence"),
+  );
+  assert.ok(runtimeTopics.some((topic) => topic.slug === "mcp"));
+});
+
+test("planWorkerBootstrap enqueues refresh and collect when the worker starts from an empty state", () => {
+  const plan = planWorkerBootstrap(
+    {
+      hasActiveRuntimeTopicSnapshot: false,
+      hasPersistedItems: false,
+    },
+    ["stackoverflow", "hackernews", "devto", "ossinsight"],
+  );
+
+  assert.equal(plan.refreshRuntimeTopics, true);
+  assert.deepEqual(plan.collectSources, [
+    "stackoverflow",
+    "hackernews",
+    "devto",
+    "ossinsight",
+  ]);
+});
+
+test("planWorkerBootstrap only refreshes runtime topics when content already exists", () => {
+  const plan = planWorkerBootstrap(
+    {
+      hasActiveRuntimeTopicSnapshot: false,
+      hasPersistedItems: true,
+    },
+    ["stackoverflow", "hackernews", "devto", "ossinsight"],
+  );
+
+  assert.equal(plan.refreshRuntimeTopics, true);
+  assert.deepEqual(plan.collectSources, []);
+});
+
+test("refreshRuntimeTopicSeeds keeps the prior active snapshot when discovery fully fails", async () => {
+  const state = createStatefulPool();
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title:
+          "How do I debug Model Context Protocol tool registration in Fastify?",
+        score: 12,
+        answers: 0,
+        url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
+      },
+    ]),
+  ]);
+
+  await refreshRuntimeTopicSeeds(state.pool, "opencli", 1000, async () => ({
+    candidates: [
+      {
+        slug: "artificial-intelligence",
+        name: "Artificial Intelligence",
+        keywords: ["artificial intelligence", "ai"],
+        sourcePriority: 100,
+        sources: ["ossinsight-hot"],
+        collectionId: "10010",
+        devtoTags: ["ai"],
+        score: 104,
+        metadata: {},
+      },
+    ],
+    sourceStatuses: [
+      {
+        source: "ossinsight",
+        status: "success",
+        errorText: null,
+        candidateCount: 1,
+      },
+      {
+        source: "devto",
+        status: "success",
+        errorText: null,
+        candidateCount: 1,
+      },
+    ],
+  }));
+
+  const initialSeeds = state.runtimeTopicSeeds.map((seed) => ({
+    slug: seed.slug,
+    active: seed.active,
+  }));
+
+  const result = await refreshRuntimeTopicSeeds(
+    state.pool,
+    "opencli",
+    1000,
+    async () => ({
+      candidates: [],
+      sourceStatuses: [
+        {
+          source: "ossinsight",
+          status: "failed",
+          errorText: "timeout",
+          candidateCount: 0,
+        },
+        {
+          source: "devto",
+          status: "failed",
+          errorText: "timeout",
+          candidateCount: 0,
+        },
+      ],
+    }),
+  );
+
+  assert.equal(result.status, "fallback");
+  assert.equal(result.fallbackUsed, true);
+  assert.deepEqual(
+    state.runtimeTopicSeeds.map((seed) => ({
+      slug: seed.slug,
+      active: seed.active,
+    })),
+    initialSeeds,
+  );
+  assert.equal(state.runtimeTopicSeedRuns.length, 2);
 });

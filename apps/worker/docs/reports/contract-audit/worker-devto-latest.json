@@ -10,57 +10,57 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:00.062Z",
-    "finishedAt": "2026-04-29T15:39:07.391Z",
-    "latencyMs": 7329,
+    "startedAt": "2026-04-30T06:06:17.373Z",
+    "finishedAt": "2026-04-30T06:06:18.085Z",
+    "latencyMs": 712,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli devto top [options]\n\nTop DEV.to articles of the day\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: dev.to\nOutput columns: rank, title, author, reactions, comments, tags",
     "payload": [
       {
         "rank": 1,
-        "title": "Fine-Tuning Gemma 4 with Cloud Run Jobs: Serverless GPUs (NVIDIA RTX 6000 Pro) for pet breed classification 🐈🐕",
-        "author": "shirmeirlador",
-        "reactions": 36,
+        "title": "Forking Paseo: Mobile vibe coding for me",
+        "author": "thisisryanswift",
+        "reactions": 21,
         "comments": 1,
-        "tags": "gemma, machinelearning, googlecloud, cloudrun",
-        "url": "https://dev.to/googleai/fine-tuning-gemma-4-with-cloud-run-jobs-serverless-gpus-nvidia-rtx-6000-pro-for-pet-breed-45ib"
+        "tags": "ai, agents, vibecoding, opensource",
+        "url": "https://dev.to/thisisryanswift/forking-paseo-mobile-vibe-coding-for-me-48pa"
       },
       {
         "rank": 2,
-        "title": "🗓️ Monthly Dev Report: April 2026",
-        "author": "francistrdev",
-        "reactions": 40,
-        "comments": 8,
-        "tags": "discuss, devjournal, programming, community",
-        "url": "https://dev.to/francistrdev/monthly-dev-report-april-2026-nak"
+        "title": "I'm a Red Teamer. Here's How I'd Go After Google's Agentic Defense.",
+        "author": "rajputs_027",
+        "reactions": 9,
+        "comments": 0,
+        "tags": "devchallenge, cloudnextchallenge, googlecloud, cybersecurity",
+        "url": "https://dev.to/rajputs_027/im-a-red-teamer-heres-how-id-go-after-googles-agentic-defense-5fl8"
       },
       {
         "rank": 3,
-        "title": "Cold Starts Are Dead",
-        "author": "edjgeek",
-        "reactions": 15,
-        "comments": 2,
-        "tags": "serverless, aws, lambda, coldstarts",
-        "url": "https://dev.to/aws/cold-starts-are-dead-5fod"
+        "title": "How I Used AI to Fix Our E2E Test Architecture",
+        "author": "debs_obrien",
+        "reactions": 20,
+        "comments": 4,
+        "tags": "testing, e2e, playwright, ai",
+        "url": "https://dev.to/debs_obrien/how-i-used-ai-to-fix-our-e2e-test-architecture-444a"
       },
       {
         "rank": 4,
-        "title": "Prompt Caching With the Claude API: A Practical Guide",
-        "author": "thegdsks",
+        "title": "What I’ve Been Building: Systems, AI, and Real-World Data",
+        "author": "kenwalger",
         "reactions": 8,
         "comments": 0,
-        "tags": "ai, anthropic, api, performance",
-        "url": "https://dev.to/thegdsks/prompt-caching-with-the-claude-api-a-practical-guide-14ce"
+        "tags": "ai, data, mcp, systemdesign",
+        "url": "https://dev.to/kenwalger/what-ive-been-building-systems-ai-and-real-world-data-426a"
       },
       {
         "rank": 5,
-        "title": "I don't want to give Claude SSH access to my home server",
-        "author": "higangssh",
-        "reactions": 7,
-        "comments": 0,
-        "tags": "ai, selfhosted, opensource, go",
-        "url": "https://dev.to/higangssh/i-dont-want-to-give-claude-ssh-access-to-my-home-server-2gjl"
+        "title": "Everyone's Talking About Gemini. The Real Story at Google Cloud NEXT '26 Was GKE Agent Sandbox.",
+        "author": "sreejit_caab72e273a4faa1f",
+        "reactions": 9,
+        "comments": 2,
+        "tags": "cloudnextchallenge, googlecloud, ai, devchallenge",
+        "url": "https://dev.to/sreejit_caab72e273a4faa1f/everyones-talking-about-gemini-the-real-story-at-google-cloud-next-26-was-gke-agent-sandbox-19g2"
       }
     ]
   },
@@ -76,9 +76,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:07.391Z",
-    "finishedAt": "2026-04-29T15:39:10.182Z",
-    "latencyMs": 2791,
+    "startedAt": "2026-04-30T06:06:18.085Z",
+    "finishedAt": "2026-04-30T06:06:18.723Z",
+    "latencyMs": 638,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli devto tag [options] <tag>\n\nLatest DEV.to articles for a specific tag\n\nArguments:\n  tag                 Tag name (e.g. javascript, python, webdev)\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: dev.to\nOutput columns: rank, title, author, reactions, comments, tags",

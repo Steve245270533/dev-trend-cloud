@@ -1,11 +1,12 @@
 import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadConfig } from "@devtrend/config";
 import { createPool } from "./client.js";
 
-async function main() {
-  const config = loadConfig();
-  const pool = createPool(config.DATABASE_URL);
+export async function runMigrations(databaseUrl: string): Promise<string[]> {
+  const pool = createPool(databaseUrl);
+  const appliedFiles: string[] = [];
   const migrationsDir = resolve(process.cwd(), "packages/db/migrations");
 
   try {
@@ -16,14 +17,31 @@ async function main() {
     for (const file of files) {
       const sql = await readFile(resolve(migrationsDir, file), "utf8");
       await pool.query(sql);
-      process.stdout.write(`applied ${file}\n`);
+      appliedFiles.push(file);
     }
+
+    return appliedFiles;
   } finally {
     await pool.end();
   }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+async function main() {
+  const config = loadConfig();
+  const appliedFiles = await runMigrations(config.DATABASE_URL);
+
+  for (const file of appliedFiles) {
+    process.stdout.write(`applied ${file}\n`);
+  }
+}
+
+const isDirectExecution =
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

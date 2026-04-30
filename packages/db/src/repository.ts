@@ -9,6 +9,8 @@ import type {
   QuestionEvidence,
   QuestionPressureQuery,
   QuestionPressureSignal,
+  RuntimeTopicSeed,
+  RuntimeTopicSeedRun,
   SourceStatus,
 } from "@devtrend/contracts";
 import type { PipelineOutput } from "@devtrend/domain";
@@ -47,6 +49,27 @@ interface FallbackSnapshotRecord {
   payload: Record<string, unknown>[];
 }
 
+interface RuntimeTopicSeedRow {
+  run_id: string;
+  slug: string;
+  name: string;
+  keywords: string[];
+  source_priority: number;
+  sources: unknown;
+  collection_id: string | null;
+  devto_tags: string[];
+  score: number;
+  active: boolean;
+  refreshed_at: string;
+  expires_at: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface WorkerBootstrapState {
+  hasActiveRuntimeTopicSnapshot: boolean;
+  hasPersistedItems: boolean;
+}
+
 type PersistedSourceStatus = SourceStatus & {
   metadata?: Record<string, unknown>;
 };
@@ -61,6 +84,29 @@ function canonicalKey(item: NormalizedItem): string {
 
 function buildArtifactKey(source: string, commandName: string): string {
   return `${source}:${commandName}`;
+}
+
+function mapRuntimeTopicSeedRow(row: RuntimeTopicSeedRow): RuntimeTopicSeed {
+  return {
+    runId: row.run_id,
+    slug: row.slug,
+    name: row.name,
+    keywords: Array.isArray(row.keywords) ? row.keywords.map(String) : [],
+    sourcePriority: Number(row.source_priority ?? 0),
+    sources: Array.isArray(row.sources)
+      ? row.sources.map(
+          (value) => String(value) as RuntimeTopicSeed["sources"][number],
+        )
+      : [],
+    collectionId:
+      typeof row.collection_id === "string" ? row.collection_id : undefined,
+    devtoTags: Array.isArray(row.devto_tags) ? row.devto_tags.map(String) : [],
+    score: Number(row.score ?? 0),
+    active: row.active === true,
+    refreshedAt: new Date(row.refreshed_at).toISOString(),
+    expiresAt: new Date(row.expires_at).toISOString(),
+    metadata: row.metadata ?? {},
+  };
 }
 
 async function getItemTopics(
@@ -172,6 +218,8 @@ export async function resetSeedTables(db: Queryable) {
   await db.query(
     `
       TRUNCATE TABLE
+        runtime_topic_seeds,
+        runtime_topic_seed_runs,
         signal_evidence,
         signals,
         question_cluster_items,
@@ -189,6 +237,35 @@ export async function resetSeedTables(db: Queryable) {
         source_health
       RESTART IDENTITY CASCADE
     `,
+  );
+}
+
+export async function listCatalogTopics(
+  db: Queryable,
+): Promise<RuntimeTopicSeed[]> {
+  const result = await db.query(
+    `
+      SELECT
+        '00000000-0000-5000-8000-000000000000'::text AS run_id,
+        slug,
+        name,
+        keywords,
+        10 AS source_priority,
+        '["fallback-topics"]'::jsonb AS sources,
+        NULL::text AS collection_id,
+        '{}'::text[] AS devto_tags,
+        10::double precision AS score,
+        TRUE AS active,
+        NOW()::text AS refreshed_at,
+        (NOW() + INTERVAL '2 hours')::text AS expires_at,
+        jsonb_build_object('fallback', TRUE, 'source', 'topics') AS metadata
+      FROM topics
+      ORDER BY slug ASC
+    `,
+  );
+
+  return result.rows.map((row: unknown) =>
+    mapRuntimeTopicSeedRow(row as RuntimeTopicSeedRow),
   );
 }
 
@@ -338,6 +415,194 @@ export async function upsertCatalog(
       ],
     );
   }
+}
+
+export async function insertRuntimeTopicSeedRun(
+  db: Queryable,
+  run: RuntimeTopicSeedRun,
+) {
+  await db.query(
+    `
+      INSERT INTO runtime_topic_seed_runs (
+        id,
+        status,
+        started_at,
+        finished_at,
+        fallback_used,
+        error_text,
+        metadata
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `,
+    [
+      run.id,
+      run.status,
+      run.startedAt,
+      run.finishedAt,
+      run.fallbackUsed,
+      run.errorText,
+      JSON.stringify(run.metadata),
+    ],
+  );
+}
+
+export async function replaceRuntimeTopicSeeds(
+  db: Queryable,
+  runId: string,
+  seeds: RuntimeTopicSeed[],
+) {
+  await db.query(
+    "UPDATE runtime_topic_seeds SET active = FALSE WHERE active = TRUE",
+  );
+
+  for (const seed of seeds) {
+    await db.query(
+      `
+        INSERT INTO runtime_topic_seeds (
+          run_id,
+          slug,
+          name,
+          keywords,
+          source_priority,
+          sources,
+          collection_id,
+          devto_tags,
+          score,
+          active,
+          refreshed_at,
+          expires_at,
+          metadata
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      `,
+      [
+        runId,
+        seed.slug,
+        seed.name,
+        seed.keywords,
+        seed.sourcePriority,
+        JSON.stringify(seed.sources),
+        seed.collectionId ?? null,
+        seed.devtoTags,
+        seed.score,
+        seed.active,
+        seed.refreshedAt,
+        seed.expiresAt,
+        JSON.stringify(seed.metadata),
+      ],
+    );
+  }
+}
+
+export async function getLatestRuntimeTopicSeedSnapshot(
+  db: Queryable,
+): Promise<RuntimeTopicSeed[]> {
+  const latestRun = await db.query(
+    `
+      SELECT run_id
+      FROM runtime_topic_seeds
+      ORDER BY refreshed_at DESC, created_at DESC
+      LIMIT 1
+    `,
+  );
+  const row = latestRun.rows[0] as Record<string, unknown> | undefined;
+
+  if (!row || typeof row.run_id !== "string") {
+    return [];
+  }
+
+  const result = await db.query(
+    `
+      SELECT
+        run_id,
+        slug,
+        name,
+        keywords,
+        source_priority,
+        sources,
+        collection_id,
+        devto_tags,
+        score,
+        active,
+        refreshed_at,
+        expires_at,
+        metadata
+      FROM runtime_topic_seeds
+      WHERE run_id = $1
+      ORDER BY score DESC, slug ASC
+    `,
+    [row.run_id],
+  );
+
+  return result.rows.map((seedRow: unknown) =>
+    mapRuntimeTopicSeedRow(seedRow as RuntimeTopicSeedRow),
+  );
+}
+
+export async function listActiveRuntimeTopicSeeds(
+  db: Queryable,
+): Promise<RuntimeTopicSeed[]> {
+  const result = await db.query(
+    `
+      SELECT
+        run_id,
+        slug,
+        name,
+        keywords,
+        source_priority,
+        sources,
+        collection_id,
+        devto_tags,
+        score,
+        active,
+        refreshed_at,
+        expires_at,
+        metadata
+      FROM runtime_topic_seeds
+      WHERE active = TRUE
+        AND expires_at > NOW()
+      ORDER BY score DESC, slug ASC
+    `,
+  );
+
+  if (result.rows.length > 0) {
+    return result.rows.map((row: unknown) =>
+      mapRuntimeTopicSeedRow(row as RuntimeTopicSeedRow),
+    );
+  }
+
+  return listCatalogTopics(db);
+}
+
+export async function getWorkerBootstrapState(
+  db: Queryable,
+): Promise<WorkerBootstrapState> {
+  const [runtimeTopicResult, itemResult] = await Promise.all([
+    db.query(
+      `
+        SELECT EXISTS (
+          SELECT 1
+          FROM runtime_topic_seeds
+          WHERE active = TRUE
+            AND expires_at > NOW()
+        ) AS has_active_runtime_topic_snapshot
+      `,
+    ),
+    db.query(
+      `
+        SELECT EXISTS (
+          SELECT 1
+          FROM items
+        ) AS has_persisted_items
+      `,
+    ),
+  ]);
+
+  return {
+    hasActiveRuntimeTopicSnapshot:
+      runtimeTopicResult.rows[0]?.has_active_runtime_topic_snapshot === true,
+    hasPersistedItems: itemResult.rows[0]?.has_persisted_items === true,
+  };
 }
 
 export async function upsertWatchlists(

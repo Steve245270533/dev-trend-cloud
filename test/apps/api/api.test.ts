@@ -75,6 +75,7 @@ test("GET /healthz works", async () => {
       SOURCE_POLL_HN_CRON: "*/20 * * * *",
       SOURCE_POLL_DEVTO_CRON: "*/30 * * * *",
       SOURCE_POLL_OSSINSIGHT_CRON: "*/30 * * * *",
+      TOPIC_SEED_REFRESH_CRON: "0 * * * *",
     },
   });
 
@@ -106,6 +107,7 @@ test("GET /signals/question-pressure returns metadata and signals", async () => 
       SOURCE_POLL_HN_CRON: "*/20 * * * *",
       SOURCE_POLL_DEVTO_CRON: "*/30 * * * *",
       SOURCE_POLL_OSSINSIGHT_CRON: "*/30 * * * *",
+      TOPIC_SEED_REFRESH_CRON: "0 * * * *",
     },
   });
 
@@ -145,6 +147,7 @@ test("GET /question-clusters/:id/evidence returns evidence rows", async () => {
       SOURCE_POLL_HN_CRON: "*/20 * * * *",
       SOURCE_POLL_DEVTO_CRON: "*/30 * * * *",
       SOURCE_POLL_OSSINSIGHT_CRON: "*/30 * * * *",
+      TOPIC_SEED_REFRESH_CRON: "0 * * * *",
     },
   });
 

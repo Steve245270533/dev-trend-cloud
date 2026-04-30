@@ -27,6 +27,52 @@ export const SourceStatusSchema = Type.Object({
 
 export type SourceStatus = Static<typeof SourceStatusSchema>;
 
+export const RuntimeTopicSeedSourceLabelSchema = Type.Union([
+  Type.Literal("ossinsight-hot"),
+  Type.Literal("ossinsight-collections"),
+  Type.Literal("devto-top"),
+  Type.Literal("fallback-topics"),
+]);
+
+export type RuntimeTopicSeedSourceLabel = Static<
+  typeof RuntimeTopicSeedSourceLabelSchema
+>;
+
+export const RuntimeTopicSeedSchema = Type.Object({
+  runId: Type.String({ format: "uuid" }),
+  slug: Type.String(),
+  name: Type.String(),
+  keywords: Type.Array(Type.String()),
+  sourcePriority: Type.Integer({ minimum: 0 }),
+  sources: Type.Array(RuntimeTopicSeedSourceLabelSchema),
+  collectionId: Type.Optional(Type.String()),
+  devtoTags: Type.Array(Type.String()),
+  score: Type.Number({ minimum: 0 }),
+  active: Type.Boolean(),
+  refreshedAt: Type.String({ format: "date-time" }),
+  expiresAt: Type.String({ format: "date-time" }),
+  metadata: Type.Record(Type.String(), Type.Unknown()),
+});
+
+export type RuntimeTopicSeed = Static<typeof RuntimeTopicSeedSchema>;
+
+export const RuntimeTopicSeedRunSchema = Type.Object({
+  id: Type.String({ format: "uuid" }),
+  status: Type.Union([
+    Type.Literal("success"),
+    Type.Literal("degraded"),
+    Type.Literal("fallback"),
+    Type.Literal("failed"),
+  ]),
+  startedAt: Type.String({ format: "date-time" }),
+  finishedAt: Type.String({ format: "date-time" }),
+  fallbackUsed: Type.Boolean(),
+  errorText: Type.Union([Type.String(), Type.Null()]),
+  metadata: Type.Record(Type.String(), Type.Unknown()),
+});
+
+export type RuntimeTopicSeedRun = Static<typeof RuntimeTopicSeedRunSchema>;
+
 export const TimestampOriginSchema = Type.Union([
   Type.Literal("source"),
   Type.Literal("collected"),

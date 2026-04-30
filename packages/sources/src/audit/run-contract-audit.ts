@@ -9,10 +9,11 @@ async function main() {
   const outputDir = resolve(process.cwd(), "docs/reports/contract-audit");
   await mkdir(outputDir, { recursive: true });
 
-  const payloads = await collectLiveSourcePayloads(
-    config.OPENCLI_BIN,
-    config.OPENCLI_TIMEOUT_MS,
-  );
+  const payloads = await collectLiveSourcePayloads({
+    openCliBin: config.OPENCLI_BIN,
+    timeoutMs: config.OPENCLI_TIMEOUT_MS,
+    mode: "audit",
+  });
 
   const snapshot = {
     generatedAt: new Date().toISOString(),

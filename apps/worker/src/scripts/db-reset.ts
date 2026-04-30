@@ -1,5 +1,5 @@
 import { loadConfig } from "@devtrend/config";
-import { createPool } from "@devtrend/db";
+import { createPool, runMigrations } from "@devtrend/db";
 import { Redis } from "ioredis";
 
 interface PublicTableRow {
@@ -66,9 +66,10 @@ async function main(): Promise<void> {
   const config = loadConfig();
   const truncatedTableCount = await truncatePublicTables(config.DATABASE_URL);
   await flushRedisDatabase(config.REDIS_URL);
+  const appliedMigrations = await runMigrations(config.DATABASE_URL);
 
   process.stdout.write(
-    `db:reset completed: truncated ${truncatedTableCount} Postgres public tables and flushed the configured Redis database\n`,
+    `db:reset completed: truncated ${truncatedTableCount} Postgres public tables, flushed the configured Redis database, and applied ${appliedMigrations.length} migrations\n`,
   );
 }
 

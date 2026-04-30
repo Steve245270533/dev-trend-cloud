@@ -27,6 +27,7 @@ export const AppConfigSchema = Type.Object({
   SOURCE_POLL_HN_CRON: Type.String({ default: "*/20 * * * *" }),
   SOURCE_POLL_DEVTO_CRON: Type.String({ default: "*/30 * * * *" }),
   SOURCE_POLL_OSSINSIGHT_CRON: Type.String({ default: "*/30 * * * *" }),
+  TOPIC_SEED_REFRESH_CRON: Type.String({ default: "0 * * * *" }),
 });
 
 export type AppConfig = Static<typeof AppConfigSchema>;

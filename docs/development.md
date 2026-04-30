@@ -55,6 +55,7 @@ Phase 0 + Phase 1 假设：
 - `SOURCE_POLL_HN_CRON`
 - `SOURCE_POLL_DEVTO_CRON`
 - `SOURCE_POLL_OSSINSIGHT_CRON`
+- `TOPIC_SEED_REFRESH_CRON`
 
 当前共享 Docker baseline 中，Redis 通过 `/Users/lehuaixiaochen/Downloads/Project/Docker/redis/redis.conf` 启用认证，因此本地默认 URL 为：
 
@@ -74,6 +75,12 @@ pnpm install
 
 ```bash
 pnpm db:migrate
+```
+
+重置本地开发数据库与 Redis，并自动补跑全部 migrations：
+
+```bash
+pnpm db:reset
 ```
 
 写入 Phase 数据（seed）：
@@ -105,6 +112,14 @@ pnpm --filter @devtrend/web dev
 ```bash
 pnpm dev
 ```
+
+worker 启动说明：
+
+- repeat cron 仍然负责常规周期调度。
+- worker 冷启动时会先做一次 bootstrap 检查。
+- 当 active runtime topic snapshot 缺失或过期时，会立即补发一次 `topic-seed-refresh`。
+- 当数据库里还没有持久化内容时，会立即按 source 补发一次 `collect`，避免本地开发必须等到下一次 cron 才看到 PG 落库。
+- bootstrap enqueue 是非阻塞的；常规重启且库中已有 snapshot 和内容时，worker 仍主要依赖 cron，不会每次都强制重采。
 
 构建：
 
@@ -146,6 +161,9 @@ pnpm audit:contracts
 - 单个 command 失败不能拖垮整轮采集。
 - worker 会优先尝试 live payload；失败时只允许回退到同一个 `source + command` 最近一次成功 `raw_snapshot`。
 - `source_health` 必须能看到 `status`、`last_success_at`、`last_error_at`、`last_error_text`、`fallback_used`、`last_latency_ms`。
+- runtime topic refresh 默认每小时跑一次；成功时写入新的 `runtime_topic_seeds` 快照，失败时保留上一份 active snapshot。
+- 当 active runtime topic snapshot 缺失或过期时，collect 会回退到 `topics` catalog 做动态查询扩展。
+- `pnpm db:reset` 会把数据库恢复到可立即运行的 schema 基线；若本地 schema 落后，不需要额外手动补跑 migration。
 
 traceability 的核验点：
 
@@ -162,3 +180,10 @@ traceability 的核验点：
 ## 种子数据
 
 仓库默认写入一批用于演示的 watchlists 与 topic/entity catalog，用于 Phase 0 + Phase 1 的匹配与 demo。
+
+动态 topic 说明：
+
+- 本阶段不再维护本地 seed JSON 文件。
+- 稳定兜底 seed 保存在 `topics` / `entities`。
+- runtime topic discovery 结果只存数据库：`runtime_topic_seed_runs` 和 `runtime_topic_seeds`。
+- runtime topic 的主发现源是 OSSInsight `collections` / `hot-collections`，DEV `top` tags 只做辅助补充。

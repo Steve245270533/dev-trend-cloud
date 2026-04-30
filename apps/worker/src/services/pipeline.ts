@@ -1,11 +1,23 @@
-import type { NormalizedItem, SourceStatus } from "@devtrend/contracts";
+import { randomUUID } from "node:crypto";
+import type {
+  NormalizedItem,
+  RuntimeTopicSeed,
+  RuntimeTopicSeedRun,
+  SourceKey,
+  SourceStatus,
+} from "@devtrend/contracts";
 import {
+  getLatestRuntimeTopicSeedSnapshot,
   getLatestSuccessfulSnapshot,
   getSourceStatusMap,
+  insertRuntimeTopicSeedRun,
   insertSourceStatus,
+  listActiveRuntimeTopicSeeds,
   listAllNormalizedItems,
+  listCatalogTopics,
   recordCollectionArtifacts,
   replaceDerivedPipelineOutput,
+  replaceRuntimeTopicSeeds,
   replaceSourceItems,
   upsertCatalog,
   withTransaction,
@@ -16,8 +28,22 @@ import {
   topicSeeds,
 } from "@devtrend/domain";
 import type { CollectedSourcePayload } from "@devtrend/sources";
-import { normalizeCollectedPayloads } from "@devtrend/sources";
+import {
+  discoverRuntimeTopicCandidates,
+  mergeRuntimeTopicCandidates,
+  normalizeCollectedPayloads,
+} from "@devtrend/sources";
 import type { Pool } from "pg";
+
+export interface WorkerBootstrapState {
+  hasActiveRuntimeTopicSnapshot: boolean;
+  hasPersistedItems: boolean;
+}
+
+export interface WorkerBootstrapPlan {
+  refreshRuntimeTopics: boolean;
+  collectSources: SourceKey[];
+}
 
 function buildPayloadKey(source: string, commandName: string): string {
   return `${source}:${commandName}`;
@@ -226,5 +252,170 @@ export async function persistCollectedPayloads(
   return {
     items: persistedItems,
     signals: persistedSignals,
+  };
+}
+
+function runtimeTopicRunStatus(
+  remoteTopics: RuntimeTopicSeed[],
+  sourceStatuses: {
+    source: "ossinsight" | "devto";
+    status: "success" | "failed";
+  }[],
+): RuntimeTopicSeedRun["status"] {
+  const ossInsightHealthy = sourceStatuses.some(
+    (status) => status.source === "ossinsight" && status.status === "success",
+  );
+  const devtoHealthy = sourceStatuses.some(
+    (status) => status.source === "devto" && status.status === "success",
+  );
+
+  if (ossInsightHealthy && devtoHealthy && remoteTopics.length > 0) {
+    return "success";
+  }
+
+  if ((ossInsightHealthy || devtoHealthy) && remoteTopics.length > 0) {
+    return "degraded";
+  }
+
+  return "fallback";
+}
+
+export function planWorkerBootstrap(
+  state: WorkerBootstrapState,
+  sources: SourceKey[],
+): WorkerBootstrapPlan {
+  return {
+    refreshRuntimeTopics: !state.hasActiveRuntimeTopicSnapshot,
+    collectSources: state.hasPersistedItems ? [] : [...sources],
+  };
+}
+
+export async function loadRuntimeTopics(
+  pool: Pool,
+): Promise<RuntimeTopicSeed[]> {
+  return withTransaction(pool, async (client) =>
+    listActiveRuntimeTopicSeeds(client),
+  );
+}
+
+export async function refreshRuntimeTopicSeeds(
+  pool: Pool,
+  openCliBin: string,
+  timeoutMs: number,
+  discoverTopics: typeof discoverRuntimeTopicCandidates = discoverRuntimeTopicCandidates,
+) {
+  const startedAt = new Date().toISOString();
+  const seedContext = await withTransaction(pool, async (client) => ({
+    fallbackTopics: await listCatalogTopics(client),
+    latestSnapshot: await getLatestRuntimeTopicSeedSnapshot(client),
+  }));
+
+  let discoveredCandidates: RuntimeTopicSeed[] = [];
+  let sourceStatuses: {
+    source: "ossinsight" | "devto";
+    status: "success" | "failed";
+    errorText: string | null;
+    candidateCount: number;
+  }[] = [];
+  let finalTopics: RuntimeTopicSeed[] = [];
+  let fallbackUsed = false;
+  let errorText: string | null = null;
+
+  try {
+    const discovery = await discoverTopics(openCliBin, timeoutMs);
+    sourceStatuses = discovery.sourceStatuses;
+    discoveredCandidates = mergeRuntimeTopicCandidates(
+      discovery.candidates,
+      [],
+      new Date(startedAt),
+    );
+    finalTopics = mergeRuntimeTopicCandidates(
+      discovery.candidates,
+      seedContext.fallbackTopics,
+    );
+
+    const hasRemoteFailure = sourceStatuses.some(
+      (status) => status.status === "failed",
+    );
+    fallbackUsed = hasRemoteFailure || discovery.candidates.length === 0;
+  } catch (error) {
+    errorText = error instanceof Error ? error.message : String(error);
+    sourceStatuses = [
+      {
+        source: "ossinsight",
+        status: "failed",
+        errorText,
+        candidateCount: 0,
+      },
+      {
+        source: "devto",
+        status: "failed",
+        errorText,
+        candidateCount: 0,
+      },
+    ];
+    fallbackUsed = true;
+  }
+
+  const finishedAt = new Date().toISOString();
+  const runId = randomUUID();
+  const status = runtimeTopicRunStatus(discoveredCandidates, sourceStatuses);
+  const hasRemoteSuccess = sourceStatuses.some(
+    (sourceStatus) => sourceStatus.status === "success",
+  );
+
+  await withTransaction(pool, async (client) => {
+    await insertRuntimeTopicSeedRun(client, {
+      id: runId,
+      status,
+      startedAt,
+      finishedAt,
+      fallbackUsed,
+      errorText,
+      metadata: {
+        sourceStatuses,
+        discoveredTopics: discoveredCandidates.length,
+        mergedTopics: finalTopics.length,
+      },
+    });
+
+    if (hasRemoteSuccess && finalTopics.length > 0) {
+      await replaceRuntimeTopicSeeds(
+        client,
+        runId,
+        finalTopics.map((topic) => ({
+          ...topic,
+          runId,
+          refreshedAt: finishedAt,
+          expiresAt: new Date(
+            new Date(finishedAt).getTime() + 2 * 60 * 60 * 1000,
+          ).toISOString(),
+        })),
+      );
+      return;
+    }
+
+    if (seedContext.latestSnapshot.length === 0) {
+      const fallbackTopics = seedContext.fallbackTopics.map((topic) => ({
+        ...topic,
+        runId,
+        refreshedAt: finishedAt,
+        expiresAt: new Date(
+          new Date(finishedAt).getTime() + 2 * 60 * 60 * 1000,
+        ).toISOString(),
+      }));
+      await replaceRuntimeTopicSeeds(client, runId, fallbackTopics);
+    }
+  });
+
+  return {
+    topics:
+      hasRemoteSuccess && finalTopics.length > 0
+        ? finalTopics.length
+        : seedContext.latestSnapshot.length > 0
+          ? seedContext.latestSnapshot.length
+          : seedContext.fallbackTopics.length,
+    status,
+    fallbackUsed,
   };
 }

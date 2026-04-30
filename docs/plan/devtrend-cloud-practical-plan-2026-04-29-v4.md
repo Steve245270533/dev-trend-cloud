@@ -226,6 +226,13 @@ Full GitHub intelligence.
 | Lobsters | `hot` / `active` / `newest` | 高信噪比工程校准 |
 | 36kr | `news` | 中文商业背景 |
 
+动态 topic 扩展策略：
+
+- 主发现源：OSSInsight `collections` / `hot-collections`
+- 辅助发现源：DEV `top` tags
+- `topics` 保持稳定 catalog，不被 hourly refresh 覆盖
+- 运行时查询扩展只消费数据库中的 runtime topic snapshot，不维护本地 seed JSON
+
 ### P1 延后增强
 
 - `producthunt/browse`：依赖 `intercept + browser`，只做按需增强。
@@ -254,6 +261,8 @@ Full GitHub intelligence.
 - `watchlists`
 - `watchlist_events`
 - `source_health`
+- `runtime_topic_seed_runs`
+- `runtime_topic_seeds`
 
 ### 暂缓表
 

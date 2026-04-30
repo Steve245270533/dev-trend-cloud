@@ -2,13 +2,18 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { loadConfig } from "@devtrend/config";
 import type { SourceKey } from "@devtrend/contracts";
-import { createPool } from "@devtrend/db";
+import { createPool, getWorkerBootstrapState } from "@devtrend/db";
 import { collectLiveSourcePayloads } from "@devtrend/sources";
 import { Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
 import { QUEUES } from "./jobs/definitions.js";
 import { invalidateApiReadCaches } from "./services/cache.js";
-import { persistCollectedPayloads } from "./services/pipeline.js";
+import {
+  loadRuntimeTopics,
+  persistCollectedPayloads,
+  planWorkerBootstrap,
+  refreshRuntimeTopicSeeds,
+} from "./services/pipeline.js";
 
 const config = loadConfig();
 const redis = new Redis(config.REDIS_URL, {
@@ -17,6 +22,10 @@ const redis = new Redis(config.REDIS_URL, {
 const pool = createPool(config.DATABASE_URL);
 
 const contractAuditQueue = new Queue(QUEUES.contractAudit, {
+  connection: redis,
+  prefix: config.QUEUE_PREFIX,
+});
+const topicSeedRefreshQueue = new Queue(QUEUES.topicSeedRefresh, {
   connection: redis,
   prefix: config.QUEUE_PREFIX,
 });
@@ -49,6 +58,17 @@ const sourcePollCrons: Record<SourceKey, string> = {
 };
 
 async function bootSchedulers() {
+  await topicSeedRefreshQueue.add(
+    "topic-seed-refresh",
+    {},
+    {
+      repeat: {
+        pattern: config.TOPIC_SEED_REFRESH_CRON,
+      },
+      jobId: "topic-seed-refresh-repeat",
+    },
+  );
+
   for (const [source, pattern] of Object.entries(sourcePollCrons) as [
     SourceKey,
     string,
@@ -77,15 +97,66 @@ async function bootSchedulers() {
   }
 }
 
+async function bootstrapQueues() {
+  const state = await getWorkerBootstrapState(pool);
+  const plan = planWorkerBootstrap(
+    state,
+    Object.keys(sourcePollCrons) as SourceKey[],
+  );
+  const scheduled: string[] = [];
+
+  if (plan.refreshRuntimeTopics) {
+    await topicSeedRefreshQueue.add(
+      "topic-seed-refresh",
+      { bootstrap: true },
+      {
+        jobId: "bootstrap-topic-seed-refresh",
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    );
+    scheduled.push("topic-seed-refresh");
+  }
+
+  for (const source of plan.collectSources) {
+    await collectQueue.add(
+      "collect",
+      { source, bootstrap: true },
+      {
+        jobId: `bootstrap-collect-${source}`,
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    );
+    scheduled.push(`collect:${source}`);
+  }
+
+  if (scheduled.length > 0) {
+    process.stdout.write(`worker bootstrap enqueued ${scheduled.join(", ")}\n`);
+  }
+}
+
+new Worker(
+  QUEUES.topicSeedRefresh,
+  async () =>
+    refreshRuntimeTopicSeeds(
+      pool,
+      config.OPENCLI_BIN,
+      config.OPENCLI_TIMEOUT_MS,
+    ),
+  { connection: redis, prefix: config.QUEUE_PREFIX },
+);
+
 new Worker(
   QUEUES.contractAudit,
   async (job) => {
     const source = job.data.source as SourceKey | undefined;
-    const payloads = await collectLiveSourcePayloads(
-      config.OPENCLI_BIN,
-      config.OPENCLI_TIMEOUT_MS,
-      source ? [source] : undefined,
-    );
+    const payloads = await collectLiveSourcePayloads({
+      openCliBin: config.OPENCLI_BIN,
+      timeoutMs: config.OPENCLI_TIMEOUT_MS,
+      sources: source ? [source] : undefined,
+      mode: "audit",
+    });
     const outputDir = resolve(process.cwd(), "docs/reports/contract-audit");
     await mkdir(outputDir, { recursive: true });
     await writeFile(
@@ -105,11 +176,13 @@ new Worker(
   QUEUES.collect,
   async (job) => {
     const source = job.data.source as SourceKey | undefined;
-    const payloads = await collectLiveSourcePayloads(
-      config.OPENCLI_BIN,
-      config.OPENCLI_TIMEOUT_MS,
-      source ? [source] : undefined,
-    );
+    const runtimeTopics = await loadRuntimeTopics(pool);
+    const payloads = await collectLiveSourcePayloads({
+      openCliBin: config.OPENCLI_BIN,
+      timeoutMs: config.OPENCLI_TIMEOUT_MS,
+      sources: source ? [source] : undefined,
+      runtimeTopics,
+    });
     await normalizeQueue.add("normalize", { payloads, source });
     return { collected: payloads.length };
   },
@@ -154,4 +227,5 @@ new Worker(
 );
 
 await bootSchedulers();
+await bootstrapQueues();
 process.stdout.write("worker booted\n");

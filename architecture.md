@@ -26,8 +26,11 @@
 
 ```text
 OpenCLI public sources
+  -> runtime topic discovery (OSSInsight collections/hot-collections + DEV tags)
+  -> runtime topic seed snapshot
   -> contract audit (registry/help/sample fixtures)
   -> collectors (per-command attempts, partial success allowed)
+  -> dynamic query expansion from active runtime topics
   -> worker fallback (reuse last successful raw snapshot for the same source+command)
   -> raw snapshots JSONB
   -> normalizers (canonical items)
@@ -40,12 +43,14 @@ OpenCLI public sources
   -> Fastify read-only API
 
 BullMQ worker
+  -> topic-seed-refresh
   -> contract-audit
   -> collect
   -> normalize
   -> match
   -> cluster
   -> score
+  -> conditional bootstrap enqueue on cold start
 ```
 
 ## 运行时分层
@@ -53,12 +58,13 @@ BullMQ worker
 ### Source 层（packages/sources）
 
 - 目标：把“外部站点能力”收敛为可审计的 OpenCLI 命令合约 + 稳定的采集/归一化输出。
-- 目标：把“外部站点能力”收敛为可审计的 OpenCLI 命令合约 + 稳定的采集/归一化输出。
+- 额外职责：基于 OSSInsight collection 与 DEV tags 发现 runtime topics，并把 topic discovery 与内容采集解耦。
 - 合约审计产物：
   - OpenCLI registry 快照
   - `--help` 快照
   - 代表性 JSON 样本（fixtures）
 - collector 允许按 command 记录失败，不以“单命令失败 = 整轮失败”作为默认行为。
+- content collect 不直接重新发现 topic，而是消费 worker 刷新的 active runtime topic snapshot。
 - 注意：本阶段只允许 public sources（无需登录态）。
 
 ### Domain 层（packages/domain）
@@ -85,6 +91,7 @@ BullMQ worker
 - `raw_snapshots` 存储原始 payload（JSONB）
 - `source_runs` 记录每次 command 尝试；fallback 只复用历史 snapshot，不复制 payload。
 - `item_sources` 负责把 item 追到 `source_runs` 和 `raw_snapshots`，供 evidence drilldown 使用。
+- `topics` 保持稳定 seed catalog；动态 topic 进入独立的 `runtime_topic_seed_runs` / `runtime_topic_seeds`，不覆盖 domain catalog。
 - repository helpers 用显式 SQL 查询表达数据访问，不引入重 ORM 抽象
 
 ### Transport 层（apps/api）
@@ -96,7 +103,11 @@ BullMQ worker
 ### Orchestration 层（apps/worker）
 
 - BullMQ 负责调度与异步任务编排
-- worker 调用 sources + domain + db，负责 source-level fallback、source health rollup、持久化和缓存结果产出
+- worker 调用 sources + domain + db，负责 runtime topic refresh、source-level fallback、source health rollup、持久化和缓存结果产出
+- repeat cron 负责常规轮询；worker 启动时还会做一次条件式 bootstrap：
+  - runtime topic active snapshot 缺失或过期时，立即补发一次 topic refresh
+  - 持久化内容为空时，立即补发一次按 source 的 collect
+  - bootstrap 是恢复冷启动和 `db:reset` 后空库状态的补偿机制，不替代常规 cron
 
 ## 代码库地图
 

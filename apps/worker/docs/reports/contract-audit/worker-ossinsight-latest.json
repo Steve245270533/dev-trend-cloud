@@ -10,9 +10,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:10.189Z",
-    "finishedAt": "2026-04-29T15:39:16.531Z",
-    "latencyMs": 6342,
+    "startedAt": "2026-04-30T06:06:18.728Z",
+    "finishedAt": "2026-04-30T06:06:21.347Z",
+    "latencyMs": 2619,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli ossinsight trending [options]\n\n获取 OSSInsight 热门仓库\n\nOptions:\n  --limit [value]     返回数量 (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_name, stars, language",
@@ -55,9 +55,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:16.531Z",
-    "finishedAt": "2026-04-29T15:39:18.558Z",
-    "latencyMs": 2027,
+    "startedAt": "2026-04-30T06:06:21.347Z",
+    "finishedAt": "2026-04-30T06:06:22.665Z",
+    "latencyMs": 1318,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli ossinsight collections [options]\n\n列出 OSSInsight 所有 collections\n\nOptions:\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: id, name",
@@ -95,9 +95,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:18.558Z",
-    "finishedAt": "2026-04-29T15:39:20.067Z",
-    "latencyMs": 1509,
+    "startedAt": "2026-04-30T06:06:22.665Z",
+    "finishedAt": "2026-04-30T06:06:26.643Z",
+    "latencyMs": 3978,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli ossinsight hot-collections [options]\n\n列出 OSSInsight 热门 collections\n\nOptions:\n  --limit [value]     返回数量，默认 20 (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: id, name, repos, repo_name, current_rank, past_rank, rank_change",
@@ -155,40 +155,18 @@
     "argv": [
       "ossinsight",
       "collection-repos",
-      "10004",
       "--limit",
       "5",
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:20.067Z",
-    "finishedAt": "2026-04-29T15:39:24.101Z",
-    "latencyMs": 4034,
-    "status": "success",
-    "errorText": null,
+    "startedAt": "2026-04-30T06:06:26.643Z",
+    "finishedAt": "2026-04-30T06:06:26.810Z",
+    "latencyMs": 167,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight collection-repos --limit 5 -f json\nerror: missing required argument 'collectionId'\n",
     "helpOutput": "Usage: opencli ossinsight collection-repos [options] <collectionId>\n\n列出指定 collection 下的仓库\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --limit [value]     返回数量，默认 100 (default: \"100\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name",
-    "payload": [
-      {
-        "repo_id": "6296790",
-        "repo_name": "spring-projects/spring-boot"
-      },
-      {
-        "repo_id": "8514",
-        "repo_name": "rails/rails"
-      },
-      {
-        "repo_id": "1863329",
-        "repo_name": "laravel/laravel"
-      },
-      {
-        "repo_id": "458058",
-        "repo_name": "symfony/symfony"
-      },
-      {
-        "repo_id": "4164482",
-        "repo_name": "django/django"
-      }
-    ]
+    "payload": []
   },
   {
     "source": "ossinsight",
@@ -196,75 +174,56 @@
     "argv": [
       "ossinsight",
       "collection-issues",
-      "10004",
       "--limit",
       "5",
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:24.101Z",
-    "finishedAt": "2026-04-29T15:39:27.335Z",
-    "latencyMs": 3234,
-    "status": "success",
-    "errorText": null,
+    "startedAt": "2026-04-30T06:06:26.810Z",
+    "finishedAt": "2026-04-30T06:06:27.003Z",
+    "latencyMs": 193,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight collection-issues --limit 5 -f json\nerror: missing required argument 'collectionId'\n",
     "helpOutput": "Usage: opencli ossinsight collection-issues [options] <collectionId>\n\n查看 collection 的 issue 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
-    "payload": [
-      {
-        "repo_id": "6296790",
-        "repo_name": "spring-projects/spring-boot",
-        "current_growth": "32",
-        "current_rank": "1",
-        "past_growth": "37",
-        "past_rank": "1",
-        "growth_pop": "-13.51",
-        "rank_pop": "0",
-        "total": "40714"
-      },
-      {
-        "repo_id": "327089870",
-        "repo_name": "payloadcms/payload",
-        "current_growth": "11",
-        "current_rank": "2",
-        "past_growth": "8",
-        "past_rank": "7",
-        "growth_pop": "37.50",
-        "rank_pop": "-5",
-        "total": "4217"
-      },
-      {
-        "repo_id": "348060227",
-        "repo_name": "withastro/astro",
-        "current_growth": "9",
-        "current_rank": "3",
-        "past_growth": "19",
-        "past_rank": "3",
-        "growth_pop": "-52.63",
-        "rank_pop": "0",
-        "total": "6162"
-      },
-      {
-        "repo_id": "1148753",
-        "repo_name": "spring-projects/spring-framework",
-        "current_growth": "9",
-        "current_rank": "4",
-        "past_growth": "11",
-        "past_rank": "4",
-        "growth_pop": "-18.18",
-        "rank_pop": "0",
-        "total": "11295"
-      },
-      {
-        "repo_id": "458058",
-        "repo_name": "symfony/symfony",
-        "current_growth": "8",
-        "current_rank": "5",
-        "past_growth": "9",
-        "past_rank": "5",
-        "growth_pop": "-11.11",
-        "rank_pop": "0",
-        "total": "21043"
-      }
-    ]
+    "payload": []
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "collection-prs",
+    "argv": [
+      "ossinsight",
+      "collection-prs",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "startedAt": "2026-04-30T06:06:27.003Z",
+    "finishedAt": "2026-04-30T06:06:27.205Z",
+    "latencyMs": 202,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight collection-prs --limit 5 -f json\nerror: missing required argument 'collectionId'\n",
+    "helpOutput": "Usage: opencli ossinsight collection-prs [options] <collectionId>\n\n查看 collection 的 Pull Request 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
+    "payload": []
+  },
+  {
+    "source": "ossinsight",
+    "commandName": "collection-stars",
+    "argv": [
+      "ossinsight",
+      "collection-stars",
+      "--limit",
+      "5",
+      "-f",
+      "json"
+    ],
+    "startedAt": "2026-04-30T06:06:27.205Z",
+    "finishedAt": "2026-04-30T06:06:27.384Z",
+    "latencyMs": 179,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight collection-stars --limit 5 -f json\nerror: missing required argument 'collectionId'\n",
+    "helpOutput": "Usage: opencli ossinsight collection-stars [options] <collectionId>\n\n查看 collection 的 Star 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
+    "payload": []
   },
   {
     "source": "ossinsight",
@@ -278,9 +237,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:27.335Z",
-    "finishedAt": "2026-04-29T15:39:29.997Z",
-    "latencyMs": 2662,
+    "startedAt": "2026-04-30T06:06:27.384Z",
+    "finishedAt": "2026-04-30T06:06:28.880Z",
+    "latencyMs": 1496,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli ossinsight stargazer-history [options] <repo>\n\n查看 stargazer 趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, stargazers",
@@ -299,11 +258,11 @@
       },
       {
         "date": "2017-01-01",
-        "stargazers": "113"
+        "stargazers": "114"
       },
       {
         "date": "2017-02-01",
-        "stargazers": "114"
+        "stargazers": "115"
       }
     ]
   },
@@ -319,9 +278,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:29.997Z",
-    "finishedAt": "2026-04-29T15:39:31.444Z",
-    "latencyMs": 1447,
+    "startedAt": "2026-04-30T06:06:28.880Z",
+    "finishedAt": "2026-04-30T06:06:30.147Z",
+    "latencyMs": 1267,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli ossinsight issue-creator-history [options] <repo>\n\n查看 issue 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, issue_creators",
@@ -360,9 +319,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-29T15:39:31.444Z",
-    "finishedAt": "2026-04-29T15:39:33.178Z",
-    "latencyMs": 1734,
+    "startedAt": "2026-04-30T06:06:30.147Z",
+    "finishedAt": "2026-04-30T06:06:31.354Z",
+    "latencyMs": 1207,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli ossinsight pr-creator-history [options] <repo>\n\n查看 Pull Request 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, pull_request_creators",

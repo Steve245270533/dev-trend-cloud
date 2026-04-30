@@ -26,3 +26,5 @@
 ## 验证方式
 
 - Pipeline 集成测试： [pipeline.test.ts](../../test/apps/worker/pipeline.test.ts)
+- `pnpm db:reset` 后不应留下缺表状态；schema 应能直接支撑 worker 首轮启动
+- worker 冷启动不应只能等待下一次 cron；当 runtime topic snapshot 或持久化内容缺失时，应能通过 bootstrap enqueue 恢复首轮采集

@@ -1,1 +1,6 @@
-export { persistCollectedPayloads } from "./services/pipeline.js";
+export {
+  loadRuntimeTopics,
+  persistCollectedPayloads,
+  planWorkerBootstrap,
+  refreshRuntimeTopicSeeds,
+} from "./services/pipeline.js";
