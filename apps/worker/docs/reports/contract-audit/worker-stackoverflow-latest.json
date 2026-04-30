@@ -10,44 +10,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T06:08:00.104Z",
-    "finishedAt": "2026-04-30T06:08:01.264Z",
-    "latencyMs": 1160,
-    "status": "success",
-    "errorText": null,
+    "startedAt": "2026-04-30T06:42:10.587Z",
+    "finishedAt": "2026-04-30T06:42:11.491Z",
+    "latencyMs": 904,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli stackoverflow hot --limit 5 -f json\nok: false\nerror:\n  code: FETCH_ERROR\n  message: HTTP 400 Bad Request from https://api.stackexchange.com/2.3/questions?order=desc&sort=hot&site=stackoverflow\n  exitCode: 1\n",
     "helpOutput": "Usage: opencli stackoverflow hot [options]\n\nHot Stack Overflow questions\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
-    "payload": [
-      {
-        "title": "Not reading the whole image",
-        "score": -3,
-        "answers": 0,
-        "url": "https://stackoverflow.com/questions/79934014/not-reading-the-whole-image"
-      },
-      {
-        "title": "VS Code task running a shell script doesn&#39;t open file",
-        "score": 0,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79934018/vs-code-task-running-a-shell-script-doesnt-open-file"
-      },
-      {
-        "title": "How to fix OTP not receiving issue in SIM registration web app (JavaScript + API)?",
-        "score": -2,
-        "answers": 0,
-        "url": "https://stackoverflow.com/questions/79934011/how-to-fix-otp-not-receiving-issue-in-sim-registration-web-app-javascript-api"
-      },
-      {
-        "title": "Core Web Vitals",
-        "score": 0,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79934001/core-web-vitals"
-      },
-      {
-        "title": "Issue on angular material version 21 animation not working",
-        "score": 2,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79934005/issue-on-angular-material-version-21-animation-not-working"
-      }
-    ]
+    "payload": []
   },
   {
     "source": "stackoverflow",
@@ -60,44 +29,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T06:08:01.264Z",
-    "finishedAt": "2026-04-30T06:08:02.272Z",
-    "latencyMs": 1008,
-    "status": "success",
-    "errorText": null,
+    "startedAt": "2026-04-30T06:42:11.491Z",
+    "finishedAt": "2026-04-30T06:42:12.379Z",
+    "latencyMs": 888,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli stackoverflow unanswered --limit 5 -f json\nok: false\nerror:\n  code: FETCH_ERROR\n  message: >-\n    HTTP 400 Bad Request from\n    https://api.stackexchange.com/2.3/questions/unanswered?order=desc&sort=votes&site=stackoverflow\n  exitCode: 1\n",
     "helpOutput": "Usage: opencli stackoverflow unanswered [options]\n\nTop voted unanswered questions on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
-    "payload": [
-      {
-        "title": "Android ndk gdb loaded shared libraries are missing *.oat",
-        "score": 123,
-        "answers": 0,
-        "url": "https://stackoverflow.com/questions/48615324/android-ndk-gdb-loaded-shared-libraries-are-missing-oat"
-      },
-      {
-        "title": "How do I write a TDBCtrlGrid VCL Style custom class?",
-        "score": 74,
-        "answers": 0,
-        "url": "https://stackoverflow.com/questions/11033956/how-do-i-write-a-tdbctrlgrid-vcl-style-custom-class"
-      },
-      {
-        "title": "Materialize the Value for a Type that has One Inhabitant",
-        "score": 68,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/32170982/materialize-the-value-for-a-type-that-has-one-inhabitant"
-      },
-      {
-        "title": "Per-element atomicity of vector load/store and gather/scatter?",
-        "score": 62,
-        "answers": 0,
-        "url": "https://stackoverflow.com/questions/46012574/per-element-atomicity-of-vector-load-store-and-gather-scatter"
-      },
-      {
-        "title": "Accessibility service disabled upon each debug run",
-        "score": 62,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/34515361/accessibility-service-disabled-upon-each-debug-run"
-      }
-    ]
+    "payload": []
   },
   {
     "source": "stackoverflow",
@@ -110,35 +48,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T06:08:02.272Z",
-    "finishedAt": "2026-04-30T06:08:03.283Z",
-    "latencyMs": 1011,
-    "status": "success",
-    "errorText": null,
+    "startedAt": "2026-04-30T06:42:12.379Z",
+    "finishedAt": "2026-04-30T06:42:13.275Z",
+    "latencyMs": 896,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli stackoverflow bounties --limit 5 -f json\nok: false\nerror:\n  code: FETCH_ERROR\n  message: >-\n    HTTP 400 Bad Request from\n    https://api.stackexchange.com/2.3/questions/featured?order=desc&sort=activity&site=stackoverflow\n  exitCode: 1\n",
     "helpOutput": "Usage: opencli stackoverflow bounties [options]\n\nActive bounties on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: bounty, title, score, answers, url",
-    "payload": [
-      {
-        "title": "Can I add a GitHub R package to a local CRAN libraries using miniCRAN?",
-        "bounty": 50,
-        "score": 4,
-        "answers": 2,
-        "url": "https://stackoverflow.com/questions/57314369/can-i-add-a-github-r-package-to-a-local-cran-libraries-using-minicran"
-      },
-      {
-        "title": "How to make my Timer fire in Release Build?",
-        "bounty": 100,
-        "score": 1,
-        "answers": 2,
-        "url": "https://stackoverflow.com/questions/79929762/how-to-make-my-timer-fire-in-release-build"
-      },
-      {
-        "title": "Restir implementation exibits strong ghosting",
-        "bounty": 50,
-        "score": 1,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79929794/restir-implementation-exibits-strong-ghosting"
-      }
-    ]
+    "payload": []
   },
   {
     "source": "stackoverflow",
@@ -152,43 +68,12 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T06:08:03.283Z",
-    "finishedAt": "2026-04-30T06:08:04.430Z",
-    "latencyMs": 1147,
-    "status": "success",
-    "errorText": null,
+    "startedAt": "2026-04-30T06:42:13.275Z",
+    "finishedAt": "2026-04-30T06:42:14.101Z",
+    "latencyMs": 826,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli stackoverflow search mcp --limit 5 -f json\nok: false\nerror:\n  code: FETCH_ERROR\n  message: >-\n    HTTP 429 Too Many Requests from\n    https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=mcp&site=stackoverflow\n  exitCode: 1\n",
     "helpOutput": "Usage: opencli stackoverflow search [options] <query>\n\nSearch Stack Overflow questions\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
-    "payload": [
-      {
-        "title": "Spring AI MCP Client not interacting with MCP Server",
-        "score": 0,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79725577/spring-ai-mcp-client-not-interacting-with-mcp-server"
-      },
-      {
-        "title": "How to pass data from an MCP client to an MCP server in Java with Spring AI?",
-        "score": 5,
-        "answers": 3,
-        "url": "https://stackoverflow.com/questions/79675247/how-to-pass-data-from-an-mcp-client-to-an-mcp-server-in-java-with-spring-ai"
-      },
-      {
-        "title": "Debugging MCP server",
-        "score": 1,
-        "answers": 3,
-        "url": "https://stackoverflow.com/questions/79584390/debugging-mcp-server"
-      },
-      {
-        "title": "MCP Messages Endpoint Returning 404",
-        "score": 0,
-        "answers": 0,
-        "url": "https://stackoverflow.com/questions/79671125/mcp-messages-endpoint-returning-404"
-      },
-      {
-        "title": "MCP error -32001 (Request timed out) when connecting Claude to Node.js MCP server",
-        "score": 2,
-        "answers": 1,
-        "url": "https://stackoverflow.com/questions/79703292/mcp-error-32001-request-timed-out-when-connecting-claude-to-node-js-mcp-serve"
-      }
-    ]
+    "payload": []
   }
 ]

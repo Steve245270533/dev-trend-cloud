@@ -690,7 +690,7 @@ async function upsertFeedItems(
       timestampOrigin: feedItem.timestampOrigin,
     };
 
-    await db.query(
+    const itemResult = await db.query(
       `
         INSERT INTO items (
           id,
@@ -724,6 +724,7 @@ async function upsertFeedItems(
             content_type = EXCLUDED.content_type,
             is_question = EXCLUDED.is_question,
             raw_meta = EXCLUDED.raw_meta
+        RETURNING id
       `,
       [
         feedItem.id,
@@ -744,6 +745,10 @@ async function upsertFeedItems(
         JSON.stringify(rawMeta),
       ],
     );
+    const persistedItemId =
+      typeof itemResult.rows[0]?.id === "string"
+        ? itemResult.rows[0].id
+        : feedItem.id;
 
     const commandName =
       typeof rawMeta.commandName === "string"
@@ -775,7 +780,7 @@ async function upsertFeedItems(
       `,
       [
         randomUUID(),
-        feedItem.id,
+        persistedItemId,
         feedItem.source,
         feedItem.sourceItemId,
         commandName,
@@ -786,9 +791,11 @@ async function upsertFeedItems(
       ],
     );
 
-    await db.query("DELETE FROM item_topics WHERE item_id = $1", [feedItem.id]);
+    await db.query("DELETE FROM item_topics WHERE item_id = $1", [
+      persistedItemId,
+    ]);
     await db.query("DELETE FROM item_entities WHERE item_id = $1", [
-      feedItem.id,
+      persistedItemId,
     ]);
 
     for (const topic of feedItem.topics) {
@@ -797,7 +804,7 @@ async function upsertFeedItems(
           INSERT INTO item_topics (item_id, topic_id, confidence, matched_keywords)
           VALUES ($1, $2, $3, $4)
         `,
-        [feedItem.id, topic.id, topic.confidence, topic.matchedKeywords],
+        [persistedItemId, topic.id, topic.confidence, topic.matchedKeywords],
       );
     }
 
@@ -814,7 +821,7 @@ async function upsertFeedItems(
           VALUES ($1, $2, $3, $4, $5)
         `,
         [
-          feedItem.id,
+          persistedItemId,
           entity.id,
           entity.confidence,
           entity.matchedKeywords,

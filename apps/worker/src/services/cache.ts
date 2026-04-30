@@ -1,8 +1,11 @@
 const API_CACHE_PATTERNS = [
-  "devtrend:question-pressure:*",
-  "devtrend:cluster:*",
-  "devtrend:evidence:*",
+  "devtrend:api:*",
+  "devtrend:feed:{*",
+  "devtrend:question-pressure:{*",
+  "devtrend:cluster:{*",
+  "devtrend:evidence:{*",
   "devtrend:source-status",
+  "source-status",
 ] as const;
 
 interface CacheScanClient {

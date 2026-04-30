@@ -10,8 +10,9 @@ import type { FastifyInstance } from "fastify";
 import type { ReadServices } from "./types.js";
 
 function cacheKey(prefix: string, value: object): string {
-  return `devtrend:${prefix}:${JSON.stringify(value)}`;
+  return `devtrend:api:${prefix}:${JSON.stringify(value)}`;
 }
+const SOURCE_STATUS_CACHE_KEY = "devtrend:api:source-status";
 
 async function withCache<T>(
   app: FastifyInstance,
@@ -40,7 +41,7 @@ export function createDatabaseServices(app: FastifyInstance): ReadServices {
     checkHealth: async () => pingDatabase(app.pg),
     checkReadiness: async () => pingDatabase(app.pg),
     getSourceStatus: async () =>
-      withCache(app, "source-status", () => getSourceStatusMap(app.pg)),
+      withCache(app, SOURCE_STATUS_CACHE_KEY, () => getSourceStatusMap(app.pg)),
     getFeed: async (query) =>
       withCache(app, cacheKey("feed", query), () => listFeed(app.pg, query)),
     getQuestionPressure: async (query) =>
