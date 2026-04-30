@@ -121,6 +121,20 @@ worker 启动说明：
 - 当数据库里还没有持久化内容时，会立即按 source 补发一次 `collect`，避免本地开发必须等到下一次 cron 才看到 PG 落库。
 - bootstrap enqueue 是非阻塞的；常规重启且库中已有 snapshot 和内容时，worker 仍主要依赖 cron，不会每次都强制重采。
 
+worker 日志说明：
+
+- worker 关键阶段日志会写入仓库根目录 `logs/`，采用 `pino-roll` 自动滚动：
+  - 文件命名：`logs/worker.YYYY-MM-DD.N.log`（`N` 为同周期内滚动序号）
+  - 滚动策略：按天 + 单文件达到 `20m` 大小时滚动
+  - 保留策略：最多保留 14 个已滚动文件（另保留当前活跃文件）
+  - `logs/current.log` 始终指向当前活跃日志文件（symlink）
+- 日志为 JSON Lines，每行包含：
+  - `timestamp`：ISO 时间
+  - `level`：`info` / `warn` / `error`
+  - `event`：事件名（例如 `job.start`、`pipeline.persist.done`、`redis.cache.invalidate.done`）
+  - `context`：结构化上下文（例如 `queue`、`jobId`、`source`、`durationMs`、计数统计）
+- 可直接用 `tail -f logs/current.log` 观察 worker 执行过程。
+
 构建：
 
 ```bash

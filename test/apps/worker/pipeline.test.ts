@@ -8,6 +8,7 @@ import {
   refreshRuntimeTopicSeeds,
 } from "@devtrend/worker";
 import type { Pool, PoolClient, QueryResult } from "pg";
+import type { WorkerLogger } from "../../../apps/worker/src/services/logger.js";
 
 interface FakeItemRow {
   id: string;
@@ -109,6 +110,44 @@ interface StatefulPool {
   runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[];
   runtimeTopicSeeds: FakeRuntimeTopicSeedRow[];
   pool: Pool;
+}
+
+interface TestLogEntry {
+  level: "info" | "warn" | "error";
+  event: string;
+  context: Record<string, unknown>;
+}
+
+function createTestLogger(
+  entries: TestLogEntry[] = [],
+  baseContext: Record<string, unknown> = {},
+): WorkerLogger {
+  return {
+    async info(event, context = {}) {
+      entries.push({
+        level: "info",
+        event,
+        context: { ...baseContext, ...context },
+      });
+    },
+    async warn(event, context = {}) {
+      entries.push({
+        level: "warn",
+        event,
+        context: { ...baseContext, ...context },
+      });
+    },
+    async error(event, context = {}) {
+      entries.push({
+        level: "error",
+        event,
+        context: { ...baseContext, ...context },
+      });
+    },
+    child(context) {
+      return createTestLogger(entries, { ...baseContext, ...context });
+    },
+  };
 }
 
 function buildCollectedPayload(
@@ -587,30 +626,40 @@ test("persistCollectedPayloads keeps prior sources and rebuilds global signals",
 
 test("persistCollectedPayloads reuses prior snapshots as fallback and degrades source health", async () => {
   const state = createStatefulPool();
+  const logs: TestLogEntry[] = [];
+  const logger = createTestLogger(logs);
 
-  await persistCollectedPayloads(state.pool, [
-    buildCollectedPayload("stackoverflow", "hot", [
-      {
-        title:
-          "How do I debug Model Context Protocol tool registration in Fastify?",
-        score: 12,
-        answers: 0,
-        url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
-      },
-    ]),
-  ]);
+  await persistCollectedPayloads(
+    state.pool,
+    [
+      buildCollectedPayload("stackoverflow", "hot", [
+        {
+          title:
+            "How do I debug Model Context Protocol tool registration in Fastify?",
+          score: 12,
+          answers: 0,
+          url: "https://stackoverflow.com/questions/10000001/mcp-fastify-tool-registration",
+        },
+      ]),
+    ],
+    logger,
+  );
 
   const firstSnapshotId = state.rawSnapshots[0]?.snapshot_id;
   assert.ok(firstSnapshotId);
 
-  await persistCollectedPayloads(state.pool, [
-    buildCollectedPayload("stackoverflow", "hot", [], {
-      status: "failed",
-      errorText: "timeout",
-      finishedAt: "2026-04-29T01:00:02.000Z",
-      latencyMs: 8000,
-    }),
-  ]);
+  await persistCollectedPayloads(
+    state.pool,
+    [
+      buildCollectedPayload("stackoverflow", "hot", [], {
+        status: "failed",
+        errorText: "timeout",
+        finishedAt: "2026-04-29T01:00:02.000Z",
+        latencyMs: 8000,
+      }),
+    ],
+    logger,
+  );
 
   assert.equal(state.sourceRuns.length, 2);
   assert.equal(state.rawSnapshots.length, 1);
@@ -622,6 +671,23 @@ test("persistCollectedPayloads reuses prior snapshots as fallback and degrades s
   const itemSource = state.itemSources[0];
   assert.equal(itemSource?.source_run_id, state.sourceRuns[1]?.id);
   assert.equal(itemSource?.snapshot_id, firstSnapshotId);
+
+  assert.ok(logs.some((entry) => entry.event === "pipeline.persist.start"));
+  assert.ok(
+    logs.some(
+      (entry) =>
+        entry.event === "pipeline.persist.pg.recordCollectionArtifacts",
+    ),
+  );
+  assert.ok(
+    logs.some(
+      (entry) =>
+        entry.event === "pipeline.persist.payloads.resolved" &&
+        (entry.context.payloadStatusSummary as Record<string, number>)
+          .fallback === 1,
+    ),
+  );
+  assert.ok(logs.some((entry) => entry.event === "pipeline.persist.done"));
 });
 
 test("persistCollectedPayloads records failed sources when no fallback snapshot exists", async () => {
@@ -746,6 +812,8 @@ test("planWorkerBootstrap only refreshes runtime topics when content already exi
 
 test("refreshRuntimeTopicSeeds keeps the prior active snapshot when discovery fully fails", async () => {
   const state = createStatefulPool();
+  const logs: TestLogEntry[] = [];
+  const logger = createTestLogger(logs);
 
   await persistCollectedPayloads(state.pool, [
     buildCollectedPayload("stackoverflow", "hot", [
@@ -759,35 +827,41 @@ test("refreshRuntimeTopicSeeds keeps the prior active snapshot when discovery fu
     ]),
   ]);
 
-  await refreshRuntimeTopicSeeds(state.pool, "opencli", 1000, async () => ({
-    candidates: [
-      {
-        slug: "artificial-intelligence",
-        name: "Artificial Intelligence",
-        keywords: ["artificial intelligence", "ai"],
-        sourcePriority: 100,
-        sources: ["ossinsight-hot"],
-        collectionId: "10010",
-        devtoTags: ["ai"],
-        score: 104,
-        metadata: {},
-      },
-    ],
-    sourceStatuses: [
-      {
-        source: "ossinsight",
-        status: "success",
-        errorText: null,
-        candidateCount: 1,
-      },
-      {
-        source: "devto",
-        status: "success",
-        errorText: null,
-        candidateCount: 1,
-      },
-    ],
-  }));
+  await refreshRuntimeTopicSeeds(
+    state.pool,
+    "opencli",
+    1000,
+    async () => ({
+      candidates: [
+        {
+          slug: "artificial-intelligence",
+          name: "Artificial Intelligence",
+          keywords: ["artificial intelligence", "ai"],
+          sourcePriority: 100,
+          sources: ["ossinsight-hot"],
+          collectionId: "10010",
+          devtoTags: ["ai"],
+          score: 104,
+          metadata: {},
+        },
+      ],
+      sourceStatuses: [
+        {
+          source: "ossinsight",
+          status: "success",
+          errorText: null,
+          candidateCount: 1,
+        },
+        {
+          source: "devto",
+          status: "success",
+          errorText: null,
+          candidateCount: 1,
+        },
+      ],
+    }),
+    logger,
+  );
 
   const initialSeeds = state.runtimeTopicSeeds.map((seed) => ({
     slug: seed.slug,
@@ -815,6 +889,7 @@ test("refreshRuntimeTopicSeeds keeps the prior active snapshot when discovery fu
         },
       ],
     }),
+    logger,
   );
 
   assert.equal(result.status, "fallback");
@@ -827,4 +902,16 @@ test("refreshRuntimeTopicSeeds keeps the prior active snapshot when discovery fu
     initialSeeds,
   );
   assert.equal(state.runtimeTopicSeedRuns.length, 2);
+  assert.ok(
+    logs.some(
+      (entry) =>
+        entry.event === "pipeline.runtime-topics.discovery.done" &&
+        entry.context.fallbackUsed === true,
+    ),
+  );
+  assert.ok(
+    logs.some(
+      (entry) => entry.event === "pipeline.runtime-topics.refresh.done",
+    ),
+  );
 });

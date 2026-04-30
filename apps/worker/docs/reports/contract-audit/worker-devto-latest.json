@@ -10,9 +10,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T06:42:00.067Z",
-    "finishedAt": "2026-04-30T06:42:00.725Z",
-    "latencyMs": 658,
+    "startedAt": "2026-04-30T14:39:00.045Z",
+    "finishedAt": "2026-04-30T14:39:00.706Z",
+    "latencyMs": 661,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli devto top [options]\n\nTop DEV.to articles of the day\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: dev.to\nOutput columns: rank, title, author, reactions, comments, tags",
@@ -21,46 +21,46 @@
         "rank": 1,
         "title": "Forking Paseo: Mobile vibe coding for me",
         "author": "thisisryanswift",
-        "reactions": 21,
+        "reactions": 24,
         "comments": 1,
         "tags": "ai, agents, vibecoding, opensource",
         "url": "https://dev.to/thisisryanswift/forking-paseo-mobile-vibe-coding-for-me-48pa"
       },
       {
         "rank": 2,
-        "title": "I'm a Red Teamer. Here's How I'd Go After Google's Agentic Defense.",
-        "author": "rajputs_027",
-        "reactions": 9,
-        "comments": 0,
-        "tags": "devchallenge, cloudnextchallenge, googlecloud, cybersecurity",
-        "url": "https://dev.to/rajputs_027/im-a-red-teamer-heres-how-id-go-after-googles-agentic-defense-5fl8"
-      },
-      {
-        "rank": 3,
         "title": "How I Used AI to Fix Our E2E Test Architecture",
         "author": "debs_obrien",
-        "reactions": 20,
-        "comments": 4,
+        "reactions": 29,
+        "comments": 7,
         "tags": "testing, e2e, playwright, ai",
         "url": "https://dev.to/debs_obrien/how-i-used-ai-to-fix-our-e2e-test-architecture-444a"
       },
       {
+        "rank": 3,
+        "title": "Is Software Development Just a Side Quest? A Jira Story",
+        "author": "sylwia-lask",
+        "reactions": 35,
+        "comments": 34,
+        "tags": "discuss, productivity",
+        "url": "https://dev.to/sylwia-lask/is-software-development-just-a-side-quest-a-jira-story-4ng3"
+      },
+      {
         "rank": 4,
-        "title": "What I’ve Been Building: Systems, AI, and Real-World Data",
-        "author": "kenwalger",
-        "reactions": 8,
+        "title": "More Accessible Focus Indicators with Compose",
+        "author": "eevajonnapanula",
+        "reactions": 16,
         "comments": 0,
-        "tags": "ai, data, mcp, systemdesign",
-        "url": "https://dev.to/kenwalger/what-ive-been-building-systems-ai-and-real-world-data-426a"
+        "tags": "android, a11y, mobile, programming",
+        "url": "https://dev.to/eevajonnapanula/more-accessible-focus-indicators-with-compose-1ca4"
       },
       {
         "rank": 5,
-        "title": "Everyone's Talking About Gemini. The Real Story at Google Cloud NEXT '26 Was GKE Agent Sandbox.",
-        "author": "sreejit_caab72e273a4faa1f",
-        "reactions": 9,
+        "title": "What I’ve Been Building: Systems, AI, and Real-World Data",
+        "author": "kenwalger",
+        "reactions": 10,
         "comments": 2,
-        "tags": "cloudnextchallenge, googlecloud, ai, devchallenge",
-        "url": "https://dev.to/sreejit_caab72e273a4faa1f/everyones-talking-about-gemini-the-real-story-at-google-cloud-next-26-was-gke-agent-sandbox-19g2"
+        "tags": "ai, data, mcp, systemdesign",
+        "url": "https://dev.to/kenwalger/what-ive-been-building-systems-ai-and-real-world-data-426a"
       }
     ]
   },
@@ -76,9 +76,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T06:42:00.725Z",
-    "finishedAt": "2026-04-30T06:42:01.355Z",
-    "latencyMs": 630,
+    "startedAt": "2026-04-30T14:39:00.706Z",
+    "finishedAt": "2026-04-30T14:39:01.344Z",
+    "latencyMs": 638,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli devto tag [options] <tag>\n\nLatest DEV.to articles for a specific tag\n\nArguments:\n  tag                 Tag name (e.g. javascript, python, webdev)\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: dev.to\nOutput columns: rank, title, author, reactions, comments, tags",

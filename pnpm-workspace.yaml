@@ -31,3 +31,5 @@ catalogs:
   worker:
     "bullmq": "^5.76.3"
     "ioredis": "^5.10.1"
+    "pino": "^10.3.1"
+    "pino-roll": "^4.0.0"

@@ -13,6 +13,8 @@
     "@devtrend/sources": "workspace:*",
     "bullmq": "catalog:worker",
     "ioredis": "catalog:worker",
+    "pino": "catalog:worker",
+    "pino-roll": "catalog:worker",
     "pg": "catalog:"
   },
   "scripts": {

@@ -34,6 +34,7 @@ import {
   normalizeCollectedPayloads,
 } from "@devtrend/sources";
 import type { Pool } from "pg";
+import { noopWorkerLogger, type WorkerLogger } from "./logger.js";
 
 export interface WorkerBootstrapState {
   hasActiveRuntimeTopicSnapshot: boolean;
@@ -208,17 +209,46 @@ async function resolveCollectedPayloads(
   });
 }
 
+function summarizePayloadStatuses(
+  payloads: CollectedSourcePayload[],
+): Record<CollectedSourcePayload["status"], number> {
+  const summary: Record<CollectedSourcePayload["status"], number> = {
+    success: 0,
+    failed: 0,
+    fallback: 0,
+  };
+
+  for (const payload of payloads) {
+    summary[payload.status] += 1;
+  }
+
+  return summary;
+}
+
 export async function persistCollectedPayloads(
   pool: Pool,
   payloads: CollectedSourcePayload[],
+  logger: WorkerLogger = noopWorkerLogger(),
 ) {
+  const startedAt = Date.now();
+  await logger.info("pipeline.persist.start", {
+    payloadCount: payloads.length,
+    payloadStatusSummary: summarizePayloadStatuses(payloads),
+  });
   const resolvedPayloads = await resolveCollectedPayloads(payloads, pool);
+  await logger.info("pipeline.persist.payloads.resolved", {
+    payloadCount: resolvedPayloads.length,
+    payloadStatusSummary: summarizePayloadStatuses(resolvedPayloads),
+  });
   const sourceStatus = buildSourceStatus(resolvedPayloads);
   let persistedItems = 0;
   let persistedSignals = 0;
 
   await withTransaction(pool, async (client) => {
     const artifacts = await recordCollectionArtifacts(client, resolvedPayloads);
+    await logger.info("pipeline.persist.pg.recordCollectionArtifacts", {
+      artifactsCount: Object.keys(artifacts).length,
+    });
     const items = enrichNormalizedItems(
       normalizeCollectedPayloads(resolvedPayloads),
       artifacts,
@@ -235,6 +265,11 @@ export async function persistCollectedPayloads(
       Object.keys(sourceStatus),
       artifacts,
     );
+    await logger.info("pipeline.persist.pg.replaceSourceItems", {
+      sourceCount: Object.keys(sourceStatus).length,
+      feedItems: sourcePipeline.feed.length,
+      signals: sourcePipeline.signals.length,
+    });
 
     const fullItems = await listAllNormalizedItems(client);
     const fullSourceStatus = await getSourceStatusMap(client);
@@ -247,6 +282,17 @@ export async function persistCollectedPayloads(
       globalPipeline,
       fullSourceStatus,
     );
+    await logger.info("pipeline.persist.pg.replaceDerivedPipelineOutput", {
+      totalItems: fullItems.length,
+      sourceCount: Object.keys(fullSourceStatus).length,
+      signals: globalPipeline.signals.length,
+    });
+  });
+
+  await logger.info("pipeline.persist.done", {
+    durationMs: Date.now() - startedAt,
+    items: persistedItems,
+    signals: persistedSignals,
   });
 
   return {
@@ -303,8 +349,15 @@ export async function refreshRuntimeTopicSeeds(
   openCliBin: string,
   timeoutMs: number,
   discoverTopics: typeof discoverRuntimeTopicCandidates = discoverRuntimeTopicCandidates,
+  logger: WorkerLogger = noopWorkerLogger(),
 ) {
+  const startedAtMs = Date.now();
   const startedAt = new Date().toISOString();
+  await logger.info("pipeline.runtime-topics.refresh.start", {
+    openCliBin,
+    timeoutMs,
+    startedAt,
+  });
   const seedContext = await withTransaction(pool, async (client) => ({
     fallbackTopics: await listCatalogTopics(client),
     latestSnapshot: await getLatestRuntimeTopicSeedSnapshot(client),
@@ -322,6 +375,10 @@ export async function refreshRuntimeTopicSeeds(
   let errorText: string | null = null;
 
   try {
+    await logger.info("pipeline.runtime-topics.discovery.start", {
+      fallbackTopicCount: seedContext.fallbackTopics.length,
+      latestSnapshotCount: seedContext.latestSnapshot.length,
+    });
     const discovery = await discoverTopics(openCliBin, timeoutMs);
     sourceStatuses = discovery.sourceStatuses;
     discoveredCandidates = mergeRuntimeTopicCandidates(
@@ -338,6 +395,12 @@ export async function refreshRuntimeTopicSeeds(
       (status) => status.status === "failed",
     );
     fallbackUsed = hasRemoteFailure || discovery.candidates.length === 0;
+    await logger.info("pipeline.runtime-topics.discovery.done", {
+      discoveredCandidates: discovery.candidates.length,
+      mergedCandidates: finalTopics.length,
+      fallbackUsed,
+      sourceStatuses,
+    });
   } catch (error) {
     errorText = error instanceof Error ? error.message : String(error);
     sourceStatuses = [
@@ -355,6 +418,9 @@ export async function refreshRuntimeTopicSeeds(
       },
     ];
     fallbackUsed = true;
+    await logger.error("pipeline.runtime-topics.discovery.failed", {
+      error: errorText,
+    });
   }
 
   const finishedAt = new Date().toISOString();
@@ -378,6 +444,13 @@ export async function refreshRuntimeTopicSeeds(
         mergedTopics: finalTopics.length,
       },
     });
+    await logger.info("pipeline.runtime-topics.pg.insertRun", {
+      runId,
+      status,
+      fallbackUsed,
+      discoveredTopics: discoveredCandidates.length,
+      mergedTopics: finalTopics.length,
+    });
 
     if (hasRemoteSuccess && finalTopics.length > 0) {
       await replaceRuntimeTopicSeeds(
@@ -392,6 +465,11 @@ export async function refreshRuntimeTopicSeeds(
           ).toISOString(),
         })),
       );
+      await logger.info("pipeline.runtime-topics.pg.replaceSeeds", {
+        runId,
+        topics: finalTopics.length,
+        strategy: "remote-or-merged",
+      });
       return;
     }
 
@@ -405,16 +483,29 @@ export async function refreshRuntimeTopicSeeds(
         ).toISOString(),
       }));
       await replaceRuntimeTopicSeeds(client, runId, fallbackTopics);
+      await logger.warn("pipeline.runtime-topics.pg.replaceSeeds", {
+        runId,
+        topics: fallbackTopics.length,
+        strategy: "fallback-catalog",
+      });
     }
   });
 
+  const finalTopicCount =
+    hasRemoteSuccess && finalTopics.length > 0
+      ? finalTopics.length
+      : seedContext.latestSnapshot.length > 0
+        ? seedContext.latestSnapshot.length
+        : seedContext.fallbackTopics.length;
+  await logger.info("pipeline.runtime-topics.refresh.done", {
+    durationMs: Date.now() - startedAtMs,
+    topics: finalTopicCount,
+    status,
+    fallbackUsed,
+  });
+
   return {
-    topics:
-      hasRemoteSuccess && finalTopics.length > 0
-        ? finalTopics.length
-        : seedContext.latestSnapshot.length > 0
-          ? seedContext.latestSnapshot.length
-          : seedContext.fallbackTopics.length,
+    topics: finalTopicCount,
     status,
     fallbackUsed,
   };
