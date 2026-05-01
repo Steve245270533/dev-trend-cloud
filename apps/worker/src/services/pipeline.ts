@@ -29,6 +29,7 @@ import {
 } from "@devtrend/domain";
 import type { CollectedSourcePayload } from "@devtrend/sources";
 import {
+  type CircuitBreakerStore,
   discoverRuntimeTopicCandidates,
   mergeRuntimeTopicCandidates,
   normalizeCollectedPayloads,
@@ -123,7 +124,12 @@ function buildSourceStatus(
           metadata: {
             commands: sourcePayloads.map((payload) => ({
               commandName: payload.commandName,
+              capability: payload.capability,
               status: payload.status,
+              executionDecision: payload.executionDecision,
+              breakerKey: payload.breakerKey,
+              adapterKey: payload.adapterKey,
+              routeRole: payload.routeRole,
               fallbackSnapshotId: payload.fallbackSnapshotId ?? null,
             })),
           },
@@ -198,6 +204,7 @@ async function resolveCollectedPayloads(
       resolved.push({
         ...payload,
         status: "fallback",
+        executionDecision: "fallback-snapshot",
         payload: snapshot.payload,
         fallbackSourceRunId: snapshot.sourceRunId,
         fallbackSnapshotId: snapshot.snapshotId,
@@ -241,6 +248,16 @@ export async function persistCollectedPayloads(
     payloadStatusSummary: summarizePayloadStatuses(resolvedPayloads),
   });
   const sourceStatus = buildSourceStatus(resolvedPayloads);
+  const replaceableSources = [
+    ...new Set(
+      resolvedPayloads
+        .filter(
+          (payload) =>
+            payload.status === "success" || payload.status === "fallback",
+        )
+        .map((payload) => payload.source),
+    ),
+  ];
   let persistedItems = 0;
   let persistedSignals = 0;
 
@@ -262,11 +279,11 @@ export async function persistCollectedPayloads(
     await replaceSourceItems(
       client,
       sourcePipeline,
-      Object.keys(sourceStatus),
+      replaceableSources,
       artifacts,
     );
     await logger.info("pipeline.persist.pg.replaceSourceItems", {
-      sourceCount: Object.keys(sourceStatus).length,
+      sourceCount: replaceableSources.length,
       feedItems: sourcePipeline.feed.length,
       signals: sourcePipeline.signals.length,
     });
@@ -350,6 +367,7 @@ export async function refreshRuntimeTopicSeeds(
   timeoutMs: number,
   discoverTopics: typeof discoverRuntimeTopicCandidates = discoverRuntimeTopicCandidates,
   logger: WorkerLogger = noopWorkerLogger(),
+  breakerStore?: CircuitBreakerStore,
 ) {
   const startedAtMs = Date.now();
   const startedAt = new Date().toISOString();
@@ -379,7 +397,13 @@ export async function refreshRuntimeTopicSeeds(
       fallbackTopicCount: seedContext.fallbackTopics.length,
       latestSnapshotCount: seedContext.latestSnapshot.length,
     });
-    const discovery = await discoverTopics(openCliBin, timeoutMs);
+    const discovery = await discoverTopics(
+      openCliBin,
+      timeoutMs,
+      undefined,
+      undefined,
+      breakerStore,
+    );
     sourceStatuses = discovery.sourceStatuses;
     discoveredCandidates = mergeRuntimeTopicCandidates(
       discovery.candidates,

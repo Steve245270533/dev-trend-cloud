@@ -15,6 +15,7 @@ import {
   planWorkerBootstrap,
   refreshRuntimeTopicSeeds,
 } from "./services/pipeline.js";
+import { RedisCircuitBreakerStore } from "./services/source-breaker.js";
 
 const config = loadConfig();
 const logger = createWorkerLogger({ level: config.LOG_LEVEL });
@@ -22,6 +23,7 @@ const redis = new Redis(config.REDIS_URL, {
   maxRetriesPerRequest: null,
 });
 const pool = createPool(config.DATABASE_URL);
+const breakerStore = new RedisCircuitBreakerStore(redis, config.QUEUE_PREFIX);
 
 const contractAuditQueue = new Queue(QUEUES.contractAudit, {
   connection: redis,
@@ -258,6 +260,7 @@ new Worker(
         config.OPENCLI_TIMEOUT_MS,
         undefined,
         jobLogger.child({ stage: "topic-seed-refresh" }),
+        breakerStore,
       ),
     ),
   { connection: redis, prefix: config.QUEUE_PREFIX },
@@ -273,6 +276,7 @@ new Worker(
         timeoutMs: config.OPENCLI_TIMEOUT_MS,
         sources: source ? [source] : undefined,
         mode: "audit",
+        breakerStore,
       });
       const outputDir = resolve(process.cwd(), "docs/reports/contract-audit");
       await mkdir(outputDir, { recursive: true });
@@ -308,6 +312,7 @@ new Worker(
         timeoutMs: config.OPENCLI_TIMEOUT_MS,
         sources: source ? [source] : undefined,
         runtimeTopics,
+        breakerStore,
       });
       await jobLogger.info("pipeline.collect.payloads.collected", {
         source: source ?? null,

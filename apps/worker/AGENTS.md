@@ -16,6 +16,7 @@
 
 - Worker 启动入口： [worker.ts](./src/worker.ts)
 - Pipeline 编排： [pipeline.ts](./src/services/pipeline.ts)
+- Source Breaker Store： [source-breaker.ts](./src/services/source-breaker.ts)
 - Job 定义： [definitions.ts](./src/jobs/definitions.ts)
 
 ## 数据源与合约
@@ -29,7 +30,11 @@
 - 日志覆盖：
   - worker 启动、scheduler 注册、bootstrap enqueue
   - 全队列 job 的 `start/success/fail`
-  - pipeline 关键阶段：抓取、PG 持久化、Redis 缓存失效、runtime topic refresh
+- pipeline 关键阶段：抓取、PG 持久化、Redis 缓存失效、runtime topic refresh
+- pipeline 关键阶段额外要求：
+  - collect / topic discovery 使用 Redis-backed circuit breaker
+  - audit job 绕过 breaker
+  - hard fail 且无 fallback snapshot 时只更新 health，不清空历史 source items
 - 日志字段包含：`timestamp`、`level`、`event`、`context`（如 `queue/jobId/source/durationMs`）
 
 ## 验证方式

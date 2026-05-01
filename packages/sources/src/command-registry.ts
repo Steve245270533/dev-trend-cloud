@@ -1,4 +1,5 @@
 import type { SourceKey } from "@devtrend/contracts";
+import type { SourceCapability } from "./types.js";
 
 export interface SourceCommandDefinition {
   source: SourceKey;
@@ -236,3 +237,18 @@ export const dynamicSourceCommandTemplates: DynamicSourceCommandTemplate[] = [
     helpArgv: ["ossinsight", "collection-stars", "--help"],
   },
 ];
+
+export function getSourceCommandDefinition(
+  source: SourceKey,
+  commandName: string,
+): SourceCommandDefinition | undefined {
+  return sourceCommands.find(
+    (command) => command.source === source && command.name === commandName,
+  );
+}
+
+export function commandCategoryToCapability(
+  category: SourceCommandDefinition["category"],
+): SourceCapability {
+  return category;
+}

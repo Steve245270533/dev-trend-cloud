@@ -29,11 +29,13 @@ OpenCLI public sources
   -> runtime topic discovery (OSSInsight collections/hot-collections + DEV tags)
   -> runtime topic seed snapshot
   -> contract audit (registry/help/sample fixtures)
-  -> collectors (per-command attempts, partial success allowed)
+  -> adapter registry + source tasks
+  -> collectors (per-task attempts, partial success allowed)
+  -> route policy + circuit breaker
   -> dynamic query expansion from active runtime topics
   -> worker fallback (reuse last successful raw snapshot for the same source+command)
   -> raw snapshots JSONB
-  -> normalizers (canonical items)
+  -> adapter-backed normalizers (canonical items)
   -> topic/entity matcher (seed catalog)
   -> question extractor (rule-first)
   -> question clusterer (rule-first + pg_trgm)
@@ -58,12 +60,21 @@ BullMQ worker
 ### Source 层（packages/sources）
 
 - 目标：把“外部站点能力”收敛为可审计的 OpenCLI 命令合约 + 稳定的采集/归一化输出。
+- 实现形态：`adapter registry -> source task -> route policy -> circuit breaker -> normalized item`。
 - 额外职责：基于 OSSInsight collection 与 DEV tags 发现 runtime topics，并把 topic discovery 与内容采集解耦。
 - 合约审计产物：
   - OpenCLI registry 快照
   - `--help` 快照
   - 代表性 JSON 样本（fixtures）
-- collector 允许按 command 记录失败，不以“单命令失败 = 整轮失败”作为默认行为。
+- 每个 source adapter 独立负责：
+  - static task 构建
+  - dynamic task 构建
+  - payload normalize
+  - 可选的 runtime topic discovery
+- collector 允许按 task 记录失败，不以“单命令失败 = 整轮失败”作为默认行为。
+- route policy 当前默认保持 source-isolated；feed / adoption / topic discovery 不自动跨源切换，search 只预留主备扩展点。
+- circuit breaker 粒度是 `source:capability:task-family`，避免单个命令异常放大为整个 source 熔断。
+- contract audit 明确绕过 breaker，必须执行真实命令，不允许被 fallback 或熔断掩盖。
 - content collect 不直接重新发现 topic，而是消费 worker 刷新的 active runtime topic snapshot。
 - 注意：本阶段只允许 public sources（无需登录态）。
 
@@ -103,11 +114,14 @@ BullMQ worker
 ### Orchestration 层（apps/worker）
 
 - BullMQ 负责调度与异步任务编排
-- worker 调用 sources + domain + db，负责 runtime topic refresh、source-level fallback、source health rollup、持久化和缓存结果产出
+- worker 调用 sources + domain + db，负责 runtime topic refresh、source-level fallback、source health rollup、Redis-backed circuit breaker、持久化和缓存结果产出
 - repeat cron 负责常规轮询；worker 启动时还会做一次条件式 bootstrap：
   - runtime topic active snapshot 缺失或过期时，立即补发一次 topic refresh
   - 持久化内容为空时，立即补发一次按 source 的 collect
   - bootstrap 是恢复冷启动和 `db:reset` 后空库状态的补偿机制，不替代常规 cron
+- 持久化时遵守 `no-clear-on-hard-fail`：
+  - 某个 source 本轮有 success / fallback payload 才允许替换该 source 内容
+  - 某个 source 本轮全部 hard fail 且没有 fallback snapshot 时，只更新运行记录与 health，不清空该 source 历史 items
 
 ## 代码库地图
 

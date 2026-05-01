@@ -173,10 +173,22 @@ pnpm audit:contracts
 采集失败与 fallback 的预期行为：
 
 - 单个 command 失败不能拖垮整轮采集。
+- sources 层通过 `adapter registry + source task + route policy` 统一管理不同来源的采集与归一化，不再依赖 collector / normalizer 中的 source-specific `switch` 分发。
 - worker 会优先尝试 live payload；失败时只允许回退到同一个 `source + command` 最近一次成功 `raw_snapshot`。
+- contract audit 必须真实执行命令，明确绕过 circuit breaker。
+- circuit breaker 粒度是 `source:capability:task-family`：
+  - 连续 3 次 hard failure 打开 breaker
+  - open 状态冷却 30 分钟
+  - 冷却后进入 half-open，允许 1 次探测
+  - probe success 立即关闭，probe failure 重新打开
 - `source_health` 必须能看到 `status`、`last_success_at`、`last_error_at`、`last_error_text`、`fallback_used`、`last_latency_ms`。
 - runtime topic refresh 默认每小时跑一次；成功时写入新的 `runtime_topic_seeds` 快照，失败时保留上一份 active snapshot。
 - 当 active runtime topic snapshot 缺失或过期时，collect 会回退到 `topics` catalog 做动态查询扩展。
+- 当某个 source 本轮全部 hard fail 且没有 fallback snapshot 时：
+  - 仍记录 `source_runs`
+  - 仍更新 `source_health`
+  - 不清空该 source 历史 items
+  - 全局 signals 基于“历史 items + 最新 source health”继续重算
 - `pnpm db:reset` 会把数据库恢复到可立即运行的 schema 基线；若本地 schema 落后，不需要额外手动补跑 migration。
 
 traceability 的核验点：

@@ -1,6 +1,12 @@
 [
   {
     "source": "stackoverflow",
+    "capability": "feed",
+    "taskKey": "stackoverflow-default:stackoverflow hot --limit 5 -f json",
+    "breakerKey": "stackoverflow:feed:hot",
+    "adapterKey": "stackoverflow-default",
+    "routeRole": "primary",
+    "executionDecision": "executed",
     "commandName": "hot",
     "argv": [
       "stackoverflow",
@@ -10,16 +16,53 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T14:40:00.013Z",
-    "finishedAt": "2026-04-30T14:40:01.461Z",
-    "latencyMs": 1448,
-    "status": "failed",
-    "errorText": "Error: Command failed: opencli stackoverflow hot --limit 5 -f json\nok: false\nerror:\n  code: FETCH_ERROR\n  message: HTTP 429 Too Many Requests from https://api.stackexchange.com/2.3/questions?order=desc&sort=hot&site=stackoverflow\n  exitCode: 1\n",
+    "startedAt": "2026-05-01T13:50:00.044Z",
+    "finishedAt": "2026-05-01T13:50:04.345Z",
+    "latencyMs": 4301,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow hot [options]\n\nHot Stack Overflow questions\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
-    "payload": []
+    "payload": [
+      {
+        "title": "&#39;3&#39; is a magic number Sun Checkstyles",
+        "score": -2,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79934679/3-is-a-magic-number-sun-checkstyles"
+      },
+      {
+        "title": "`git` upstream dependency narrowing",
+        "score": 0,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79934672/git-upstream-dependency-narrowing"
+      },
+      {
+        "title": "c++ compilers behave inconsistently with operator overload and namespaces",
+        "score": -1,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79934658/c-compilers-behave-inconsistently-with-operator-overload-and-namespaces"
+      },
+      {
+        "title": "how to implement multiple search functions in c for a string library",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79934663/how-to-implement-multiple-search-functions-in-c-for-a-string-library"
+      },
+      {
+        "title": "What does pocketbase do?",
+        "score": 0,
+        "answers": 2,
+        "url": "https://stackoverflow.com/questions/79934627/what-does-pocketbase-do"
+      }
+    ]
   },
   {
     "source": "stackoverflow",
+    "capability": "feed",
+    "taskKey": "stackoverflow-default:stackoverflow unanswered --limit 5 -f json",
+    "breakerKey": "stackoverflow:feed:unanswered",
+    "adapterKey": "stackoverflow-default",
+    "routeRole": "primary",
+    "executionDecision": "executed",
     "commandName": "unanswered",
     "argv": [
       "stackoverflow",
@@ -29,16 +72,53 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T14:40:01.462Z",
-    "finishedAt": "2026-04-30T14:40:04.333Z",
-    "latencyMs": 2871,
-    "status": "failed",
-    "errorText": "Error: Command failed: opencli stackoverflow unanswered --limit 5 -f json\nok: false\nerror:\n  code: FETCH_ERROR\n  message: >-\n    HTTP 429 Too Many Requests from\n    https://api.stackexchange.com/2.3/questions/unanswered?order=desc&sort=votes&site=stackoverflow\n  exitCode: 1\n",
+    "startedAt": "2026-05-01T13:50:04.345Z",
+    "finishedAt": "2026-05-01T13:50:05.468Z",
+    "latencyMs": 1123,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow unanswered [options]\n\nTop voted unanswered questions on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
-    "payload": []
+    "payload": [
+      {
+        "title": "Android ndk gdb loaded shared libraries are missing *.oat",
+        "score": 123,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/48615324/android-ndk-gdb-loaded-shared-libraries-are-missing-oat"
+      },
+      {
+        "title": "How do I write a TDBCtrlGrid VCL Style custom class?",
+        "score": 74,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/11033956/how-do-i-write-a-tdbctrlgrid-vcl-style-custom-class"
+      },
+      {
+        "title": "Materialize the Value for a Type that has One Inhabitant",
+        "score": 68,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/32170982/materialize-the-value-for-a-type-that-has-one-inhabitant"
+      },
+      {
+        "title": "Per-element atomicity of vector load/store and gather/scatter?",
+        "score": 62,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/46012574/per-element-atomicity-of-vector-load-store-and-gather-scatter"
+      },
+      {
+        "title": "Accessibility service disabled upon each debug run",
+        "score": 62,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/34515361/accessibility-service-disabled-upon-each-debug-run"
+      }
+    ]
   },
   {
     "source": "stackoverflow",
+    "capability": "feed",
+    "taskKey": "stackoverflow-default:stackoverflow bounties --limit 5 -f json",
+    "breakerKey": "stackoverflow:feed:bounties",
+    "adapterKey": "stackoverflow-default",
+    "routeRole": "primary",
+    "executionDecision": "executed",
     "commandName": "bounties",
     "argv": [
       "stackoverflow",
@@ -48,16 +128,30 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T14:40:04.333Z",
-    "finishedAt": "2026-04-30T14:40:05.226Z",
-    "latencyMs": 893,
-    "status": "failed",
-    "errorText": "Error: Command failed: opencli stackoverflow bounties --limit 5 -f json\nok: false\nerror:\n  code: FETCH_ERROR\n  message: >-\n    HTTP 429 Too Many Requests from\n    https://api.stackexchange.com/2.3/questions/featured?order=desc&sort=activity&site=stackoverflow\n  exitCode: 1\n",
+    "startedAt": "2026-05-01T13:50:05.468Z",
+    "finishedAt": "2026-05-01T13:50:07.802Z",
+    "latencyMs": 2334,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow bounties [options]\n\nActive bounties on Stack Overflow\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: bounty, title, score, answers, url",
-    "payload": []
+    "payload": [
+      {
+        "title": "How to make my Timer fire in Release Build?",
+        "bounty": 100,
+        "score": 2,
+        "answers": 2,
+        "url": "https://stackoverflow.com/questions/79929762/how-to-make-my-timer-fire-in-release-build"
+      }
+    ]
   },
   {
     "source": "stackoverflow",
+    "capability": "search",
+    "taskKey": "stackoverflow-default:stackoverflow search mcp --limit 5 -f json",
+    "breakerKey": "stackoverflow:search:search",
+    "adapterKey": "stackoverflow-default",
+    "routeRole": "primary",
+    "executionDecision": "executed",
     "commandName": "search",
     "argv": [
       "stackoverflow",
@@ -68,12 +162,43 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-04-30T14:40:05.226Z",
-    "finishedAt": "2026-04-30T14:40:08.233Z",
-    "latencyMs": 3007,
-    "status": "failed",
-    "errorText": "Error: Command failed: opencli stackoverflow search mcp --limit 5 -f json\nok: false\nerror:\n  code: FETCH_ERROR\n  message: >-\n    HTTP 429 Too Many Requests from\n    https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=mcp&site=stackoverflow\n  exitCode: 1\n",
+    "startedAt": "2026-05-01T13:50:07.802Z",
+    "finishedAt": "2026-05-01T13:50:08.740Z",
+    "latencyMs": 938,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli stackoverflow search [options] <query>\n\nSearch Stack Overflow questions\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Max number of results (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: stackoverflow.com\nOutput columns: title, score, answers, url",
-    "payload": []
+    "payload": [
+      {
+        "title": "Spring AI MCP Client not interacting with MCP Server",
+        "score": 0,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79725577/spring-ai-mcp-client-not-interacting-with-mcp-server"
+      },
+      {
+        "title": "How to pass data from an MCP client to an MCP server in Java with Spring AI?",
+        "score": 5,
+        "answers": 3,
+        "url": "https://stackoverflow.com/questions/79675247/how-to-pass-data-from-an-mcp-client-to-an-mcp-server-in-java-with-spring-ai"
+      },
+      {
+        "title": "Debugging MCP server",
+        "score": 1,
+        "answers": 3,
+        "url": "https://stackoverflow.com/questions/79584390/debugging-mcp-server"
+      },
+      {
+        "title": "MCP Messages Endpoint Returning 404",
+        "score": 0,
+        "answers": 0,
+        "url": "https://stackoverflow.com/questions/79671125/mcp-messages-endpoint-returning-404"
+      },
+      {
+        "title": "MCP error -32001 (Request timed out) when connecting Claude to Node.js MCP server",
+        "score": 2,
+        "answers": 1,
+        "url": "https://stackoverflow.com/questions/79703292/mcp-error-32001-request-timed-out-when-connecting-claude-to-node-js-mcp-serve"
+      }
+    ]
   }
 ]

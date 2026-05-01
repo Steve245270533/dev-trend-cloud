@@ -158,6 +158,17 @@ function buildCollectedPayload(
 ): CollectedSourcePayload {
   return {
     source,
+    capability:
+      source === "ossinsight"
+        ? "adoption"
+        : commandName === "search" || commandName === "tag"
+          ? "search"
+          : "feed",
+    taskKey: `${source}:${commandName}`,
+    breakerKey: `${source}:${source === "ossinsight" ? "adoption" : "feed"}:${commandName}`,
+    adapterKey: `${source}-default`,
+    routeRole: "primary",
+    executionDecision: "executed",
     commandName,
     argv: [source, commandName, "--limit", "5", "-f", "json"],
     startedAt: "2026-04-29T00:00:00.000Z",
@@ -709,6 +720,42 @@ test("persistCollectedPayloads records failed sources when no fallback snapshot 
   assert.equal(state.sourceHealth[0]?.status, "failed");
   assert.equal(state.sourceHealth[0]?.fallback_used, false);
   assert.equal(state.items.length, 0);
+});
+
+test("persistCollectedPayloads keeps prior source items when a later run hard-fails without fallback", async () => {
+  const state = createStatefulPool();
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("devto", "top", [
+      {
+        title: "Building a Fastify + BullMQ pipeline for developer signals",
+        author: "frank",
+        reactions: 48,
+        comments: 7,
+        tags: ["fastify", "typescript", "bullmq"],
+        url: "https://dev.to/example/fastify-bullmq-pipeline",
+        published_at: "2026-04-28T10:00:00.000Z",
+      },
+    ]),
+  ]);
+
+  const previousItems = state.items.map((item) => item.source_item_id);
+  assert.equal(previousItems.length, 1);
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("devto", "tag", [], {
+      status: "failed",
+      errorText: "command timed out",
+      finishedAt: "2026-04-29T02:00:02.000Z",
+      latencyMs: 6000,
+    }),
+  ]);
+
+  assert.deepEqual(
+    state.items.map((item) => item.source_item_id),
+    previousItems,
+  );
+  assert.equal(state.sourceHealth[0]?.status, "failed");
 });
 
 test("refreshRuntimeTopicSeeds stores a merged runtime topic snapshot", async () => {
