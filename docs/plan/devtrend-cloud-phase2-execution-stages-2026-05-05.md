@@ -82,6 +82,7 @@ S7 Watchlist / Digest / Webhook 验证阶段
 - 明确 question layer 与 topic layer 对输入数据的边界
 - 补足 repository / contract / DB 的基础对象设计
 - 让 worker 能在不破坏旧流程的情况下输出统一模型数据
+- 为 runtime topic discovery 中现有固定 allowlist 设计“可配置、可审计、可回滚”的承载方式（仅做去硬编码准备，不做语义替代）
 
 ### 不在本阶段做
 
@@ -90,6 +91,13 @@ S7 Watchlist / Digest / Webhook 验证阶段
 - LLM naming
 - topic API
 - web 新页面
+- 用聚类或 taxonomy 直接替换固定 allowlist 的核心判定
+
+### S1 与固定 Allowlist 的关系
+
+- `TAG_ALLOWLIST`、`COLLECTION_ALLOWLIST` 在 S1 仍可保留为过渡期 guardrail，但不得继续作为长期主判定方案
+- S1 必须完成“从代码常量到配置/模型承载”的迁移设计，且能被测试与审计覆盖
+- S1 产物需要为 S3-S4 的动态语义替代预留字段与版本化能力（例如规则版本、来源、启停状态、回滚点）
 
 ### 主要改动面
 
@@ -208,6 +216,7 @@ S7 Watchlist / Digest / Webhook 验证阶段
 - 定义 merge / split / dedupe guardrails
 - 设计 representative evidence 选取规则
 - 让 worker 可以产出可查询 topic clusters
+- 启动“动态语义替代”主链路：以聚类规则接管 runtime topic 主判定，固定 allowlist 退化为 safety fallback
 
 ### 不在本阶段做
 
@@ -240,6 +249,7 @@ S7 Watchlist / Digest / Webhook 验证阶段
 - cluster 是批处理、增量更新，还是混合模式？
 - merge guardrails 具体依赖哪些规则：embedding、tags、repo、entity、source overlap、time window？
 - 如何定义 cluster 稳定性，避免 cluster id 频繁抖动？
+- 固定 allowlist 在 S3 中的保留边界是什么？哪些流量走动态判定，哪些异常场景仍走 fallback？
 
 ### 测试要求
 
@@ -255,6 +265,7 @@ S7 Watchlist / Digest / Webhook 验证阶段
 - 至少有可解释的 representative evidence 与 source mix
 - cluster id 与 membership 在重复运行时具备稳定性
 - 结果质量足以支撑 `S4` naming
+- 已完成 runtime topic 主判定从固定 allowlist 到动态聚类规则的迁移；固定 allowlist 仅用于兜底与风险控制
 
 ---
 
@@ -271,6 +282,7 @@ S7 Watchlist / Digest / Webhook 验证阶段
 - 定义 naming validation / fallback 规则
 - 定义 taxonomy node、topic lineage、topic membership
 - 让 taxonomy 产物可追溯、可审计、可重算
+- 完成动态语义替代的语义收口：用 naming + taxonomy 稳定主题边界，避免回退为固定词表驱动
 
 ### 不在本阶段做
 
@@ -317,6 +329,7 @@ S7 Watchlist / Digest / Webhook 验证阶段
 - 能归并出第一版 L1/L2/L3 taxonomy
 - taxonomy 输出可追溯到 cluster 与 evidence
 - Topic Layer 资产已经可供 API 层消费
+- 固定 allowlist 不再参与主路径语义决策，只作为可观测、可控的低优先级 fallback guardrail
 
 ---
 
