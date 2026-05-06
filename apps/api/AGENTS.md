@@ -2,14 +2,30 @@
 
 ## 职责
 
-- 提供 Phase 0 + Phase 1 的只读 HTTP API（Fastify）
+- 提供当前已实现的只读 HTTP API（Fastify）
 - 组合 `packages/*` 的能力：读取 Postgres、使用 Redis 缓存、返回结构化响应
 - 提供健康检查与就绪检查
+- 为下一阶段的 topic / insight read model 预留扩展入口
+
+## 当前已实现
+
+- `GET /healthz`
+- `GET /readyz`
+- `GET /feed`
+- `GET /signals/question-pressure`
+- `GET /question-clusters/:id`
+- `GET /question-clusters/:id/evidence`
+
+## 下一阶段目标
+
+- 增加 topic read APIs
+- 逐步演进到 insight-oriented read endpoints
+- 保持“当前已实现接口”和“规划接口”的文档分层，避免误导
 
 ## 边界与禁止项
 
 - 不实现鉴权、API keys、RBAC
-- 不实现写入型业务 API（包括 watchlist CRUD）
+- 在 Topic Layer 稳定前，不优先实现 watchlist CRUD 或其它写入型业务 API
 - 不在此包内放 domain 决策逻辑（匹配/聚类/评分归 `packages/domain`）
 
 ## 关键入口

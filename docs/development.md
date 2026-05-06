@@ -1,6 +1,25 @@
 # 开发
 
-本文件承载本仓库的开发、运行与基础设施信息。顶层架构请先阅读 [architecture.md](../architecture.md)。
+本文件承载本仓库的开发、运行与基础设施信息。顶层架构请先阅读 [architecture.md](../architecture.md)，阶段路线请阅读 [devtrend-cloud-practical-plan-2026-05-05-v5.md](./plan/devtrend-cloud-practical-plan-2026-05-05-v5.md)。
+
+## 当前实现范围
+
+截至 2026-05-05，当前代码实现仍以 `Phase 0 + Phase 1` 为主：
+
+- Stack Overflow / Hacker News / DEV / OSSInsight 的 public source 采集
+- raw snapshots、normalized items、question pressure、evidence drilldown
+- Fastify 只读 API
+- BullMQ worker
+- 轻量只读 web console
+- runtime topic discovery
+
+以下能力仍属于下一阶段规划，而不是当前运行说明：
+
+- embedding pipeline
+- topic clustering / topic persistence
+- LLM topic naming
+- topic taxonomy（L1 / L2 / L3）
+- watchlist CRUD、digest、webhook
 
 ## 前置条件
 
@@ -19,28 +38,35 @@
 ## 工程约束
 
 - workspace 子包之间引用只能使用包名顶级入口：`import { ... } from "@devtrend/<pkg>"`
-- 禁止跨包相对路径或深导入 `packages/<pkg>/src/**`（例如 `../../contracts/src/index.js`）
+- 禁止跨包相对路径或深导入 `packages/<pkg>/src/**`
 - 新增对外 API 必须通过对应包的 `src/index.ts` 导出
+- 若文档提到下一阶段的 `GitHub`，默认仍指 `OSSInsight-backed GitHub adoption proxy`
 
 ## 基础设施
 
 本项目扩展 `/Users/lehuaixiaochen/Downloads/Project/Docker/docker-compose.yml`。
 
-Phase 0 + Phase 1 假设：
+当前基础设施：
 
-- Postgres 镜像升级为 `pgvector/pgvector:pg16`
-- Redis 保持不变
+- Postgres 镜像：`pgvector/pgvector:pg16`
+- Redis
 - Postgres 初始化 SQL 启用：
   - `vector`
   - `pg_trgm`
   - `unaccent`
   - `pgcrypto`
 
+说明：
+
+- `pgvector` 已在数据库层启用，但当前主链路仍不是 embedding-first。
+- 当前仓库还没有 embedding pipeline、LLM naming worker、topic taxonomy persistence job。
+- 这些能力属于 `Phase 2 / Topic Layer` 规划，不应写成当前可运行命令。
+
 ## 环境变量
 
 复制 `.env.example` 为 `.env` 并按需调整。
 
-核心变量：
+当前已存在的核心变量：
 
 - `PORT`
 - `HOST`
@@ -56,6 +82,8 @@ Phase 0 + Phase 1 假设：
 - `SOURCE_POLL_DEVTO_CRON`
 - `SOURCE_POLL_OSSINSIGHT_CRON`
 - `TOPIC_SEED_REFRESH_CRON`
+
+计划中的下一阶段可能新增 embedding / topic jobs 相关配置，但在相关实现落地前，不应在此文档中宣称这些变量已存在。
 
 当前共享 Docker baseline 中，Redis 通过 `/Users/lehuaixiaochen/Downloads/Project/Docker/redis/redis.conf` 启用认证，因此本地默认 URL 为：
 
@@ -113,7 +141,7 @@ pnpm --filter @devtrend/web dev
 pnpm dev
 ```
 
-worker 启动说明：
+## worker 启动说明
 
 - repeat cron 仍然负责常规周期调度。
 - worker 冷启动时会先做一次 bootstrap 检查。
@@ -121,7 +149,7 @@ worker 启动说明：
 - 当数据库里还没有持久化内容时，会立即按 source 补发一次 `collect`，避免本地开发必须等到下一次 cron 才看到 PG 落库。
 - bootstrap enqueue 是非阻塞的；常规重启且库中已有 snapshot 和内容时，worker 仍主要依赖 cron，不会每次都强制重采。
 
-worker 日志说明：
+## worker 日志说明
 
 - worker 关键阶段日志会写入仓库根目录 `logs/`，采用 `pino-roll` 自动滚动：
   - 文件命名：`logs/worker.YYYY-MM-DD.N.log`（`N` 为同周期内滚动序号）
@@ -134,6 +162,8 @@ worker 日志说明：
   - `event`：事件名（例如 `job.start`、`pipeline.persist.done`、`redis.cache.invalidate.done`）
   - `context`：结构化上下文（例如 `queue`、`jobId`、`source`、`durationMs`、计数统计）
 - 可直接用 `tail -f logs/current.log` 观察 worker 执行过程。
+
+## 构建与验证
 
 构建：
 
@@ -161,7 +191,7 @@ pnpm audit:contracts
 
 ## 验证口径
 
-本阶段真实验证优先级：
+当前真实验证优先级：
 
 1. `pnpm lint`
 2. `pnpm typecheck`
@@ -173,7 +203,7 @@ pnpm audit:contracts
 采集失败与 fallback 的预期行为：
 
 - 单个 command 失败不能拖垮整轮采集。
-- sources 层通过 `adapter registry + source task + route policy` 统一管理不同来源的采集与归一化，不再依赖 collector / normalizer 中的 source-specific `switch` 分发。
+- sources 层通过 `adapter registry + source task + route policy` 统一管理不同来源的采集与归一化，不再依赖 source-specific `switch` 分发。
 - worker 会优先尝试 live payload；失败时只允许回退到同一个 `source + command` 最近一次成功 `raw_snapshot`。
 - contract audit 必须真实执行命令，明确绕过 circuit breaker。
 - circuit breaker 粒度是 `source:capability:task-family`：
@@ -189,7 +219,6 @@ pnpm audit:contracts
   - 仍更新 `source_health`
   - 不清空该 source 历史 items
   - 全局 signals 基于“历史 items + 最新 source health”继续重算
-- `pnpm db:reset` 会把数据库恢复到可立即运行的 schema 基线；若本地 schema 落后，不需要额外手动补跑 migration。
 
 traceability 的核验点：
 
@@ -203,9 +232,9 @@ traceability 的核验点：
 - 当源站不给发布时间时，`publishedAt` 回退到 `collectedAt`，同时 `timestampOrigin = "collected"`。
 - 依赖 freshness / novelty 的逻辑一律读取 `publishedAt`，不要把 `collectedAt` 当成真实发布时间。
 
-## 种子数据
+## 种子数据与下一阶段说明
 
-仓库默认写入一批用于演示的 watchlists 与 topic/entity catalog，用于 Phase 0 + Phase 1 的匹配与 demo。
+仓库当前会写入一批用于演示的 watchlists 与 topic/entity catalog，服务于当前 question-pressure pipeline 与 demo 场景。
 
 动态 topic 说明：
 
@@ -213,3 +242,8 @@ traceability 的核验点：
 - 稳定兜底 seed 保存在 `topics` / `entities`。
 - runtime topic discovery 结果只存数据库：`runtime_topic_seed_runs` 和 `runtime_topic_seeds`。
 - runtime topic 的主发现源是 OSSInsight `collections` / `hot-collections`，DEV `top` tags 只做辅助补充。
+
+下一阶段说明：
+
+- `runtime_topic_seeds` 继续承担“发现候选 topic”的职责。
+- `Phase 2 / Topic Layer` 将基于这些候选与统一内容模型，进一步生成 embeddings、topic clusters、topic labels 与 L1/L2/L3 taxonomy。

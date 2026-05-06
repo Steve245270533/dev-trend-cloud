@@ -2,15 +2,32 @@
 
 ## 职责
 
-- 调度与执行 Phase 0 + Phase 1 的异步作业（BullMQ）
-- 编排 sources -> domain -> db 的数据管道
-- 产出可被 `apps/api` 读取的持久化数据与缓存
+- 调度与执行当前的异步作业（BullMQ）
+- 编排 `sources -> domain -> db` 的数据管道
+- 产出可被 `apps/api` 与 `apps/web` 读取的持久化数据与缓存
+- 为下一阶段的 Feature Layer / Topic Layer jobs 提供编排承载
+
+## 当前已实现
+
+- topic seed refresh
+- contract audit
+- source collect / fallback / source health rollup
+- normalize / match / question cluster / score
+- bootstrap enqueue on cold start
+
+## 下一阶段目标
+
+- embedding generation jobs
+- topic clustering jobs
+- topic naming jobs（LLM-assisted）
+- topic persistence / taxonomy jobs
 
 ## 边界与禁止项
 
 - 不实现鉴权、计费、配额
 - 不在 worker 内发明新的 domain 规则（决策逻辑归 `packages/domain`）
-- 不接入 GitHub API / GH Archive
+- 不接入 direct GitHub API / GH Archive
+- LLM 只参与 topic naming / summary，不直接裁决核心评分
 
 ## 关键入口
 
@@ -35,7 +52,6 @@
   - collect / topic discovery 使用 Redis-backed circuit breaker
   - audit job 绕过 breaker
   - hard fail 且无 fallback snapshot 时只更新 health，不清空历史 source items
-- 日志字段包含：`timestamp`、`level`、`event`、`context`（如 `queue/jobId/source/durationMs`）
 
 ## 验证方式
 

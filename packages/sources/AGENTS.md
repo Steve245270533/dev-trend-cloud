@@ -6,11 +6,25 @@
 - 执行 contract audit（registry/help/sample fixtures）
 - 提供 collectors、circuit breaker 协议与 normalizers，把外部站点输出收敛成稳定的归一化 item
 - 提供 runtime topic discovery adapters，把 OSSInsight / DEV 的发现逻辑与内容采集统一到同一套抽象
+- 为下一阶段统一内容模型提供稳定的多源输入
+
+## 当前数据源范围
+
+- Stack Overflow
+- Hacker News
+- DEV
+- OSSInsight
+
+## 下一阶段数据源口径
+
+- 文档中提到的 `GitHub`，默认指 `OSSInsight-backed GitHub adoption proxy`
+- 不新增 direct GitHub API / GH Archive source adapter
+- 继续优先 public + browserless 主链路
 
 ## 边界与禁止项
 
 - 仅允许 public sources（不需要登录态/cookie）
-- 不接入 GitHub API / GH Archive
+- 不接入 direct GitHub API / GH Archive
 - contract audit 不依赖 `opencli verify --smoke`，必须执行真实子命令采样
 - contract audit 必须绕过 breaker，不允许被熔断或自动降级掩盖
 

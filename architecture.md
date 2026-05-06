@@ -1,12 +1,15 @@
 # 架构
 
-本文件提供 DevTrend Cloud（Phase 0 + Phase 1）的顶层架构地图，目标是让智能体与工程师都能快速定位“应该去哪看什么”，而不是把所有细节塞进一个入口文件。
+本文件提供 DevTrend Cloud 的顶层架构地图。它同时描述两件事：
 
-## 范围边界（Phase 0 + Phase 1）
+- 当前仓库已经实现了什么
+- 下一阶段将如何从 `Question Pressure MVP` 演进到 `Topic Layer / Feature Layer MVP`
 
-本仓库只实现 [devtrend-cloud-practical-plan-2026-04-29-v4.md](./docs/plan/devtrend-cloud-practical-plan-2026-04-29-v4.md) 中的 Phase 0 + Phase 1。
+## 当前实现边界（截至 2026-05-05）
 
-包含：
+当前仓库的代码实现仍以 [devtrend-cloud-practical-plan-2026-04-29-v4.md](./docs/plan/devtrend-cloud-practical-plan-2026-04-29-v4.md) 的 `Phase 0 + Phase 1` 为主，但已经包含一些不应再被写成“占位”的能力。
+
+### 已实现
 
 - 公开数据源（Stack Overflow / Hacker News / DEV / OSSInsight）的 OpenCLI 合约审计与采集
 - raw snapshot 捕获、归一化、topic/entity 匹配
@@ -14,15 +17,39 @@
 - Postgres 持久化、Redis 缓存
 - Fastify 只读 API
 - BullMQ worker 的异步编排
+- 轻量只读 web console
+- runtime topic discovery
 
-不包含：
+### 尚未实现
 
-- 鉴权（API keys、RBAC）、计费、配额
-- watchlist CRUD API、digest/webhook 交付、前端控制台产品化
-- GitHub API / GH Archive ingestion
-- 需要登录态或 cookie 的社交数据源
+- embedding pipeline
+- topic clustering / topic persistence
+- LLM topic naming
+- topic taxonomy（L1 / L2 / L3）
+- insight-oriented APIs
+- watchlist CRUD、digest、webhook
+- 完整 analyst console
 
-## 系统形态
+## 演进方向
+
+当前系统的主链路更像：
+
+```text
+Raw data + normalized items + question pressure
+```
+
+下一阶段目标是演进到：
+
+```text
+Raw Data Layer
+  -> Normalized Layer
+  -> Feature Layer
+  -> Topic Layer
+  -> Insight Layer
+  -> API / Delivery Layer
+```
+
+## 当前系统形态
 
 ```text
 OpenCLI public sources
@@ -43,6 +70,7 @@ OpenCLI public sources
   -> Postgres persistence
   -> Redis cache
   -> Fastify read-only API
+  -> lightweight read-only web console
 
 BullMQ worker
   -> topic-seed-refresh
@@ -55,73 +83,59 @@ BullMQ worker
   -> conditional bootstrap enqueue on cold start
 ```
 
+## 下一阶段目标形态（规划，不代表当前已实现）
+
+```text
+OpenCLI public sources
+  -> canonical content model
+  -> source-specific features
+  -> embedding generation
+  -> topic clustering
+  -> topic labeler (LLM-assisted)
+  -> hierarchical taxonomy (L1/L2/L3)
+  -> topic persistence
+  -> insight read models
+  -> topic / insight APIs
+```
+
 ## 运行时分层
 
 ### Source 层（packages/sources）
 
-- 目标：把“外部站点能力”收敛为可审计的 OpenCLI 命令合约 + 稳定的采集/归一化输出。
-- 实现形态：`adapter registry -> source task -> route policy -> circuit breaker -> normalized item`。
-- 额外职责：基于 OSSInsight collection 与 DEV tags 发现 runtime topics，并把 topic discovery 与内容采集解耦。
-- 合约审计产物：
-  - OpenCLI registry 快照
-  - `--help` 快照
-  - 代表性 JSON 样本（fixtures）
-- 每个 source adapter 独立负责：
-  - static task 构建
-  - dynamic task 构建
-  - payload normalize
-  - 可选的 runtime topic discovery
-- collector 允许按 task 记录失败，不以“单命令失败 = 整轮失败”作为默认行为。
-- route policy 当前默认保持 source-isolated；feed / adoption / topic discovery 不自动跨源切换，search 只预留主备扩展点。
-- circuit breaker 粒度是 `source:capability:task-family`，避免单个命令异常放大为整个 source 熔断。
-- contract audit 明确绕过 breaker，必须执行真实命令，不允许被 fallback 或熔断掩盖。
-- content collect 不直接重新发现 topic，而是消费 worker 刷新的 active runtime topic snapshot。
-- 注意：本阶段只允许 public sources（无需登录态）。
+- 目标：把外部站点能力收敛为可审计的 OpenCLI 命令合约 + 稳定采集输出。
+- 当前职责：contract audit、collectors、normalizers、runtime topic discovery、route policy、breaker。
+- 下一阶段职责：继续为统一内容模型提供稳定输入，并把 OSSInsight 代理层作为 `GitHub adoption proxy` 输入 Feature Layer。
+- 注意：当前与下一阶段都只允许 public sources，不接入登录态数据源。
 
 ### Domain 层（packages/domain）
 
-该层只放确定性规则与可测试的信号逻辑，避免把“决策”散落在 worker 或 API。
+该层只放确定性规则与可测试信号逻辑，避免把决策散落在 worker 或 API。
 
-- matching：topic/entity 的 catalog 与匹配规则
-- questions：从归一化 items 中抽取问题与聚类
-- scoring：question pressure 评分与标签
-
-聚类规则必须保持 rule-first：
-
-- normalized title
-- token overlap
-- `pg_trgm` 相似度
-- topic/entity overlap
-- time window grouping
-
-`pgvector` 允许在基础设施中启用，但不是本阶段的主依赖。
+- 当前能力：topic/entity matching、question extraction、question clustering、question pressure scoring。
+- 下一阶段能力：在保持 rule-first 的前提下，引入 embedding-assisted topic clustering、topic merge guardrails、taxonomy 归并规则。
+- 规则要求：LLM 不直接决定最终评分或置信度。
 
 ### Data 层（packages/db）
 
-- Postgres 是事实源（system of record）
-- `raw_snapshots` 存储原始 payload（JSONB）
-- `source_runs` 记录每次 command 尝试；fallback 只复用历史 snapshot，不复制 payload。
-- `item_sources` 负责把 item 追到 `source_runs` 和 `raw_snapshots`，供 evidence drilldown 使用。
-- `topics` 保持稳定 seed catalog；动态 topic 进入独立的 `runtime_topic_seed_runs` / `runtime_topic_seeds`，不覆盖 domain catalog。
-- repository helpers 用显式 SQL 查询表达数据访问，不引入重 ORM 抽象
+- Postgres 是事实源（system of record）。
+- 当前对象：`raw_snapshots`、`source_runs`、`items`、`item_sources`、`topics`、`entities`、`question_clusters`、`signals`、`signal_evidence`、`runtime_topic_seed_runs`、`runtime_topic_seeds`。
+- 当前基础设施：`pgvector` 已启用，但尚未成为线上主链路依赖。
+- 下一阶段规划：为 embedding、topic cluster、topic label candidate、topic lineage、taxonomy node 预留持久化对象。
 
 ### Transport 层（apps/api）
 
-- Fastify 提供只读 HTTP API
-- 统一响应 envelope：`{ data, meta }`
-- 健康检查：`/healthz`、`/readyz`
+- 当前：Fastify 提供只读 HTTP API 与统一响应 envelope。
+- 下一阶段：新增 topic / insight read model，但不要把规划接口误写成当前已上线。
 
 ### Orchestration 层（apps/worker）
 
-- BullMQ 负责调度与异步任务编排
-- worker 调用 sources + domain + db，负责 runtime topic refresh、source-level fallback、source health rollup、Redis-backed circuit breaker、持久化和缓存结果产出
-- repeat cron 负责常规轮询；worker 启动时还会做一次条件式 bootstrap：
-  - runtime topic active snapshot 缺失或过期时，立即补发一次 topic refresh
-  - 持久化内容为空时，立即补发一次按 source 的 collect
-  - bootstrap 是恢复冷启动和 `db:reset` 后空库状态的补偿机制，不替代常规 cron
-- 持久化时遵守 `no-clear-on-hard-fail`：
-  - 某个 source 本轮有 success / fallback payload 才允许替换该 source 内容
-  - 某个 source 本轮全部 hard fail 且没有 fallback snapshot 时，只更新运行记录与 health，不清空该 source 历史 items
+- 当前：BullMQ 负责 source refresh、collect、normalize、match、cluster、score、fallback、source health rollup。
+- 下一阶段：在不破坏现有 question pipeline 的前提下，新增 embedding、topic clustering、topic naming、topic persistence jobs。
+
+### Web 层（apps/web）
+
+- 当前：轻量只读控制台已存在，可浏览 pressure、cluster、evidence、feed、health。
+- 下一阶段：可以扩展为 topic / insight 浏览入口，但仍不等于完整 analyst console。
 
 ## 代码库地图
 
@@ -129,19 +143,21 @@ BullMQ worker
 apps/
   api/       Fastify read API
   worker/    BullMQ schedulers and jobs
-  web/       预留占位（Phase 0+1 不做 console）
+  web/       轻量只读控制台
 packages/
   config/    环境变量 schema 与运行时配置
   contracts/ TypeBox schemas / DTOs（跨包共享）
   db/        migrations, seeds, repositories
-  domain/    匹配、抽取、聚类、评分的确定性逻辑
+  domain/    问题层与主题层的确定性逻辑
   sources/   OpenCLI registry、collectors、normalizers、fixtures、audit
 docs/
   plan/      产品与交付计划（source of truth）
 ```
 
-## 下一步（文档路由）
+## 事实源导航
 
+- 最新计划： [devtrend-cloud-practical-plan-2026-05-05-v5.md](./docs/plan/devtrend-cloud-practical-plan-2026-05-05-v5.md)
+- 历史计划： [devtrend-cloud-practical-plan-2026-04-29-v4.md](./docs/plan/devtrend-cloud-practical-plan-2026-04-29-v4.md)
 - 开发与运行： [development.md](./docs/development.md)
 - API 形状与路由： [api.md](./docs/api.md)
 - Agent 执行规范入口： [AGENTS.md](./AGENTS.md)
