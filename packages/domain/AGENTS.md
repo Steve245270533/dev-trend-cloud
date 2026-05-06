@@ -16,6 +16,8 @@
 - question pressure scoring
 - embedding-assisted topic clustering guardrails
 - topic cluster stable id / representative evidence / runtime topic seed projection
+- topic naming parser / validator / deterministic fallback
+- taxonomy node merge guardrails（L1/L2/L3）
 
 ## 下一阶段目标
 

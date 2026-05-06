@@ -7,6 +7,12 @@ import {
   TimestampOriginSchema,
   TopicClusterMembershipSchema,
   TopicClusterSchema,
+  TopicLabelCandidateSchema,
+  TopicLineageSchema,
+  TopicMembershipSchema,
+  TopicNamingFallbackReasonSchema,
+  TopicNamingStatusSchema,
+  TopicNodeSchema,
   UnifiedContentRecordSchema,
 } from "../../../packages/contracts/src/index.js";
 
@@ -86,4 +92,63 @@ test("runtime topic fallback reason remains constrained", () => {
     "missing-cluster",
     "worker-error",
   ]);
+});
+
+test("topic naming candidate contract includes taxonomy and status fields", () => {
+  const required = TopicLabelCandidateSchema.required ?? [];
+  assert.ok(required.includes("topicClusterId"));
+  assert.ok(required.includes("clusterVersion"));
+  assert.ok(required.includes("status"));
+  assert.ok(required.includes("taxonomyL1"));
+});
+
+test("topic naming status remains llm|fallback", () => {
+  const variants = Array.isArray(TopicNamingStatusSchema.anyOf)
+    ? TopicNamingStatusSchema.anyOf
+        .map((entry) => ("const" in entry ? entry.const : undefined))
+        .filter(
+          (value): value is "llm-generated" | "fallback-generated" =>
+            typeof value === "string",
+        )
+    : [];
+  assert.deepEqual(variants.sort(), ["fallback-generated", "llm-generated"]);
+});
+
+test("topic naming fallback reasons remain constrained", () => {
+  const variants = Array.isArray(TopicNamingFallbackReasonSchema.anyOf)
+    ? TopicNamingFallbackReasonSchema.anyOf
+        .map((entry) => ("const" in entry ? entry.const : undefined))
+        .filter(
+          (
+            value,
+          ): value is
+            | "invalid-response"
+            | "low-quality"
+            | "missing-config"
+            | "provider-error"
+            | "provider-timeout" => typeof value === "string",
+        )
+    : [];
+  assert.deepEqual(variants.sort(), [
+    "invalid-response",
+    "low-quality",
+    "missing-config",
+    "provider-error",
+    "provider-timeout",
+  ]);
+});
+
+test("topic node/lineage/membership contracts keep key relational fields", () => {
+  const nodeRequired = TopicNodeSchema.required ?? [];
+  assert.ok(nodeRequired.includes("slug"));
+  assert.ok(nodeRequired.includes("level"));
+
+  const lineageRequired = TopicLineageSchema.required ?? [];
+  assert.ok(lineageRequired.includes("topicClusterId"));
+  assert.ok(lineageRequired.includes("l1TopicId"));
+
+  const membershipRequired = TopicMembershipSchema.required ?? [];
+  assert.ok(membershipRequired.includes("topicClusterId"));
+  assert.ok(membershipRequired.includes("topicId"));
+  assert.ok(membershipRequired.includes("membershipRole"));
 });

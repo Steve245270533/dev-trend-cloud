@@ -120,3 +120,25 @@ test("topic cluster migration defines versioned cluster and membership tables", 
     /UNIQUE \(topic_cluster_id, canonical_id, cluster_version\)/,
   );
 });
+
+test("topic naming taxonomy migration defines candidate, node, lineage and membership tables", async () => {
+  const migrationSql = await readFile(
+    join(repoRoot, "packages/db/migrations/006_topic_naming_taxonomy.sql"),
+    "utf8",
+  );
+
+  assert.match(
+    migrationSql,
+    /CREATE TABLE IF NOT EXISTS topic_label_candidates/,
+  );
+  assert.match(
+    migrationSql,
+    /status IN \('llm-generated', 'fallback-generated'\)/,
+  );
+  assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS topic_nodes/);
+  assert.match(migrationSql, /level IN \('l1', 'l2', 'l3'\)/);
+  assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS topic_lineage/);
+  assert.match(migrationSql, /UNIQUE \(topic_cluster_id, cluster_version\)/);
+  assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS topic_memberships/);
+  assert.match(migrationSql, /membership_role IN \('primary', 'supporting'\)/);
+});

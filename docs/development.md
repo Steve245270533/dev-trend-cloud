@@ -4,7 +4,7 @@
 
 ## 当前实现范围
 
-截至 2026-05-05，当前代码实现仍以 `Phase 0 + Phase 1` 为主：
+截至 2026-05-06，当前代码实现已覆盖 `Phase 0 + Phase 1` + `Phase 2` 的 `S1-S3`：
 
 - Stack Overflow / Hacker News / DEV / OSSInsight 的 public source 采集
 - raw snapshots、normalized items、question pressure、evidence drilldown
@@ -12,13 +12,14 @@
 - BullMQ worker
 - 轻量只读 web console
 - runtime topic discovery
+- unified content model
+- embedding incremental / backfill
+- topic clustering incremental / backfill
 
 以下能力仍属于下一阶段规划，而不是当前运行说明：
 
-- embedding pipeline（完整链路）
-- topic clustering / topic persistence
-- LLM topic naming
-- topic taxonomy（L1 / L2 / L3）
+- topic read APIs（S5）
+- insight read models（S6）
 - watchlist CRUD、digest、webhook
 
 ## 前置条件
@@ -58,8 +59,8 @@
 
 说明：
 
-- `pgvector` 已在数据库层启用，但当前主链路仍不是 embedding-first。
-- 当前仓库已预留 embedding DTO 与 Ollama embedding 配置；但还没有完整 embedding pipeline、LLM naming worker、topic taxonomy persistence job。
+- `pgvector` 已在数据库层启用，当前 worker 已支持 embedding 与 topic clustering 主链路。
+- 当前仓库已具备 embedding + topic clustering + topic naming/taxonomy MVP 主链路。
 - 这些能力属于 `Phase 2 / Topic Layer` 规划，不应写成当前可运行命令。
 
 ## 环境变量
@@ -86,6 +87,9 @@
 - `OLLAMA_EMBEDDING_MODEL`
 - `OLLAMA_EMBEDDING_DIMENSIONS`
 - `OLLAMA_EMBEDDING_TIMEOUT_MS`
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_MODEL`
+- `CLOUDFLARE_ACCOUNT_ID`
 
 embedding / topic jobs 的其余配置仍属下一阶段，未落地前不应在此文档中宣称已存在。
 

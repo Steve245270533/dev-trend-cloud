@@ -10,6 +10,7 @@ import {
   runIncrementalEmbeddingJob,
   runTopicClusteringBackfillJob,
   runTopicClusteringJob,
+  runTopicNamingJob,
 } from "@devtrend/worker";
 import type { Pool, PoolClient, QueryResult } from "pg";
 import type { WorkerLogger } from "../../../apps/worker/src/services/logger.js";
@@ -167,6 +168,60 @@ interface FakeTopicClusterMembershipRow {
   metadata: Record<string, unknown>;
 }
 
+interface FakeTopicLabelCandidateRow {
+  id: string;
+  topic_cluster_id: string;
+  cluster_version: string;
+  status: "llm-generated" | "fallback-generated";
+  label: string;
+  summary: string;
+  keywords: string[];
+  taxonomy_l1: string;
+  taxonomy_l2: string | null;
+  taxonomy_l3: string | null;
+  fallback_reason: string | null;
+  provider: string | null;
+  model: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface FakeTopicNodeRow {
+  id: string;
+  slug: string;
+  display_name: string;
+  level: "l1" | "l2" | "l3";
+  parent_topic_id: string | null;
+  source: "llm" | "fallback";
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface FakeTopicLineageRow {
+  id: string;
+  topic_cluster_id: string;
+  cluster_version: string;
+  label_candidate_id: string;
+  l1_topic_id: string;
+  l2_topic_id: string | null;
+  l3_topic_id: string | null;
+  path_slugs: string[];
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface FakeTopicMembershipRow {
+  topic_cluster_id: string;
+  cluster_version: string;
+  topic_node_id: string;
+  membership_role: "primary" | "supporting";
+  confidence: number;
+  metadata: Record<string, unknown>;
+}
+
 interface StatefulPool {
   executed: string[];
   items: FakeItemRow[];
@@ -181,6 +236,10 @@ interface StatefulPool {
   embeddingRecords: FakeEmbeddingRow[];
   topicClusters: FakeTopicClusterRow[];
   topicClusterMemberships: FakeTopicClusterMembershipRow[];
+  topicLabelCandidates: FakeTopicLabelCandidateRow[];
+  topicNodes: FakeTopicNodeRow[];
+  topicLineage: FakeTopicLineageRow[];
+  topicMemberships: FakeTopicMembershipRow[];
   addRuntimeTopicSeed: (seed: FakeRuntimeTopicSeedRow) => void;
   addTopicCluster: (cluster: FakeTopicClusterRow) => void;
   pool: Pool;
@@ -271,6 +330,10 @@ function createStatefulPool(): StatefulPool {
     string,
     FakeTopicClusterMembershipRow[]
   >();
+  const topicLabelCandidates = new Map<string, FakeTopicLabelCandidateRow>();
+  const topicNodes = new Map<string, FakeTopicNodeRow>();
+  const topicLineage = new Map<string, FakeTopicLineageRow>();
+  const topicMemberships = new Map<string, FakeTopicMembershipRow[]>();
   let runtimeTopicSeeds: FakeRuntimeTopicSeedRow[] = [];
   const runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[] = [];
   let signalPayloads: Record<string, unknown>[] = [];
@@ -819,6 +882,121 @@ function createStatefulPool(): StatefulPool {
         return { rows } as unknown as QueryResult;
       }
 
+      if (text.includes("INSERT INTO topic_label_candidates")) {
+        const key = `${String(params?.[0])}:${String(params?.[1])}`;
+        const existing = topicLabelCandidates.get(key);
+        const row: FakeTopicLabelCandidateRow = {
+          id:
+            existing?.id ??
+            `topic-label-candidate-${topicLabelCandidates.size + 1}`,
+          topic_cluster_id: String(params?.[0]),
+          cluster_version: String(params?.[1]),
+          status: String(params?.[2]) as FakeTopicLabelCandidateRow["status"],
+          label: String(params?.[3]),
+          summary: String(params?.[4]),
+          keywords: Array.isArray(params?.[5]) ? params[5].map(String) : [],
+          taxonomy_l1: String(params?.[6]),
+          taxonomy_l2:
+            typeof params?.[7] === "string" ? String(params[7]) : null,
+          taxonomy_l3:
+            typeof params?.[8] === "string" ? String(params[8]) : null,
+          fallback_reason:
+            typeof params?.[9] === "string" ? String(params[9]) : null,
+          provider:
+            typeof params?.[10] === "string" ? String(params[10]) : null,
+          model: typeof params?.[11] === "string" ? String(params[11]) : null,
+          metadata:
+            typeof params?.[12] === "string"
+              ? (JSON.parse(String(params[12])) as Record<string, unknown>)
+              : {},
+          created_at: "2026-05-06T00:00:00.000Z",
+          updated_at: "2026-05-06T00:10:00.000Z",
+        };
+        topicLabelCandidates.set(key, row);
+        return { rows: [row] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO topic_nodes")) {
+        const slug = String(params?.[0]);
+        const existing = topicNodes.get(slug);
+        const row: FakeTopicNodeRow = {
+          id: existing?.id ?? `topic-node-${topicNodes.size + 1}`,
+          slug,
+          display_name: String(params?.[1]),
+          level: String(params?.[2]) as FakeTopicNodeRow["level"],
+          parent_topic_id:
+            typeof params?.[3] === "string" ? String(params[3]) : null,
+          source: String(params?.[4]) as FakeTopicNodeRow["source"],
+          metadata:
+            typeof params?.[5] === "string"
+              ? (JSON.parse(String(params[5])) as Record<string, unknown>)
+              : {},
+          created_at: "2026-05-06T00:00:00.000Z",
+          updated_at: "2026-05-06T00:10:00.000Z",
+        };
+        topicNodes.set(slug, row);
+        return { rows: [row] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO topic_lineage")) {
+        const key = `${String(params?.[0])}:${String(params?.[1])}`;
+        const row: FakeTopicLineageRow = {
+          id:
+            topicLineage.get(key)?.id ??
+            `topic-lineage-${topicLineage.size + 1}`,
+          topic_cluster_id: String(params?.[0]),
+          cluster_version: String(params?.[1]),
+          label_candidate_id: String(params?.[2]),
+          l1_topic_id: String(params?.[3]),
+          l2_topic_id:
+            typeof params?.[4] === "string" ? String(params[4]) : null,
+          l3_topic_id:
+            typeof params?.[5] === "string" ? String(params[5]) : null,
+          path_slugs: Array.isArray(params?.[6]) ? params[6].map(String) : [],
+          metadata:
+            typeof params?.[7] === "string"
+              ? (JSON.parse(String(params[7])) as Record<string, unknown>)
+              : {},
+          created_at: "2026-05-06T00:00:00.000Z",
+          updated_at: "2026-05-06T00:10:00.000Z",
+        };
+        topicLineage.set(key, row);
+        return { rows: [row] } as unknown as QueryResult;
+      }
+
+      if (text.includes("DELETE FROM topic_memberships")) {
+        const key = `${String(params?.[0])}:${String(params?.[1])}`;
+        topicMemberships.set(key, []);
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO topic_memberships")) {
+        const key = `${String(params?.[0])}:${String(params?.[1])}`;
+        const rows = topicMemberships.get(key) ?? [];
+        rows.push({
+          topic_cluster_id: String(params?.[0]),
+          cluster_version: String(params?.[1]),
+          topic_node_id: String(params?.[2]),
+          membership_role: String(
+            params?.[3],
+          ) as FakeTopicMembershipRow["membership_role"],
+          confidence: Number(params?.[4] ?? 0),
+          metadata:
+            typeof params?.[5] === "string"
+              ? (JSON.parse(String(params[5])) as Record<string, unknown>)
+              : {},
+        });
+        topicMemberships.set(key, rows);
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("FROM topic_memberships")) {
+        const key = `${String(params?.[0])}:${String(params?.[1])}`;
+        return {
+          rows: topicMemberships.get(key) ?? [],
+        } as unknown as QueryResult;
+      }
+
       if (text.includes("SELECT i.*") && text.includes("FROM items i")) {
         return {
           rows: [...items.values()],
@@ -901,6 +1079,18 @@ function createStatefulPool(): StatefulPool {
     },
     get topicClusterMemberships() {
       return [...topicClusterMemberships.values()].flat();
+    },
+    get topicLabelCandidates() {
+      return [...topicLabelCandidates.values()];
+    },
+    get topicNodes() {
+      return [...topicNodes.values()];
+    },
+    get topicLineage() {
+      return [...topicLineage.values()];
+    },
+    get topicMemberships() {
+      return [...topicMemberships.values()].flat();
     },
     addRuntimeTopicSeed(seed) {
       runtimeTopicSeeds.push(seed);
@@ -1785,4 +1975,110 @@ test("runTopicClusteringBackfillJob reuses the clustering path for historical ba
 
   assert.equal(result.embeddings, 1);
   assert.equal(result.clusters >= 1, true);
+});
+
+test("runTopicNamingJob persists label candidates and taxonomy assets when LLM output is valid", async () => {
+  const state = createStatefulPool();
+  const logger = createTestLogger([]);
+
+  state.addTopicCluster({
+    id: "cluster-row-1",
+    topic_cluster_id: "cluster-1",
+    stable_key: "topic-cluster:1",
+    cluster_version: "v1",
+    rule_version: "topic-cluster-rules-v1",
+    status: "active",
+    slug: "dynamic-pgvector",
+    display_name: "Dynamic Pgvector",
+    summary: "dynamic cluster",
+    keywords: ["pgvector", "postgres"],
+    anchor_canonical_id: "stackoverflow:123",
+    representative_evidence: [],
+    source_mix: [{ source: "stackoverflow", count: 1, ratio: 1 }],
+    related_repos: ["pgvector/pgvector"],
+    related_entities: ["pgvector"],
+    item_count: 2,
+    cluster_confidence: 0.92,
+    runtime_fallback_reason: null,
+    metadata: {},
+    created_at: "2026-05-06T00:00:00.000Z",
+    updated_at: "2026-05-06T00:10:00.000Z",
+  });
+
+  const result = await runTopicNamingJob(
+    state.pool,
+    {
+      apiToken: "token",
+      model: "@cf/meta/llama",
+      accountId: "acc-1",
+      timeoutMs: 1000,
+    },
+    { limit: 10 },
+    logger,
+    async () => ({
+      response:
+        '{"label":"Pgvector Retrieval Stability","summary":"Cross-source reports on pgvector ranking stability and mitigations.","keywords":["pgvector","postgres","vector-search"],"taxonomy":{"l1":"Data Infrastructure","l2":"Databases","l3":"Vector Search"}}',
+    }),
+  );
+
+  assert.equal(result.clusters, 1);
+  assert.equal(result.llmGenerated, 1);
+  assert.equal(result.fallbackGenerated, 0);
+  assert.equal(state.topicLabelCandidates.length, 1);
+  assert.equal(state.topicNodes.length, 3);
+  assert.equal(state.topicLineage.length, 1);
+  assert.equal(state.topicMemberships.length, 3);
+});
+
+test("runTopicNamingJob falls back when provider fails", async () => {
+  const state = createStatefulPool();
+  const logger = createTestLogger([]);
+
+  state.addTopicCluster({
+    id: "cluster-row-2",
+    topic_cluster_id: "cluster-2",
+    stable_key: "topic-cluster:2",
+    cluster_version: "v1",
+    rule_version: "topic-cluster-rules-v1",
+    status: "active",
+    slug: "dynamic-mcp",
+    display_name: "Dynamic MCP",
+    summary: "dynamic cluster",
+    keywords: ["mcp", "tool-calling"],
+    anchor_canonical_id: "hackernews:1",
+    representative_evidence: [],
+    source_mix: [{ source: "hackernews", count: 1, ratio: 1 }],
+    related_repos: [],
+    related_entities: ["mcp-protocol"],
+    item_count: 2,
+    cluster_confidence: 0.9,
+    runtime_fallback_reason: null,
+    metadata: {},
+    created_at: "2026-05-06T00:00:00.000Z",
+    updated_at: "2026-05-06T00:10:00.000Z",
+  });
+
+  const result = await runTopicNamingJob(
+    state.pool,
+    {
+      apiToken: "token",
+      model: "@cf/meta/llama",
+      accountId: "acc-1",
+      timeoutMs: 1000,
+    },
+    { limit: 10 },
+    logger,
+    async () => {
+      throw new Error("provider unavailable");
+    },
+  );
+
+  assert.equal(result.clusters, 1);
+  assert.equal(result.llmGenerated, 0);
+  assert.equal(result.fallbackGenerated, 1);
+  assert.equal(state.topicLabelCandidates[0]?.status, "fallback-generated");
+  assert.equal(
+    state.topicLabelCandidates[0]?.fallback_reason,
+    "provider-error",
+  );
 });

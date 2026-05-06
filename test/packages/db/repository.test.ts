@@ -11,16 +11,21 @@ import {
   listQuestionPressureSignals,
   listRuntimeTopicClusterSeeds,
   listTopicClusterMemberships,
+  listTopicMemberships,
   listUnifiedContentRecords,
   markSupersededEmbeddings,
   markSupersededTopicClusters,
   replaceRuntimeTopicSeeds,
   replaceSourceItems,
   replaceTopicClusterMemberships,
+  replaceTopicMemberships,
   rollbackUnifiedContentBySources,
   updateEmbeddingRecordStatus,
   upsertEmbeddingRecord,
   upsertTopicCluster,
+  upsertTopicLabelCandidate,
+  upsertTopicLineage,
+  upsertTopicNode,
   upsertUnifiedContentRecords,
 } from "@devtrend/db";
 import type { QueryResult } from "pg";
@@ -775,4 +780,158 @@ test("listRuntimeTopicClusterSeeds projects active clusters into runtime topics"
   assert.equal(seeds.length, 1);
   assert.equal(seeds[0]?.sources[0], "topic-cluster");
   assert.equal(seeds[0]?.slug, "pgvector-postgres-rag");
+});
+
+test("topic naming persistence helpers upsert candidate, nodes and lineage", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      if (text.includes("INSERT INTO topic_label_candidates")) {
+        return {
+          rows: [
+            {
+              id: "aaaaaaaa-aaaa-5aaa-8aaa-aaaaaaaaaaaa",
+              topic_cluster_id: "88888888-8888-5888-8888-888888888888",
+              cluster_version: "v1",
+              status: "llm-generated",
+              label: "Pgvector Retrieval Stability",
+              summary: "Topic summary",
+              keywords: ["pgvector", "postgres"],
+              taxonomy_l1: "Data Infrastructure",
+              taxonomy_l2: "Databases",
+              taxonomy_l3: "Vector Search",
+              fallback_reason: null,
+              provider: "cloudflare-workers-ai",
+              model: "@cf/meta/llama",
+              metadata: {},
+              created_at: "2026-05-06T00:00:00.000Z",
+              updated_at: "2026-05-06T00:10:00.000Z",
+            },
+          ],
+        } as unknown as QueryResult;
+      }
+      if (text.includes("INSERT INTO topic_nodes")) {
+        return {
+          rows: [
+            {
+              id: "bbbbbbbb-bbbb-5bbb-8bbb-bbbbbbbbbbbb",
+              slug: "data-infrastructure",
+              display_name: "Data Infrastructure",
+              level: "l1",
+              parent_topic_id: null,
+              source: "llm",
+              metadata: {},
+              created_at: "2026-05-06T00:00:00.000Z",
+              updated_at: "2026-05-06T00:10:00.000Z",
+            },
+          ],
+        } as unknown as QueryResult;
+      }
+      if (text.includes("INSERT INTO topic_lineage")) {
+        return {
+          rows: [
+            {
+              id: "cccccccc-cccc-5ccc-8ccc-cccccccccccc",
+              topic_cluster_id: "88888888-8888-5888-8888-888888888888",
+              cluster_version: "v1",
+              label_candidate_id: "aaaaaaaa-aaaa-5aaa-8aaa-aaaaaaaaaaaa",
+              l1_topic_id: "bbbbbbbb-bbbb-5bbb-8bbb-bbbbbbbbbbbb",
+              l2_topic_id: null,
+              l3_topic_id: null,
+              path_slugs: ["data-infrastructure"],
+              metadata: {},
+              created_at: "2026-05-06T00:00:00.000Z",
+              updated_at: "2026-05-06T00:10:00.000Z",
+            },
+          ],
+        } as unknown as QueryResult;
+      }
+      return { rows: [] } as unknown as QueryResult;
+    },
+  };
+
+  const candidate = await upsertTopicLabelCandidate(db, {
+    topicClusterId: "88888888-8888-5888-8888-888888888888",
+    clusterVersion: "v1",
+    status: "llm-generated",
+    label: "Pgvector Retrieval Stability",
+    summary: "Topic summary",
+    keywords: ["pgvector", "postgres"],
+    taxonomyL1: "Data Infrastructure",
+    taxonomyL2: "Databases",
+    taxonomyL3: "Vector Search",
+    provider: "cloudflare-workers-ai",
+    model: "@cf/meta/llama",
+    metadata: {},
+  });
+  const node = await upsertTopicNode(db, {
+    slug: "data-infrastructure",
+    displayName: "Data Infrastructure",
+    level: "l1",
+    source: "llm",
+    metadata: {},
+  });
+  const lineage = await upsertTopicLineage(db, {
+    topicClusterId: "88888888-8888-5888-8888-888888888888",
+    clusterVersion: "v1",
+    labelCandidateId: candidate.id,
+    l1TopicId: node.id,
+    pathSlugs: ["data-infrastructure"],
+    metadata: {},
+  });
+
+  assert.equal(candidate.status, "llm-generated");
+  assert.equal(node.level, "l1");
+  assert.equal(lineage.l1TopicId, node.id);
+  assert.equal(calls.length, 3);
+});
+
+test("replaceTopicMemberships rewrites memberships and listTopicMemberships maps rows", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      if (text.includes("FROM topic_memberships")) {
+        return {
+          rows: [
+            {
+              topic_cluster_id: "88888888-8888-5888-8888-888888888888",
+              cluster_version: "v1",
+              topic_node_id: "bbbbbbbb-bbbb-5bbb-8bbb-bbbbbbbbbbbb",
+              membership_role: "primary",
+              confidence: 1,
+              metadata: {},
+            },
+          ],
+        } as unknown as QueryResult;
+      }
+      return { rows: [] } as unknown as QueryResult;
+    },
+  };
+
+  const written = await replaceTopicMemberships(db, {
+    topicClusterId: "88888888-8888-5888-8888-888888888888",
+    clusterVersion: "v1",
+    memberships: [
+      {
+        topicClusterId: "88888888-8888-5888-8888-888888888888",
+        clusterVersion: "v1",
+        topicId: "bbbbbbbb-bbbb-5bbb-8bbb-bbbbbbbbbbbb",
+        membershipRole: "primary",
+        confidence: 1,
+        metadata: {},
+      },
+    ],
+  });
+  const rows = await listTopicMemberships(
+    db,
+    "88888888-8888-5888-8888-888888888888",
+    "v1",
+  );
+
+  assert.equal(written, 1);
+  assert.match(calls[0]?.text ?? "", /DELETE FROM topic_memberships/);
+  assert.match(calls[1]?.text ?? "", /INSERT INTO topic_memberships/);
+  assert.equal(rows[0]?.membershipRole, "primary");
 });

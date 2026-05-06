@@ -6,6 +6,9 @@ import type {
   SourceFeatures,
   SourceKey,
   SourceStatus,
+  TopicCluster,
+  TopicMembership,
+  TopicNode,
   UnifiedContentRecord,
 } from "@devtrend/contracts";
 import {
@@ -28,20 +31,28 @@ import {
   replaceRuntimeTopicSeeds,
   replaceSourceItems,
   replaceTopicClusterMemberships,
+  replaceTopicMemberships,
   upsertCatalog,
   upsertEmbeddingRecord,
   upsertTopicCluster,
+  upsertTopicLabelCandidate,
+  upsertTopicLineage,
+  upsertTopicNode,
   upsertUnifiedContentRecords,
   withTransaction,
 } from "@devtrend/db";
 import {
   buildEmbeddingInputFromUnifiedContent,
+  buildFallbackTopicNaming,
   buildQuestionPressurePipeline,
+  buildTaxonomyNodes,
   clusterTopicContents,
   entitySeeds,
   isValidSourceFeatures,
+  parseTopicNamingLLMOutput,
   TOPIC_CLUSTER_RULE_VERSION,
   topicSeeds,
+  validateTopicNamingCandidate,
 } from "@devtrend/domain";
 import type { CollectedSourcePayload } from "@devtrend/sources";
 import {
@@ -91,10 +102,28 @@ export interface TopicClusteringJobResult {
   superseded: number;
 }
 
+export interface TopicNamingCloudflareConfig {
+  apiToken: string;
+  model: string;
+  accountId: string;
+  timeoutMs: number;
+}
+
+export interface TopicNamingJobResult {
+  clusters: number;
+  llmGenerated: number;
+  fallbackGenerated: number;
+}
+
 export type EmbeddingVectorGenerator = (
   config: EmbeddingPipelineConfig,
   input: string,
 ) => Promise<number[]>;
+
+export type TopicNamingGenerator = (
+  config: TopicNamingCloudflareConfig,
+  prompt: string,
+) => Promise<unknown>;
 
 const EMBEDDING_INPUT_SCHEMA_VERSION = "embedding-input-v1";
 const DEFAULT_EMBEDDING_BATCH_LIMIT = 50;
@@ -175,6 +204,63 @@ export async function requestOllamaEmbedding(
       );
     }
     return vector;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function cloudflareEndpoint(config: TopicNamingCloudflareConfig): string {
+  const modelPath = config.model.trim().replace(/^\/+/, "");
+  return `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/ai/run/${modelPath}`;
+}
+
+export async function requestCloudflareTopicNaming(
+  config: TopicNamingCloudflareConfig,
+  prompt: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<unknown> {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    Math.max(config.timeoutMs, 1000),
+  );
+
+  try {
+    const response = await fetchImpl(cloudflareEndpoint(config), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${config.apiToken}`,
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a topic naming assistant. Return only strict JSON with keys: label, summary, keywords, taxonomy{l1,l2,l3}.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      let errorBody = "";
+      try {
+        errorBody = await response.text();
+      } catch {
+        errorBody = "";
+      }
+      throw new Error(
+        `Cloudflare naming HTTP ${response.status}${errorBody ? `: ${errorBody}` : ""}`,
+      );
+    }
+
+    return (await response.json()) as unknown;
   } finally {
     clearTimeout(timeout);
   }
@@ -958,6 +1044,242 @@ export async function runTopicClusteringBackfillJob(
   logger: WorkerLogger = noopWorkerLogger(),
 ): Promise<TopicClusteringJobResult> {
   return runTopicClusteringBatch(pool, config, options, logger);
+}
+
+function buildTopicNamingPrompt(cluster: TopicCluster): string {
+  const evidence = cluster.representativeEvidence
+    .map((item) => `${item.source}: ${item.title}`)
+    .slice(0, 4);
+  const payload = {
+    clusterId: cluster.topicClusterId,
+    displayName: cluster.displayName,
+    summary: cluster.summary,
+    keywords: cluster.keywords,
+    relatedRepos: cluster.relatedRepos,
+    relatedEntities: cluster.relatedEntities,
+    sourceMix: cluster.sourceMix,
+    representativeEvidence: evidence,
+  };
+  return JSON.stringify(payload);
+}
+
+function cloudflareConfigAvailable(
+  config: TopicNamingCloudflareConfig,
+): boolean {
+  return (
+    config.apiToken.trim().length > 0 &&
+    config.accountId.trim().length > 0 &&
+    config.model.trim().length > 0
+  );
+}
+
+function deriveTopicMemberships(
+  topicClusterId: string,
+  clusterVersion: string,
+  nodeIds: string[],
+): TopicMembership[] {
+  if (nodeIds.length === 0) {
+    return [];
+  }
+
+  const leafId = nodeIds[nodeIds.length - 1] ?? nodeIds[0];
+  return nodeIds.map((topicId) => ({
+    topicClusterId,
+    clusterVersion,
+    topicId,
+    membershipRole: topicId === leafId ? "primary" : "supporting",
+    confidence: topicId === leafId ? 1 : 0.85,
+    metadata: {
+      source: "topic-naming",
+    },
+  }));
+}
+
+async function runTopicNamingBatch(
+  pool: Pool,
+  config: TopicNamingCloudflareConfig,
+  options: {
+    source?: SourceKey;
+    limit?: number;
+  } = {},
+  logger: WorkerLogger,
+  generate: TopicNamingGenerator = requestCloudflareTopicNaming,
+): Promise<TopicNamingJobResult> {
+  const clusters = await withTransaction(pool, async (client) => {
+    const rows = await listActiveTopicClusters(client, {
+      limit: resolveEmbeddingLimit(options.limit),
+    });
+    if (!options.source) {
+      return rows;
+    }
+    return rows.filter((row) =>
+      row.sourceMix.some((mix) => mix.source === options.source),
+    );
+  });
+
+  await logger.info("pipeline.topic-naming.batch.start", {
+    source: options.source ?? null,
+    limit: options.limit ?? DEFAULT_EMBEDDING_BATCH_LIMIT,
+    clusterCount: clusters.length,
+  });
+
+  let llmGenerated = 0;
+  let fallbackGenerated = 0;
+
+  for (const cluster of clusters) {
+    let namingCandidate = buildFallbackTopicNaming(cluster, "low-quality");
+    const prompt = buildTopicNamingPrompt(cluster);
+    const metadata: Record<string, unknown> = {
+      clusterVersion: cluster.clusterVersion,
+      promptSize: prompt.length,
+    };
+
+    if (!cloudflareConfigAvailable(config)) {
+      namingCandidate = buildFallbackTopicNaming(cluster, "missing-config");
+    } else {
+      try {
+        const llmPayload = await generate(config, prompt);
+        const parsed = parseTopicNamingLLMOutput(llmPayload);
+        const validated = parsed
+          ? validateTopicNamingCandidate(
+              cluster,
+              parsed,
+              "cloudflare-workers-ai",
+              config.model,
+            )
+          : null;
+
+        if (validated) {
+          namingCandidate = validated;
+          llmGenerated += 1;
+          metadata.llmResult = "accepted";
+        } else {
+          namingCandidate = buildFallbackTopicNaming(
+            cluster,
+            "invalid-response",
+          );
+          metadata.llmResult = "invalid-response";
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const reason = message.includes("aborted")
+          ? "provider-timeout"
+          : "provider-error";
+        namingCandidate = buildFallbackTopicNaming(cluster, reason);
+        metadata.llmResult = reason;
+        metadata.error = message;
+      }
+    }
+
+    if (namingCandidate.status !== "llm-generated") {
+      fallbackGenerated += 1;
+    }
+
+    await withTransaction(pool, async (client) => {
+      const candidate = await upsertTopicLabelCandidate(client, {
+        topicClusterId: cluster.topicClusterId,
+        clusterVersion: cluster.clusterVersion,
+        status: namingCandidate.status,
+        label: namingCandidate.label,
+        summary: namingCandidate.summary,
+        keywords: namingCandidate.keywords,
+        taxonomyL1: namingCandidate.taxonomyL1,
+        taxonomyL2: namingCandidate.taxonomyL2,
+        taxonomyL3: namingCandidate.taxonomyL3,
+        fallbackReason: namingCandidate.fallbackReason,
+        provider: namingCandidate.provider,
+        model: namingCandidate.model,
+        metadata: {
+          ...namingCandidate.metadata,
+          ...metadata,
+        },
+      });
+
+      const nodes = buildTaxonomyNodes(namingCandidate);
+      const persistedNodes: TopicNode[] = [];
+      let parentTopicId: string | undefined;
+      for (const node of nodes) {
+        const persisted = await upsertTopicNode(client, {
+          slug: node.slug,
+          displayName: node.displayName,
+          level: node.level,
+          parentTopicId,
+          source: node.source,
+          metadata: {
+            topicClusterId: cluster.topicClusterId,
+            clusterVersion: cluster.clusterVersion,
+          },
+        });
+        persistedNodes.push(persisted);
+        parentTopicId = persisted.id;
+      }
+
+      const l1 = persistedNodes.find((entry) => entry.level === "l1");
+      const l2 = persistedNodes.find((entry) => entry.level === "l2");
+      const l3 = persistedNodes.find((entry) => entry.level === "l3");
+      if (!l1) {
+        throw new Error("Topic naming must always persist an L1 topic node.");
+      }
+
+      await upsertTopicLineage(client, {
+        topicClusterId: cluster.topicClusterId,
+        clusterVersion: cluster.clusterVersion,
+        labelCandidateId: candidate.id,
+        l1TopicId: l1.id,
+        l2TopicId: l2?.id,
+        l3TopicId: l3?.id,
+        pathSlugs: persistedNodes.map((node) => node.slug),
+        metadata: {
+          namingStatus: namingCandidate.status,
+        },
+      });
+
+      const memberships = deriveTopicMemberships(
+        cluster.topicClusterId,
+        cluster.clusterVersion,
+        persistedNodes.map((entry) => entry.id),
+      );
+      await replaceTopicMemberships(client, {
+        topicClusterId: cluster.topicClusterId,
+        clusterVersion: cluster.clusterVersion,
+        memberships,
+      });
+    });
+  }
+
+  const result: TopicNamingJobResult = {
+    clusters: clusters.length,
+    llmGenerated,
+    fallbackGenerated,
+  };
+  await logger.info("pipeline.topic-naming.batch.done", { ...result });
+  return result;
+}
+
+export async function runTopicNamingJob(
+  pool: Pool,
+  config: TopicNamingCloudflareConfig,
+  options: {
+    source?: SourceKey;
+    limit?: number;
+  } = {},
+  logger: WorkerLogger = noopWorkerLogger(),
+  generate: TopicNamingGenerator = requestCloudflareTopicNaming,
+): Promise<TopicNamingJobResult> {
+  return runTopicNamingBatch(pool, config, options, logger, generate);
+}
+
+export async function runTopicNamingBackfillJob(
+  pool: Pool,
+  config: TopicNamingCloudflareConfig,
+  options: {
+    source?: SourceKey;
+    limit?: number;
+  } = {},
+  logger: WorkerLogger = noopWorkerLogger(),
+  generate: TopicNamingGenerator = requestCloudflareTopicNaming,
+): Promise<TopicNamingJobResult> {
+  return runTopicNamingBatch(pool, config, options, logger, generate);
 }
 
 function runtimeTopicRunStatus(

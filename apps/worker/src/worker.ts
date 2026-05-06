@@ -16,6 +16,8 @@ import {
   QUEUES,
   type TopicClusteringBackfillJobData,
   type TopicClusteringJobData,
+  type TopicNamingBackfillJobData,
+  type TopicNamingJobData,
   type TopicSeedRefreshJobData,
 } from "./jobs/definitions.js";
 import { invalidateApiReadCaches } from "./services/cache.js";
@@ -29,6 +31,8 @@ import {
   runIncrementalEmbeddingJob,
   runTopicClusteringBackfillJob,
   runTopicClusteringJob,
+  runTopicNamingBackfillJob,
+  runTopicNamingJob,
 } from "./services/pipeline.js";
 import { RedisCircuitBreakerStore } from "./services/source-breaker.js";
 
@@ -87,12 +91,27 @@ const _topicClusteringBackfillQueue = new Queue(
     prefix: config.QUEUE_PREFIX,
   },
 );
+const topicNamingQueue = new Queue(QUEUES.topicNaming, {
+  connection: redis,
+  prefix: config.QUEUE_PREFIX,
+});
+const _topicNamingBackfillQueue = new Queue(QUEUES.topicNamingBackfill, {
+  connection: redis,
+  prefix: config.QUEUE_PREFIX,
+});
 
 const embeddingConfig = {
   baseUrl: config.OLLAMA_EMBEDDING_BASE_URL,
   model: config.OLLAMA_EMBEDDING_MODEL,
   dimensions: config.OLLAMA_EMBEDDING_DIMENSIONS,
   timeoutMs: config.OLLAMA_EMBEDDING_TIMEOUT_MS,
+};
+
+const topicNamingConfig = {
+  apiToken: config.CLOUDFLARE_API_TOKEN,
+  model: config.CLOUDFLARE_MODEL,
+  accountId: config.CLOUDFLARE_ACCOUNT_ID,
+  timeoutMs: 20000,
 };
 
 const sourcePollCrons: Record<SourceKey, string> = {
@@ -532,8 +551,8 @@ new Worker(
 new Worker(
   QUEUES.topicClustering,
   async (job: Job<TopicClusteringJobData>) =>
-    runJobWithLogging(QUEUES.topicClustering, job, async (jobLogger) =>
-      runTopicClusteringJob(
+    runJobWithLogging(QUEUES.topicClustering, job, async (jobLogger) => {
+      const result = await runTopicClusteringJob(
         pool,
         embeddingConfig,
         {
@@ -541,8 +560,28 @@ new Worker(
           limit: job.data.limit,
         },
         jobLogger.child({ stage: "topic-clustering.incremental" }),
-      ),
-    ),
+      );
+      try {
+        await topicNamingQueue.add("topic-naming", {
+          source: job.data.source,
+          limit: job.data.limit,
+          bootstrap: job.data.bootstrap,
+          reason: "cluster-stage",
+        } satisfies TopicNamingJobData);
+        await jobLogger.info("pipeline.topic-clustering.enqueue.topic-naming", {
+          source: job.data.source ?? null,
+          limit: job.data.limit ?? null,
+        });
+      } catch (error) {
+        await jobLogger.warn(
+          "pipeline.topic-clustering.enqueue.topic-naming.failed",
+          {
+            error: toErrorContext(error),
+          },
+        );
+      }
+      return result;
+    }),
   { connection: redis, prefix: config.QUEUE_PREFIX },
 );
 
@@ -558,6 +597,40 @@ new Worker(
           limit: job.data.limit,
         },
         jobLogger.child({ stage: "topic-clustering.backfill" }),
+      ),
+    ),
+  { connection: redis, prefix: config.QUEUE_PREFIX },
+);
+
+new Worker(
+  QUEUES.topicNaming,
+  async (job: Job<TopicNamingJobData>) =>
+    runJobWithLogging(QUEUES.topicNaming, job, async (jobLogger) =>
+      runTopicNamingJob(
+        pool,
+        topicNamingConfig,
+        {
+          source: job.data.source,
+          limit: job.data.limit,
+        },
+        jobLogger.child({ stage: "topic-naming.incremental" }),
+      ),
+    ),
+  { connection: redis, prefix: config.QUEUE_PREFIX },
+);
+
+new Worker(
+  QUEUES.topicNamingBackfill,
+  async (job: Job<TopicNamingBackfillJobData>) =>
+    runJobWithLogging(QUEUES.topicNamingBackfill, job, async (jobLogger) =>
+      runTopicNamingBackfillJob(
+        pool,
+        topicNamingConfig,
+        {
+          source: job.data.source,
+          limit: job.data.limit,
+        },
+        jobLogger.child({ stage: "topic-naming.backfill" }),
       ),
     ),
   { connection: redis, prefix: config.QUEUE_PREFIX },

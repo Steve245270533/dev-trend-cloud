@@ -20,12 +20,12 @@
 - embedding records
 - topic clusters
 - topic cluster memberships
-
-## 下一阶段规划对象（planned，不代表当前 schema 已存在）
-
 - topic label candidates
 - taxonomy nodes（L1 / L2 / L3）
 - topic memberships / topic lineage
+
+## 下一阶段规划对象（planned，不代表当前 schema 已存在）
+- topic read model 相关聚合查询
 
 ## 边界与禁止项
 
@@ -39,7 +39,7 @@
 - Repository helpers： [repository.ts](./src/repository.ts)
 - 迁移执行： [migrate.ts](./src/migrate.ts)
 - 种子写入： [seed.ts](./src/seed.ts)
-- Migrations： [001_initial.sql](./migrations/001_initial.sql)、[002_runtime_topic_seeds.sql](./migrations/002_runtime_topic_seeds.sql)、[003_unified_content.sql](./migrations/003_unified_content.sql)、[004_embedding_records.sql](./migrations/004_embedding_records.sql)、[005_topic_clusters.sql](./migrations/005_topic_clusters.sql)
+- Migrations： [001_initial.sql](./migrations/001_initial.sql)、[002_runtime_topic_seeds.sql](./migrations/002_runtime_topic_seeds.sql)、[003_unified_content.sql](./migrations/003_unified_content.sql)、[004_embedding_records.sql](./migrations/004_embedding_records.sql)、[005_topic_clusters.sql](./migrations/005_topic_clusters.sql)、[006_topic_naming_taxonomy.sql](./migrations/006_topic_naming_taxonomy.sql)
 
 ## 验证方式
 

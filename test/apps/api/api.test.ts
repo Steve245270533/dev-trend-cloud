@@ -80,6 +80,9 @@ test("GET /healthz works", async () => {
       OLLAMA_EMBEDDING_MODEL: "nomic-embed-text-v2-moe",
       OLLAMA_EMBEDDING_DIMENSIONS: 768,
       OLLAMA_EMBEDDING_TIMEOUT_MS: 30000,
+      CLOUDFLARE_API_TOKEN: "",
+      CLOUDFLARE_MODEL: "",
+      CLOUDFLARE_ACCOUNT_ID: "",
     },
   });
 
@@ -116,6 +119,9 @@ test("GET /signals/question-pressure returns metadata and signals", async () => 
       OLLAMA_EMBEDDING_MODEL: "nomic-embed-text-v2-moe",
       OLLAMA_EMBEDDING_DIMENSIONS: 768,
       OLLAMA_EMBEDDING_TIMEOUT_MS: 30000,
+      CLOUDFLARE_API_TOKEN: "",
+      CLOUDFLARE_MODEL: "",
+      CLOUDFLARE_ACCOUNT_ID: "",
     },
   });
 
@@ -160,6 +166,9 @@ test("GET /question-clusters/:id/evidence returns evidence rows", async () => {
       OLLAMA_EMBEDDING_MODEL: "nomic-embed-text-v2-moe",
       OLLAMA_EMBEDDING_DIMENSIONS: 768,
       OLLAMA_EMBEDDING_TIMEOUT_MS: 30000,
+      CLOUDFLARE_API_TOKEN: "",
+      CLOUDFLARE_MODEL: "",
+      CLOUDFLARE_ACCOUNT_ID: "",
     },
   });
 

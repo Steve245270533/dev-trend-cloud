@@ -17,8 +17,8 @@
 
 - 当前规划事实源： [devtrend-cloud-practical-plan-2026-05-05-v5.md](./docs/plan/devtrend-cloud-practical-plan-2026-05-05-v5.md)
 - 历史规划参考： [devtrend-cloud-practical-plan-2026-04-29-v4.md](./docs/plan/devtrend-cloud-practical-plan-2026-04-29-v4.md)
-- 当前代码实现：`Phase 0 + Phase 1` 已稳定，`Phase 2` 已完成 `S1`、`S2`，并已进入 `S3 / Topic Clustering MVP` 实现态
-- 当前文档规划目标：继续在 `Phase 2 / Dynamic Topic Layer + Feature Layer MVP` 内推进 `S3 -> S4`
+- 当前代码实现：`Phase 0 + Phase 1` 已稳定，`Phase 2` 已完成 `S1`、`S2`、`S3`、`S4` MVP，并进入 `S5 / Topic Read API` 准备态
+- 当前文档规划目标：继续在 `Phase 2 / Dynamic Topic Layer + Feature Layer MVP` 内推进 `S5 -> S6`
 - 若旧文档与新计划冲突，以 `2026-05-05 v5` 为准
 
 ## 强约束（禁止项）

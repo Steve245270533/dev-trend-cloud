@@ -335,6 +335,109 @@ export const TopicClusterSchema = Type.Object({
 
 export type TopicCluster = Static<typeof TopicClusterSchema>;
 
+export const TopicNamingStatusSchema = Type.Union([
+  Type.Literal("llm-generated"),
+  Type.Literal("fallback-generated"),
+]);
+
+export type TopicNamingStatus = Static<typeof TopicNamingStatusSchema>;
+
+export const TopicNamingFallbackReasonSchema = Type.Union([
+  Type.Literal("provider-error"),
+  Type.Literal("provider-timeout"),
+  Type.Literal("missing-config"),
+  Type.Literal("invalid-response"),
+  Type.Literal("low-quality"),
+]);
+
+export type TopicNamingFallbackReason = Static<
+  typeof TopicNamingFallbackReasonSchema
+>;
+
+export const TopicTaxonomyLevelSchema = Type.Union([
+  Type.Literal("l1"),
+  Type.Literal("l2"),
+  Type.Literal("l3"),
+]);
+
+export type TopicTaxonomyLevel = Static<typeof TopicTaxonomyLevelSchema>;
+
+export const TopicNodeSourceSchema = Type.Union([
+  Type.Literal("llm"),
+  Type.Literal("fallback"),
+]);
+
+export type TopicNodeSource = Static<typeof TopicNodeSourceSchema>;
+
+export const TopicLabelCandidateSchema = Type.Object({
+  id: Type.String({ format: "uuid" }),
+  topicClusterId: Type.String({ format: "uuid" }),
+  clusterVersion: Type.String(),
+  status: TopicNamingStatusSchema,
+  label: Type.String(),
+  summary: Type.String(),
+  keywords: Type.Array(Type.String()),
+  taxonomyL1: Type.String(),
+  taxonomyL2: Type.Optional(Type.String()),
+  taxonomyL3: Type.Optional(Type.String()),
+  fallbackReason: Type.Optional(TopicNamingFallbackReasonSchema),
+  provider: Type.Optional(Type.String()),
+  model: Type.Optional(Type.String()),
+  metadata: Type.Record(Type.String(), Type.Unknown()),
+  createdAt: Type.String({ format: "date-time" }),
+  updatedAt: Type.String({ format: "date-time" }),
+});
+
+export type TopicLabelCandidate = Static<typeof TopicLabelCandidateSchema>;
+
+export const TopicNodeSchema = Type.Object({
+  id: Type.String({ format: "uuid" }),
+  slug: Type.String(),
+  displayName: Type.String(),
+  level: TopicTaxonomyLevelSchema,
+  parentTopicId: Type.Optional(Type.String({ format: "uuid" })),
+  source: TopicNodeSourceSchema,
+  metadata: Type.Record(Type.String(), Type.Unknown()),
+  createdAt: Type.String({ format: "date-time" }),
+  updatedAt: Type.String({ format: "date-time" }),
+});
+
+export type TopicNode = Static<typeof TopicNodeSchema>;
+
+export const TopicLineageSchema = Type.Object({
+  id: Type.String({ format: "uuid" }),
+  topicClusterId: Type.String({ format: "uuid" }),
+  clusterVersion: Type.String(),
+  labelCandidateId: Type.String({ format: "uuid" }),
+  l1TopicId: Type.String({ format: "uuid" }),
+  l2TopicId: Type.Optional(Type.String({ format: "uuid" })),
+  l3TopicId: Type.Optional(Type.String({ format: "uuid" })),
+  pathSlugs: Type.Array(Type.String()),
+  metadata: Type.Record(Type.String(), Type.Unknown()),
+  createdAt: Type.String({ format: "date-time" }),
+  updatedAt: Type.String({ format: "date-time" }),
+});
+
+export type TopicLineage = Static<typeof TopicLineageSchema>;
+
+export const TopicMembershipRoleSchema = Type.Union([
+  Type.Literal("primary"),
+  Type.Literal("supporting"),
+]);
+
+export type TopicMembershipRole = Static<typeof TopicMembershipRoleSchema>;
+
+export const TopicMembershipSchema = Type.Object({
+  topicClusterId: Type.String({ format: "uuid" }),
+  clusterVersion: Type.String(),
+  topicId: Type.String({ format: "uuid" }),
+  membershipRole: TopicMembershipRoleSchema,
+  confidence: Type.Number({ minimum: 0, maximum: 1 }),
+  metadata: Type.Record(Type.String(), Type.Unknown()),
+});
+
+export type TopicMembership = Static<typeof TopicMembershipSchema>;
+
 export const FeedItemSchema = Type.Composite([
   NormalizedItemSchema,
   Type.Object({

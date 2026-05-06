@@ -32,6 +32,9 @@ export const AppConfigSchema = Type.Object({
   OLLAMA_EMBEDDING_MODEL: Type.String({ default: "nomic-embed-text-v2-moe" }),
   OLLAMA_EMBEDDING_DIMENSIONS: Type.Number({ default: 768 }),
   OLLAMA_EMBEDDING_TIMEOUT_MS: Type.Number({ default: 30000 }),
+  CLOUDFLARE_API_TOKEN: Type.String({ default: "" }),
+  CLOUDFLARE_MODEL: Type.String({ default: "" }),
+  CLOUDFLARE_ACCOUNT_ID: Type.String({ default: "" }),
 });
 
 export type AppConfig = Static<typeof AppConfigSchema>;

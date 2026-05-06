@@ -17,6 +17,12 @@ import {
   TOPIC_CLUSTER_RULE_VERSION,
 } from "./topics/cluster.js";
 import {
+  buildFallbackTopicNaming,
+  buildTaxonomyNodes,
+  parseTopicNamingLLMOutput,
+  validateTopicNamingCandidate,
+} from "./topics/naming.js";
+import {
   buildEmbeddingInput,
   buildEmbeddingInputFromUnifiedContent,
   isEmbeddingInputRecord,
@@ -29,12 +35,16 @@ export type { SourceFeatures, UnifiedContentRecord };
 export {
   buildEmbeddingInput,
   buildEmbeddingInputFromUnifiedContent,
+  buildFallbackTopicNaming,
   buildRuntimeTopicSeedsFromTopicClusters,
+  buildTaxonomyNodes,
   clusterTopicContents,
   isEmbeddingInputRecord,
   isUnifiedContentRecord,
   isValidSourceFeatures,
+  parseTopicNamingLLMOutput,
   TOPIC_CLUSTER_RULE_VERSION,
+  validateTopicNamingCandidate,
 };
 
 export interface PipelineOutput {

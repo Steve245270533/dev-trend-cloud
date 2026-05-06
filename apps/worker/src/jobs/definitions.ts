@@ -13,6 +13,8 @@ export const QUEUES = {
   embeddingBackfill: "embedding-backfill",
   topicClustering: "topic-clustering",
   topicClusteringBackfill: "topic-clustering-backfill",
+  topicNaming: "topic-naming",
+  topicNamingBackfill: "topic-naming-backfill",
 } as const;
 
 export interface ContractAuditJobData {
@@ -59,6 +61,20 @@ export interface TopicClusteringJobData {
 }
 
 export interface TopicClusteringBackfillJobData {
+  source?: SourceKey;
+  limit?: number;
+  bootstrap?: boolean;
+  reason?: "manual-backfill" | "rule-version-change";
+}
+
+export interface TopicNamingJobData {
+  source?: SourceKey;
+  limit?: number;
+  bootstrap?: boolean;
+  reason?: "cluster-stage" | "manual-naming";
+}
+
+export interface TopicNamingBackfillJobData {
   source?: SourceKey;
   limit?: number;
   bootstrap?: boolean;

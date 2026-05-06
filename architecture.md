@@ -5,9 +5,9 @@
 - 当前仓库已经实现了什么
 - 下一阶段将如何从 `Question Pressure MVP` 演进到 `Topic Layer / Feature Layer MVP`
 
-## 当前实现边界（截至 2026-05-05）
+## 当前实现边界（截至 2026-05-06）
 
-当前仓库的代码实现仍以 [devtrend-cloud-practical-plan-2026-04-29-v4.md](./docs/plan/devtrend-cloud-practical-plan-2026-04-29-v4.md) 的 `Phase 0 + Phase 1` 为主，但已经包含一些不应再被写成“占位”的能力。
+当前仓库实现已覆盖 `Phase 2` 的 `S1-S3`（统一模型、embedding、topic clustering），`S4` 的 topic naming / taxonomy 仍在进行中。
 
 ### 已实现
 
@@ -19,13 +19,14 @@
 - BullMQ worker 的异步编排
 - 轻量只读 web console
 - runtime topic discovery
+- embedding incremental / backfill
+- topic clustering incremental / backfill
+- dynamic-cluster-first runtime topic projection
+- topic naming（Cloudflare LLM + deterministic fallback）
+- taxonomy persistence（topic nodes / lineage / memberships）
 
 ### 尚未实现
 
-- embedding pipeline
-- topic clustering / topic persistence
-- LLM topic naming
-- topic taxonomy（L1 / L2 / L3）
 - insight-oriented APIs
 - watchlist CRUD、digest、webhook
 - 完整 analyst console
@@ -119,8 +120,8 @@ OpenCLI public sources
 
 - Postgres 是事实源（system of record）。
 - 当前对象：`raw_snapshots`、`source_runs`、`items`、`item_sources`、`topics`、`entities`、`question_clusters`、`signals`、`signal_evidence`、`runtime_topic_seed_runs`、`runtime_topic_seeds`。
-- 当前基础设施：`pgvector` 已启用，但尚未成为线上主链路依赖。
-- 下一阶段规划：为 embedding、topic cluster、topic label candidate、topic lineage、taxonomy node 预留持久化对象。
+- 当前基础设施：`pgvector` 已启用，embedding 与 topic cluster 主链路可运行。
+- 下一阶段规划：补齐 topic label candidate、topic lineage、taxonomy node、topic membership 的持久化对象。
 
 ### Transport 层（apps/api）
 
@@ -130,7 +131,7 @@ OpenCLI public sources
 ### Orchestration 层（apps/worker）
 
 - 当前：BullMQ 负责 source refresh、collect、normalize、match、cluster、score、fallback、source health rollup。
-- 下一阶段：在不破坏现有 question pipeline 的前提下，新增 embedding、topic clustering、topic naming、topic persistence jobs。
+- 下一阶段：在不破坏现有 question pipeline 的前提下，新增 topic naming 与 taxonomy persistence jobs。
 
 ### Web 层（apps/web）
 

@@ -16,6 +16,12 @@ import type {
   SourceStatus,
   TopicCluster,
   TopicClusterMembership,
+  TopicLabelCandidate,
+  TopicLineage,
+  TopicMembership,
+  TopicNamingFallbackReason,
+  TopicNamingStatus,
+  TopicNode,
   UnifiedContentRecord,
 } from "@devtrend/contracts";
 import type { PipelineOutput } from "@devtrend/domain";
@@ -168,6 +174,60 @@ interface TopicClusterMembershipRow {
   metadata: Record<string, unknown>;
 }
 
+interface TopicLabelCandidateRow {
+  id: string;
+  topic_cluster_id: string;
+  cluster_version: string;
+  status: string;
+  label: string;
+  summary: string;
+  keywords: string[];
+  taxonomy_l1: string;
+  taxonomy_l2: string | null;
+  taxonomy_l3: string | null;
+  fallback_reason: string | null;
+  provider: string | null;
+  model: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TopicNodeRow {
+  id: string;
+  slug: string;
+  display_name: string;
+  level: string;
+  parent_topic_id: string | null;
+  source: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TopicLineageRow {
+  id: string;
+  topic_cluster_id: string;
+  cluster_version: string;
+  label_candidate_id: string;
+  l1_topic_id: string;
+  l2_topic_id: string | null;
+  l3_topic_id: string | null;
+  path_slugs: string[];
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TopicMembershipRow {
+  topic_cluster_id: string;
+  cluster_version: string;
+  topic_node_id: string;
+  membership_role: string;
+  confidence: number;
+  metadata: Record<string, unknown>;
+}
+
 export interface EmbeddingRecordPersisted {
   id: string;
   canonicalId: string;
@@ -241,6 +301,48 @@ export interface UpsertTopicClusterInput extends TopicCluster {}
 export interface ReplaceTopicClusterMembershipsInput {
   topicClusterRowId: string;
   memberships: TopicClusterMembership[];
+}
+
+export interface UpsertTopicLabelCandidateInput {
+  topicClusterId: string;
+  clusterVersion: string;
+  status: TopicNamingStatus;
+  label: string;
+  summary: string;
+  keywords: string[];
+  taxonomyL1: string;
+  taxonomyL2?: string;
+  taxonomyL3?: string;
+  fallbackReason?: TopicNamingFallbackReason;
+  provider?: string;
+  model?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface UpsertTopicNodeInput {
+  slug: string;
+  displayName: string;
+  level: TopicNode["level"];
+  parentTopicId?: string;
+  source: TopicNode["source"];
+  metadata?: Record<string, unknown>;
+}
+
+export interface UpsertTopicLineageInput {
+  topicClusterId: string;
+  clusterVersion: string;
+  labelCandidateId: string;
+  l1TopicId: string;
+  l2TopicId?: string;
+  l3TopicId?: string;
+  pathSlugs: string[];
+  metadata?: Record<string, unknown>;
+}
+
+export interface ReplaceTopicMembershipsInput {
+  topicClusterId: string;
+  clusterVersion: string;
+  memberships: TopicMembership[];
 }
 
 type PersistedSourceStatus = SourceStatus & {
@@ -519,6 +621,73 @@ function mapTopicClusterMembershipRow(
   };
 }
 
+function mapTopicLabelCandidateRow(
+  row: TopicLabelCandidateRow,
+): TopicLabelCandidate {
+  return {
+    id: row.id,
+    topicClusterId: row.topic_cluster_id,
+    clusterVersion: row.cluster_version,
+    status: row.status as TopicNamingStatus,
+    label: row.label,
+    summary: row.summary,
+    keywords: row.keywords ?? [],
+    taxonomyL1: row.taxonomy_l1,
+    taxonomyL2: row.taxonomy_l2 ?? undefined,
+    taxonomyL3: row.taxonomy_l3 ?? undefined,
+    fallbackReason:
+      typeof row.fallback_reason === "string"
+        ? (row.fallback_reason as TopicNamingFallbackReason)
+        : undefined,
+    provider: row.provider ?? undefined,
+    model: row.model ?? undefined,
+    metadata: row.metadata ?? {},
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+  };
+}
+
+function mapTopicNodeRow(row: TopicNodeRow): TopicNode {
+  return {
+    id: row.id,
+    slug: row.slug,
+    displayName: row.display_name,
+    level: row.level as TopicNode["level"],
+    parentTopicId: row.parent_topic_id ?? undefined,
+    source: row.source as TopicNode["source"],
+    metadata: row.metadata ?? {},
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+  };
+}
+
+function mapTopicLineageRow(row: TopicLineageRow): TopicLineage {
+  return {
+    id: row.id,
+    topicClusterId: row.topic_cluster_id,
+    clusterVersion: row.cluster_version,
+    labelCandidateId: row.label_candidate_id,
+    l1TopicId: row.l1_topic_id,
+    l2TopicId: row.l2_topic_id ?? undefined,
+    l3TopicId: row.l3_topic_id ?? undefined,
+    pathSlugs: row.path_slugs ?? [],
+    metadata: row.metadata ?? {},
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+  };
+}
+
+function mapTopicMembershipRow(row: TopicMembershipRow): TopicMembership {
+  return {
+    topicClusterId: row.topic_cluster_id,
+    clusterVersion: row.cluster_version,
+    topicId: row.topic_node_id,
+    membershipRole: row.membership_role as TopicMembership["membershipRole"],
+    confidence: Number(row.confidence ?? 0),
+    metadata: row.metadata ?? {},
+  };
+}
+
 export async function pingDatabase(db: Queryable): Promise<boolean> {
   await db.query("SELECT 1");
   return true;
@@ -528,6 +697,14 @@ export async function resetRuntimeTables(db: Queryable) {
   await db.query(
     `
       TRUNCATE TABLE
+        topic_memberships,
+        topic_lineage,
+        topic_label_candidates,
+        topic_nodes,
+        topic_cluster_memberships,
+        topic_clusters,
+        embedding_records,
+        unified_contents,
         signal_evidence,
         signals,
         question_cluster_items,
@@ -545,6 +722,14 @@ export async function resetSeedTables(db: Queryable) {
   await db.query(
     `
       TRUNCATE TABLE
+        topic_memberships,
+        topic_lineage,
+        topic_label_candidates,
+        topic_nodes,
+        topic_cluster_memberships,
+        topic_clusters,
+        embedding_records,
+        unified_contents,
         runtime_topic_seeds,
         runtime_topic_seed_runs,
         signal_evidence,
@@ -2072,6 +2257,260 @@ export async function listTopicClusterMemberships(
 
   return result.rows.map((row: unknown) =>
     mapTopicClusterMembershipRow(row as TopicClusterMembershipRow),
+  );
+}
+
+export async function upsertTopicLabelCandidate(
+  db: Queryable,
+  input: UpsertTopicLabelCandidateInput,
+): Promise<TopicLabelCandidate> {
+  const result = await db.query(
+    `
+      INSERT INTO topic_label_candidates (
+        topic_cluster_id,
+        cluster_version,
+        status,
+        label,
+        summary,
+        keywords,
+        taxonomy_l1,
+        taxonomy_l2,
+        taxonomy_l3,
+        fallback_reason,
+        provider,
+        model,
+        metadata
+      )
+      VALUES (
+        $1, $2, $3, $4, $5, $6,
+        $7, $8, $9, $10, $11, $12, $13::jsonb
+      )
+      ON CONFLICT (topic_cluster_id, cluster_version) DO UPDATE
+      SET status = EXCLUDED.status,
+          label = EXCLUDED.label,
+          summary = EXCLUDED.summary,
+          keywords = EXCLUDED.keywords,
+          taxonomy_l1 = EXCLUDED.taxonomy_l1,
+          taxonomy_l2 = EXCLUDED.taxonomy_l2,
+          taxonomy_l3 = EXCLUDED.taxonomy_l3,
+          fallback_reason = EXCLUDED.fallback_reason,
+          provider = EXCLUDED.provider,
+          model = EXCLUDED.model,
+          metadata = EXCLUDED.metadata,
+          updated_at = NOW()
+      RETURNING
+        id,
+        topic_cluster_id,
+        cluster_version,
+        status,
+        label,
+        summary,
+        keywords,
+        taxonomy_l1,
+        taxonomy_l2,
+        taxonomy_l3,
+        fallback_reason,
+        provider,
+        model,
+        metadata,
+        created_at,
+        updated_at
+    `,
+    [
+      input.topicClusterId,
+      input.clusterVersion,
+      input.status,
+      input.label,
+      input.summary,
+      input.keywords,
+      input.taxonomyL1,
+      input.taxonomyL2 ?? null,
+      input.taxonomyL3 ?? null,
+      input.fallbackReason ?? null,
+      input.provider ?? null,
+      input.model ?? null,
+      JSON.stringify(input.metadata ?? {}),
+    ],
+  );
+
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error("Failed to upsert topic label candidate.");
+  }
+  return mapTopicLabelCandidateRow(row as TopicLabelCandidateRow);
+}
+
+export async function upsertTopicNode(
+  db: Queryable,
+  input: UpsertTopicNodeInput,
+): Promise<TopicNode> {
+  const result = await db.query(
+    `
+      INSERT INTO topic_nodes (
+        slug,
+        display_name,
+        level,
+        parent_topic_id,
+        source,
+        metadata
+      )
+      VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+      ON CONFLICT (slug) DO UPDATE
+      SET display_name = EXCLUDED.display_name,
+          level = EXCLUDED.level,
+          parent_topic_id = EXCLUDED.parent_topic_id,
+          source = EXCLUDED.source,
+          metadata = EXCLUDED.metadata,
+          updated_at = NOW()
+      RETURNING
+        id,
+        slug,
+        display_name,
+        level,
+        parent_topic_id,
+        source,
+        metadata,
+        created_at,
+        updated_at
+    `,
+    [
+      input.slug,
+      input.displayName,
+      input.level,
+      input.parentTopicId ?? null,
+      input.source,
+      JSON.stringify(input.metadata ?? {}),
+    ],
+  );
+
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error("Failed to upsert topic node.");
+  }
+  return mapTopicNodeRow(row as TopicNodeRow);
+}
+
+export async function upsertTopicLineage(
+  db: Queryable,
+  input: UpsertTopicLineageInput,
+): Promise<TopicLineage> {
+  const result = await db.query(
+    `
+      INSERT INTO topic_lineage (
+        topic_cluster_id,
+        cluster_version,
+        label_candidate_id,
+        l1_topic_id,
+        l2_topic_id,
+        l3_topic_id,
+        path_slugs,
+        metadata
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+      ON CONFLICT (topic_cluster_id, cluster_version) DO UPDATE
+      SET label_candidate_id = EXCLUDED.label_candidate_id,
+          l1_topic_id = EXCLUDED.l1_topic_id,
+          l2_topic_id = EXCLUDED.l2_topic_id,
+          l3_topic_id = EXCLUDED.l3_topic_id,
+          path_slugs = EXCLUDED.path_slugs,
+          metadata = EXCLUDED.metadata,
+          updated_at = NOW()
+      RETURNING
+        id,
+        topic_cluster_id,
+        cluster_version,
+        label_candidate_id,
+        l1_topic_id,
+        l2_topic_id,
+        l3_topic_id,
+        path_slugs,
+        metadata,
+        created_at,
+        updated_at
+    `,
+    [
+      input.topicClusterId,
+      input.clusterVersion,
+      input.labelCandidateId,
+      input.l1TopicId,
+      input.l2TopicId ?? null,
+      input.l3TopicId ?? null,
+      input.pathSlugs,
+      JSON.stringify(input.metadata ?? {}),
+    ],
+  );
+
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error("Failed to upsert topic lineage.");
+  }
+  return mapTopicLineageRow(row as TopicLineageRow);
+}
+
+export async function replaceTopicMemberships(
+  db: Queryable,
+  input: ReplaceTopicMembershipsInput,
+): Promise<number> {
+  await db.query(
+    `
+      DELETE FROM topic_memberships
+      WHERE topic_cluster_id = $1
+        AND cluster_version = $2
+    `,
+    [input.topicClusterId, input.clusterVersion],
+  );
+
+  for (const membership of input.memberships) {
+    await db.query(
+      `
+        INSERT INTO topic_memberships (
+          topic_cluster_id,
+          cluster_version,
+          topic_node_id,
+          membership_role,
+          confidence,
+          metadata
+        )
+        VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+      `,
+      [
+        membership.topicClusterId,
+        membership.clusterVersion,
+        membership.topicId,
+        membership.membershipRole,
+        membership.confidence,
+        JSON.stringify(membership.metadata ?? {}),
+      ],
+    );
+  }
+
+  return input.memberships.length;
+}
+
+export async function listTopicMemberships(
+  db: Queryable,
+  topicClusterId: string,
+  clusterVersion: string,
+): Promise<TopicMembership[]> {
+  const result = await db.query(
+    `
+      SELECT
+        topic_cluster_id,
+        cluster_version,
+        topic_node_id,
+        membership_role,
+        confidence,
+        metadata
+      FROM topic_memberships
+      WHERE topic_cluster_id = $1
+        AND cluster_version = $2
+      ORDER BY confidence DESC, membership_role ASC
+    `,
+    [topicClusterId, clusterVersion],
+  );
+
+  return result.rows.map((row: unknown) =>
+    mapTopicMembershipRow(row as TopicMembershipRow),
   );
 }
 
