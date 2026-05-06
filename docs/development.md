@@ -4,7 +4,7 @@
 
 ## 当前实现范围
 
-截至 2026-05-06，当前代码实现已覆盖 `Phase 0 + Phase 1` + `Phase 2` 的 `S1-S3`：
+截至 2026-05-06，当前代码实现已覆盖 `Phase 0 + Phase 1` + `Phase 2` 的 `S1-S4`：
 
 - Stack Overflow / Hacker News / DEV / OSSInsight 的 public source 采集
 - raw snapshots、normalized items、question pressure、evidence drilldown
@@ -15,6 +15,7 @@
 - unified content model
 - embedding incremental / backfill
 - topic clustering incremental / backfill
+- topic naming / taxonomy persistence
 
 以下能力仍属于下一阶段规划，而不是当前运行说明：
 
@@ -60,7 +61,7 @@
 说明：
 
 - `pgvector` 已在数据库层启用，当前 worker 已支持 embedding 与 topic clustering 主链路。
-- 当前仓库已具备 embedding + topic clustering + topic naming/taxonomy MVP 主链路。
+- 当前仓库已具备 embedding + topic clustering + topic naming/taxonomy MVP 主链路，Ollama transport 已收口到 `packages/ai`。
 - 这些能力属于 `Phase 2 / Topic Layer` 规划，不应写成当前可运行命令。
 
 ## 环境变量

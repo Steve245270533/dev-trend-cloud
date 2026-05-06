@@ -177,6 +177,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@devtrend/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@devtrend/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -198,9 +201,6 @@ importers:
       ioredis:
         specifier: catalog:worker
         version: 5.10.1
-      ollama:
-        specifier: ^0.6.3
-        version: 0.6.3
       pg:
         specifier: 'catalog:'
         version: 8.20.0
@@ -210,6 +210,12 @@ importers:
       pino-roll:
         specifier: catalog:worker
         version: 4.0.0
+
+  packages/ai:
+    dependencies:
+      ollama:
+        specifier: ^0.6.3
+        version: 0.6.3
 
   packages/config:
     dependencies:
@@ -261,6 +267,9 @@ importers:
 
   test:
     dependencies:
+      '@devtrend/ai':
+        specifier: workspace:*
+        version: link:../packages/ai
       '@devtrend/api':
         specifier: workspace:*
         version: link:../apps/api

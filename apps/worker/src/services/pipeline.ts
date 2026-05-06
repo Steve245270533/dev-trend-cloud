@@ -1,5 +1,16 @@
 import { createHash, randomUUID } from "node:crypto";
 import type {
+  EmbeddingRequestConfig,
+  EmbeddingVectorGenerator,
+  TopicNamingGenerator,
+  TopicNamingRequestConfig,
+} from "@devtrend/ai";
+import {
+  isTopicNamingRequestConfigured,
+  requestOllamaEmbedding,
+  requestOllamaTopicNaming,
+} from "@devtrend/ai";
+import type {
   NormalizedItem,
   RuntimeTopicSeed,
   RuntimeTopicSeedRun,
@@ -61,7 +72,6 @@ import {
   mergeRuntimeTopicCandidates,
   normalizeCollectedPayloads,
 } from "@devtrend/sources";
-import { Ollama } from "ollama";
 import type { Pool } from "pg";
 import { noopWorkerLogger, type WorkerLogger } from "./logger.js";
 
@@ -73,13 +83,6 @@ export interface WorkerBootstrapState {
 export interface WorkerBootstrapPlan {
   refreshRuntimeTopics: boolean;
   collectSources: SourceKey[];
-}
-
-export interface EmbeddingPipelineConfig {
-  baseUrl: string;
-  model: string;
-  dimensions: number;
-  timeoutMs: number;
 }
 
 export interface EmbeddingJobOptions {
@@ -103,27 +106,11 @@ export interface TopicClusteringJobResult {
   superseded: number;
 }
 
-export interface TopicNamingOllamaConfig {
-  baseUrl: string;
-  model: string;
-  timeoutMs: number;
-}
-
 export interface TopicNamingJobResult {
   clusters: number;
   llmGenerated: number;
   fallbackGenerated: number;
 }
-
-export type EmbeddingVectorGenerator = (
-  config: EmbeddingPipelineConfig,
-  input: string,
-) => Promise<number[]>;
-
-export type TopicNamingGenerator = (
-  config: TopicNamingOllamaConfig,
-  prompt: string,
-) => Promise<unknown>;
 
 const EMBEDDING_INPUT_SCHEMA_VERSION = "embedding-input-v1";
 const DEFAULT_EMBEDDING_BATCH_LIMIT = 50;
@@ -151,140 +138,6 @@ function resolveEmbeddingLimit(value: number | undefined): number {
     return DEFAULT_EMBEDDING_BATCH_LIMIT;
   }
   return Math.max(1, Math.min(value, 500));
-}
-
-function resolveEmbeddingEndpoint(baseUrl: string): string {
-  return `${baseUrl.replace(/\/+$/, "")}/api/embeddings`;
-}
-
-function parseEmbeddingVector(payload: unknown): number[] {
-  if (!isObjectLike(payload) || !Array.isArray(payload.embedding)) {
-    throw new Error("Embedding provider response does not include embedding.");
-  }
-
-  const vector = payload.embedding
-    .map((value) => (typeof value === "number" ? value : Number.NaN))
-    .filter((value) => Number.isFinite(value));
-  if (vector.length === 0) {
-    throw new Error("Embedding provider returned an empty vector.");
-  }
-  return vector;
-}
-
-export async function requestOllamaEmbedding(
-  config: EmbeddingPipelineConfig,
-  input: string,
-  fetchImpl: typeof fetch = fetch,
-): Promise<number[]> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
-
-  try {
-    const response = await fetchImpl(resolveEmbeddingEndpoint(config.baseUrl), {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: config.model,
-        prompt: input,
-      }),
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Embedding provider HTTP ${response.status}`);
-    }
-
-    const payload = (await response.json()) as unknown;
-    const vector = parseEmbeddingVector(payload);
-    if (config.dimensions > 0 && vector.length !== config.dimensions) {
-      throw new Error(
-        `Embedding vector dimension mismatch: expected ${config.dimensions}, got ${vector.length}`,
-      );
-    }
-    return vector;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-function createTimeoutFetch(
-  timeoutMs: number,
-  fetchImpl: typeof fetch = fetch,
-): typeof fetch {
-  return async (
-    input: Parameters<typeof fetch>[0],
-    init?: Parameters<typeof fetch>[1],
-  ) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort(),
-      Math.max(timeoutMs, 1000),
-    );
-    const upstreamSignal = init?.signal;
-    const abortOnUpstreamSignal = () => controller.abort();
-
-    if (upstreamSignal) {
-      if (upstreamSignal.aborted) {
-        controller.abort();
-      } else {
-        upstreamSignal.addEventListener("abort", abortOnUpstreamSignal, {
-          once: true,
-        });
-      }
-    }
-
-    try {
-      return await fetchImpl(input, {
-        ...init,
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeout);
-      upstreamSignal?.removeEventListener("abort", abortOnUpstreamSignal);
-    }
-  };
-}
-
-export async function requestOllamaTopicNaming(
-  config: TopicNamingOllamaConfig,
-  prompt: string,
-  fetchImpl: typeof fetch = fetch,
-): Promise<unknown> {
-  const client = new Ollama({
-    host: config.baseUrl,
-    fetch: createTimeoutFetch(config.timeoutMs, fetchImpl),
-  });
-
-  const response = await client.chat({
-    model: config.model,
-    think: false,
-    stream: false,
-    format: "json",
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a topic naming assistant. Return only strict JSON with keys: label, summary, keywords, taxonomy{l1,l2,l3}.",
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-  });
-
-  const content = response.message.content.trim();
-  if (content.length === 0) {
-    throw new Error("Ollama naming response is empty.");
-  }
-
-  return content;
-}
-
-function topicNamingConfigAvailable(config: TopicNamingOllamaConfig): boolean {
-  return config.baseUrl.trim().length > 0 && config.model.trim().length > 0;
 }
 
 function toStringArray(value: unknown): string[] {
@@ -793,7 +646,7 @@ export async function persistCollectedPayloads(
 
 async function runEmbeddingBatch(
   pool: Pool,
-  config: EmbeddingPipelineConfig,
+  config: EmbeddingRequestConfig,
   options: EmbeddingJobOptions,
   logger: WorkerLogger,
   embed: EmbeddingVectorGenerator = requestOllamaEmbedding,
@@ -909,7 +762,7 @@ async function runEmbeddingBatch(
 
 export async function runIncrementalEmbeddingJob(
   pool: Pool,
-  config: EmbeddingPipelineConfig,
+  config: EmbeddingRequestConfig,
   options: Omit<EmbeddingJobOptions, "includeFailed"> = {},
   logger: WorkerLogger = noopWorkerLogger(),
   embed: EmbeddingVectorGenerator = requestOllamaEmbedding,
@@ -925,7 +778,7 @@ export async function runIncrementalEmbeddingJob(
 
 export async function runEmbeddingBackfillJob(
   pool: Pool,
-  config: EmbeddingPipelineConfig,
+  config: EmbeddingRequestConfig,
   options: EmbeddingJobOptions = {},
   logger: WorkerLogger = noopWorkerLogger(),
   embed: EmbeddingVectorGenerator = requestOllamaEmbedding,
@@ -971,7 +824,7 @@ async function persistTopicClusters(
 
 async function runTopicClusteringBatch(
   pool: Pool,
-  config: EmbeddingPipelineConfig,
+  config: EmbeddingRequestConfig,
   options: {
     source?: SourceKey;
     limit?: number;
@@ -1045,7 +898,7 @@ async function runTopicClusteringBatch(
 
 export async function runTopicClusteringJob(
   pool: Pool,
-  config: EmbeddingPipelineConfig,
+  config: EmbeddingRequestConfig,
   options: {
     source?: SourceKey;
     limit?: number;
@@ -1057,7 +910,7 @@ export async function runTopicClusteringJob(
 
 export async function runTopicClusteringBackfillJob(
   pool: Pool,
-  config: EmbeddingPipelineConfig,
+  config: EmbeddingRequestConfig,
   options: {
     source?: SourceKey;
     limit?: number;
@@ -1108,7 +961,7 @@ function deriveTopicMemberships(
 
 async function runTopicNamingBatch(
   pool: Pool,
-  config: TopicNamingOllamaConfig,
+  config: TopicNamingRequestConfig,
   options: {
     source?: SourceKey;
     limit?: number;
@@ -1145,7 +998,7 @@ async function runTopicNamingBatch(
       promptSize: prompt.length,
     };
 
-    if (!topicNamingConfigAvailable(config)) {
+    if (!isTopicNamingRequestConfigured(config)) {
       namingCandidate = buildFallbackTopicNaming(cluster, "missing-config");
     } else {
       try {
@@ -1269,7 +1122,7 @@ async function runTopicNamingBatch(
 
 export async function runTopicNamingJob(
   pool: Pool,
-  config: TopicNamingOllamaConfig,
+  config: TopicNamingRequestConfig,
   options: {
     source?: SourceKey;
     limit?: number;
@@ -1282,7 +1135,7 @@ export async function runTopicNamingJob(
 
 export async function runTopicNamingBackfillJob(
   pool: Pool,
-  config: TopicNamingOllamaConfig,
+  config: TopicNamingRequestConfig,
   options: {
     source?: SourceKey;
     limit?: number;

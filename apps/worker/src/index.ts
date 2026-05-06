@@ -3,8 +3,6 @@ export {
   persistCollectedPayloads,
   planWorkerBootstrap,
   refreshRuntimeTopicSeeds,
-  requestOllamaEmbedding,
-  requestOllamaTopicNaming,
   runEmbeddingBackfillJob,
   runIncrementalEmbeddingJob,
   runTopicClusteringBackfillJob,

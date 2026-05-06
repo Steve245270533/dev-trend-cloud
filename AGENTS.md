@@ -85,6 +85,7 @@
 - Worker（BullMQ 编排与任务，后续承接 embedding/topic jobs）： [apps/worker/AGENTS.md](./apps/worker/AGENTS.md)
 - Web（轻量只读控制台，非完整 analyst console）： [apps/web/AGENTS.md](./apps/web/AGENTS.md)
 - Config（环境 schema）： [packages/config/AGENTS.md](./packages/config/AGENTS.md)
+- AI（本地模型适配与 transport）： [packages/ai/AGENTS.md](./packages/ai/AGENTS.md)
 - Contracts（TypeBox DTO）： [packages/contracts/AGENTS.md](./packages/contracts/AGENTS.md)
 - DB（migrations/seeds/repos）： [packages/db/AGENTS.md](./packages/db/AGENTS.md)
 - Domain（问题层 + 主题层的确定性逻辑）： [packages/domain/AGENTS.md](./packages/domain/AGENTS.md)

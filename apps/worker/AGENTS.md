@@ -15,7 +15,7 @@
 - normalize / match / question cluster / score
 - embedding incremental / backfill（provider 调用 + 持久化 + 失败降级日志）
 - topic clustering incremental / backfill（cluster 持久化 + membership 更新 + supersede）
-- topic naming incremental / backfill（Ollama local LLM + deterministic fallback）
+- topic naming incremental / backfill（经 `packages/ai` 调用本地模型 + deterministic fallback）
 - taxonomy persistence（topic nodes / lineage / memberships）
 - dynamic-cluster-first runtime topic loading（低置信度或异常时回退到 runtime seeds）
 - bootstrap enqueue on cold start
@@ -43,6 +43,7 @@
 
 - OpenCLI 审计与采集：`packages/sources`
 - DB 访问：`packages/db`
+- 本地模型 transport：`packages/ai`
 
 ## 日志与可观测性
 

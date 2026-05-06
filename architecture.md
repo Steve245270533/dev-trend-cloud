@@ -7,7 +7,7 @@
 
 ## 当前实现边界（截至 2026-05-06）
 
-当前仓库实现已覆盖 `Phase 2` 的 `S1-S3`（统一模型、embedding、topic clustering），`S4` 的 topic naming / taxonomy 仍在进行中。
+当前仓库实现已覆盖 `Phase 2` 的 `S1-S4`（统一模型、embedding、topic clustering、topic naming / taxonomy）。
 
 ### 已实现
 
@@ -22,7 +22,7 @@
 - embedding incremental / backfill
 - topic clustering incremental / backfill
 - dynamic-cluster-first runtime topic projection
-- topic naming（Ollama local LLM + deterministic fallback）
+- topic naming（通过 `packages/ai` 调用本地模型 + deterministic fallback）
 - taxonomy persistence（topic nodes / lineage / memberships）
 
 ### 尚未实现
@@ -123,6 +123,12 @@ OpenCLI public sources
 - 当前基础设施：`pgvector` 已启用，embedding 与 topic cluster 主链路可运行。
 - 下一阶段规划：补齐 topic label candidate、topic lineage、taxonomy node、topic membership 的持久化对象。
 
+### AI 层（packages/ai）
+
+- 目标：把本地模型 provider 的 transport、超时控制与响应校验从 worker 编排中拆出。
+- 当前职责：封装 Ollama embedding / topic naming 请求与 JSON transport 校验。
+- 边界：不承载 topic merge、taxonomy、fallback 等 domain 决策。
+
 ### Transport 层（apps/api）
 
 - 当前：Fastify 提供只读 HTTP API 与统一响应 envelope。
@@ -146,6 +152,7 @@ apps/
   worker/    BullMQ schedulers and jobs
   web/       轻量只读控制台
 packages/
+  ai/        本地模型 provider 适配与 transport
   config/    环境变量 schema 与运行时配置
   contracts/ TypeBox schemas / DTOs（跨包共享）
   db/        migrations, seeds, repositories

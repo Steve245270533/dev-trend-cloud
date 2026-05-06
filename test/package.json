@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@devtrend/ai": "workspace:*",
     "@devtrend/api": "workspace:*",
     "@devtrend/db": "workspace:*",
     "@devtrend/domain": "workspace:*",
@@ -15,4 +16,3 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
-
