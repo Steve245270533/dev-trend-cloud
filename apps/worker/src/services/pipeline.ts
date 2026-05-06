@@ -1,10 +1,12 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type {
   NormalizedItem,
   RuntimeTopicSeed,
   RuntimeTopicSeedRun,
+  SourceFeatures,
   SourceKey,
   SourceStatus,
+  UnifiedContentRecord,
 } from "@devtrend/contracts";
 import {
   getLatestRuntimeTopicSeedSnapshot,
@@ -20,11 +22,13 @@ import {
   replaceRuntimeTopicSeeds,
   replaceSourceItems,
   upsertCatalog,
+  upsertUnifiedContentRecords,
   withTransaction,
 } from "@devtrend/db";
 import {
   buildQuestionPressurePipeline,
   entitySeeds,
+  isValidSourceFeatures,
   topicSeeds,
 } from "@devtrend/domain";
 import type { CollectedSourcePayload } from "@devtrend/sources";
@@ -49,6 +53,240 @@ export interface WorkerBootstrapPlan {
 
 function buildPayloadKey(source: string, commandName: string): string {
   return `${source}:${commandName}`;
+}
+
+function isObjectLike(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function toNonNegativeInteger(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0
+    ? value
+    : undefined;
+}
+
+function toNumber(value: unknown): number | undefined {
+  return typeof value === "number" ? value : undefined;
+}
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter((entry): entry is string => typeof entry === "string")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+}
+
+function resolveSourceSpecificFeatures(item: NormalizedItem): SourceFeatures {
+  const rawMeta = isObjectLike(item.rawMeta) ? item.rawMeta : {};
+
+  if (item.source === "stackoverflow") {
+    return {
+      shared: {
+        score: item.score,
+        answerCount: item.answerCount,
+        commentCount: item.commentCount,
+        viewCount:
+          toNonNegativeInteger(rawMeta.view_count) ??
+          toNonNegativeInteger(rawMeta.viewCount) ??
+          toNonNegativeInteger(rawMeta.views),
+      },
+      stackoverflow: {
+        answerCount: item.answerCount,
+        commentCount: item.commentCount,
+        viewCount:
+          toNonNegativeInteger(rawMeta.view_count) ??
+          toNonNegativeInteger(rawMeta.viewCount) ??
+          toNonNegativeInteger(rawMeta.views),
+        hasAcceptedAnswer:
+          typeof rawMeta.is_answered === "boolean"
+            ? rawMeta.is_answered
+            : rawMeta.accepted_answer_id !== undefined
+              ? true
+              : undefined,
+      },
+    };
+  }
+
+  if (item.source === "hackernews") {
+    const postKind =
+      typeof rawMeta.postKind === "string"
+        ? rawMeta.postKind
+        : /^ask hn:/i.test(item.title)
+          ? "ask"
+          : /^show hn:/i.test(item.title)
+            ? "show"
+            : /^poll:/i.test(item.title)
+              ? "poll"
+              : /^job:/i.test(item.title)
+                ? "job"
+                : "story";
+    return {
+      shared: {
+        score: item.score,
+        commentCount: item.commentCount,
+      },
+      hackernews: {
+        points: item.score,
+        comments: item.commentCount,
+        postKind:
+          postKind === "ask" ||
+          postKind === "show" ||
+          postKind === "story" ||
+          postKind === "job" ||
+          postKind === "poll"
+            ? postKind
+            : undefined,
+      },
+    };
+  }
+
+  if (item.source === "devto") {
+    return {
+      shared: {
+        score: item.score,
+        reactionCount: item.score,
+        commentCount: item.commentCount,
+      },
+      devto: {
+        readingTimeMinutes:
+          toNonNegativeInteger(rawMeta.reading_time_minutes) ??
+          toNonNegativeInteger(rawMeta.readingTimeMinutes),
+        reactionsCount: item.score,
+        commentsCount: item.commentCount,
+        tagDensity: toNumber(rawMeta.tagDensity),
+        tutorialIntent:
+          typeof rawMeta.tutorialIntent === "boolean"
+            ? rawMeta.tutorialIntent
+            : undefined,
+      },
+    };
+  }
+
+  return {
+    shared: {
+      score: item.score,
+      trendScore: item.score,
+    },
+    ossinsight: {
+      starsGrowth:
+        toNumber(rawMeta.stars_growth) ?? toNumber(rawMeta.starsGrowth),
+      issueCreatorGrowth:
+        toNumber(rawMeta.issue_creator_growth) ??
+        toNumber(rawMeta.issueCreatorGrowth),
+      prCreatorGrowth:
+        toNumber(rawMeta.pr_creator_growth) ??
+        toNumber(rawMeta.prCreatorGrowth),
+      collectionMembership:
+        toStringArray(rawMeta.collectionMembership).length > 0
+          ? toStringArray(rawMeta.collectionMembership)
+          : typeof rawMeta.collection_name === "string"
+            ? [rawMeta.collection_name]
+            : undefined,
+    },
+  };
+}
+
+function resolveSourceFeatures(item: NormalizedItem): SourceFeatures {
+  const rawMeta = isObjectLike(item.rawMeta) ? item.rawMeta : {};
+  if (isValidSourceFeatures(rawMeta.sourceFeatures)) {
+    return rawMeta.sourceFeatures;
+  }
+
+  return resolveSourceSpecificFeatures(item);
+}
+
+function resolveBodyExcerpt(item: NormalizedItem): string | undefined {
+  const rawMeta = isObjectLike(item.rawMeta) ? item.rawMeta : {};
+  if (
+    typeof rawMeta.bodyExcerpt === "string" &&
+    rawMeta.bodyExcerpt.length > 0
+  ) {
+    return rawMeta.bodyExcerpt.slice(0, 500);
+  }
+  if (typeof rawMeta.excerpt === "string" && rawMeta.excerpt.length > 0) {
+    return rawMeta.excerpt.slice(0, 500);
+  }
+  if (typeof rawMeta.body === "string" && rawMeta.body.length > 0) {
+    return rawMeta.body.slice(0, 500);
+  }
+  if (
+    typeof rawMeta.description === "string" &&
+    rawMeta.description.length > 0
+  ) {
+    return rawMeta.description.slice(0, 500);
+  }
+  return undefined;
+}
+
+function buildFingerprint(item: NormalizedItem): string {
+  const rawMeta = isObjectLike(item.rawMeta) ? item.rawMeta : {};
+  if (
+    typeof rawMeta.fingerprint === "string" &&
+    rawMeta.fingerprint.length > 0
+  ) {
+    return rawMeta.fingerprint;
+  }
+
+  const canonicalText = [
+    item.source,
+    item.sourceItemId,
+    item.title.toLowerCase(),
+    item.summary.toLowerCase(),
+    item.url.toLowerCase(),
+  ].join("|");
+  return `sha256:${createHash("sha256").update(canonicalText).digest("hex")}`;
+}
+
+function resolveEvidenceRefs(item: NormalizedItem): string[] {
+  const rawMeta = isObjectLike(item.rawMeta) ? item.rawMeta : {};
+  const rawRefs = toStringArray(rawMeta.evidenceRefs);
+  const refs = new Set<string>(rawRefs);
+  if (item.url.trim().length > 0) {
+    refs.add(item.url.trim());
+  }
+  return [...refs];
+}
+
+function buildUnifiedContentRecords(
+  items: NormalizedItem[],
+  legacyItemIdBySourceItem: Record<string, string>,
+): UnifiedContentRecord[] {
+  return items.flatMap((item) => {
+    const legacyItemId =
+      legacyItemIdBySourceItem[buildPayloadKey(item.source, item.sourceItemId)];
+    if (!legacyItemId) {
+      return [];
+    }
+
+    return [
+      {
+        canonicalId: `${item.source}:${item.sourceItemId}`,
+        source: item.source,
+        sourceItemId: item.sourceItemId,
+        title: item.title,
+        summary: item.summary,
+        bodyExcerpt: resolveBodyExcerpt(item),
+        url: item.url,
+        author: item.author,
+        publishedAt: item.publishedAt,
+        collectedAt: item.collectedAt,
+        timestampOrigin: item.timestampOrigin,
+        tags: item.tags,
+        sourceFeatures: resolveSourceFeatures(item),
+        fingerprint: buildFingerprint(item),
+        evidenceRefs: resolveEvidenceRefs(item),
+        legacyRefs: {
+          itemId: legacyItemId,
+          itemSourceId: null,
+        },
+        rawMeta: item.rawMeta,
+      },
+    ] satisfies UnifiedContentRecord[];
+  });
 }
 
 function successTimestamp(payload: CollectedSourcePayload): string | null {
@@ -289,6 +527,23 @@ export async function persistCollectedPayloads(
     });
 
     const fullItems = await listAllNormalizedItems(client);
+    const legacyItemIdBySourceItem = fullItems.reduce<Record<string, string>>(
+      (accumulator, item) => {
+        accumulator[buildPayloadKey(item.source, item.sourceItemId)] = item.id;
+        return accumulator;
+      },
+      {},
+    );
+    const unifiedRecords = buildUnifiedContentRecords(
+      sourcePipeline.feed,
+      legacyItemIdBySourceItem,
+    );
+    await upsertUnifiedContentRecords(client, unifiedRecords);
+    await logger.info("pipeline.persist.pg.upsertUnifiedContentRecords", {
+      recordCount: unifiedRecords.length,
+      sourceCount: replaceableSources.length,
+    });
+
     const fullSourceStatus = await getSourceStatusMap(client);
     const globalPipeline = buildQuestionPressurePipeline(
       fullItems,

@@ -1,4 +1,4 @@
-import type { NormalizedItem } from "@devtrend/contracts";
+import type { NormalizedItem, SourceFeatures } from "@devtrend/contracts";
 import {
   collectStaticSourceCommands,
   dynamicSourceCommandTemplates,
@@ -16,6 +16,7 @@ import {
 } from "./runtime-topic-shared.js";
 import {
   baseItem,
+  composeUnifiedRawMeta,
   createSourceTask,
   filterRuntimeTopics,
   normalizeText,
@@ -62,13 +63,55 @@ function normalizeOssInsight(
       entry.repo_name ?? entry.repo ?? entry.name,
       `OSS Insight item ${index + 1}`,
     );
-    return baseItem("ossinsight", `${commandName}-${repoName}-${index}`, {
+    const sourceItemId = `${commandName}-${repoName}-${index}`;
+    const summary = normalizeText(
+      entry.language ?? entry.collection_name ?? entry.period ?? commandName,
+      commandName,
+    );
+    const url = resolveOssInsightUrl(entry);
+    const score = Number(entry.stars ?? entry.value ?? entry.count ?? 0);
+    const sourceFeatures: SourceFeatures = {
+      shared: {
+        score,
+        trendScore:
+          typeof entry.rank_change === "number" ? entry.rank_change : score,
+      },
+      ossinsight: {
+        starsGrowth:
+          typeof entry.stars_growth === "number"
+            ? entry.stars_growth
+            : undefined,
+        issueCreatorGrowth:
+          typeof entry.issue_creator_growth === "number"
+            ? entry.issue_creator_growth
+            : undefined,
+        prCreatorGrowth:
+          typeof entry.pr_creator_growth === "number"
+            ? entry.pr_creator_growth
+            : undefined,
+        collectionMembership:
+          typeof entry.collection_name === "string"
+            ? [entry.collection_name]
+            : undefined,
+      },
+    };
+    const unifiedMeta = composeUnifiedRawMeta({
+      source: "ossinsight",
+      sourceItemId,
       title: repoName,
-      summary: normalizeText(
-        entry.language ?? entry.collection_name ?? entry.period ?? commandName,
-        commandName,
-      ),
-      url: resolveOssInsightUrl(entry),
+      summary,
+      url,
+      bodyExcerpt:
+        typeof entry.description === "string"
+          ? entry.description.slice(0, 400)
+          : undefined,
+      sourceFeatures,
+    });
+
+    return baseItem("ossinsight", sourceItemId, {
+      title: repoName,
+      summary,
+      url,
       collectedAt,
       ...resolvePublishedAt(
         collectedAt,
@@ -76,9 +119,9 @@ function normalizeOssInsight(
         entry.timestamp,
         entry.created_at,
       ),
-      score: Number(entry.stars ?? entry.value ?? entry.count ?? 0),
+      score,
       contentType: commandName,
-      rawMeta: { commandName, ...metadata, ...entry },
+      rawMeta: { commandName, ...metadata, ...entry, ...unifiedMeta },
     });
   });
 }

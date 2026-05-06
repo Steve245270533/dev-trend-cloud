@@ -99,6 +99,14 @@ interface FakeRuntimeTopicSeedRow {
   metadata: Record<string, unknown>;
 }
 
+interface FakeUnifiedContentRow {
+  canonical_id: string;
+  source: string;
+  source_item_id: string;
+  source_features: Record<string, unknown>;
+  legacy_item_id: string;
+}
+
 interface StatefulPool {
   executed: string[];
   items: FakeItemRow[];
@@ -109,6 +117,7 @@ interface StatefulPool {
   sourceHealth: FakeSourceHealthRow[];
   runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[];
   runtimeTopicSeeds: FakeRuntimeTopicSeedRow[];
+  unifiedContents: FakeUnifiedContentRow[];
   pool: Pool;
 }
 
@@ -190,6 +199,7 @@ function createStatefulPool(): StatefulPool {
   const sourceRuns: FakeSourceRunRow[] = [];
   const itemSources = new Map<string, FakeItemSourceRow>();
   const topics = new Map<string, FakeTopicRow>();
+  const unifiedContents = new Map<string, FakeUnifiedContentRow>();
   let runtimeTopicSeeds: FakeRuntimeTopicSeedRow[] = [];
   const runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[] = [];
   let signalPayloads: Record<string, unknown>[] = [];
@@ -459,6 +469,21 @@ function createStatefulPool(): StatefulPool {
         return { rows: [] } as unknown as QueryResult;
       }
 
+      if (text.includes("INSERT INTO unified_contents")) {
+        const key = `${String(params?.[1])}:${String(params?.[2])}`;
+        unifiedContents.set(key, {
+          canonical_id: String(params?.[0]),
+          source: String(params?.[1]),
+          source_item_id: String(params?.[2]),
+          source_features:
+            typeof params?.[12] === "string"
+              ? (JSON.parse(String(params[12])) as Record<string, unknown>)
+              : {},
+          legacy_item_id: String(params?.[15]),
+        });
+        return { rows: [] } as unknown as QueryResult;
+      }
+
       if (text.includes("SELECT i.*") && text.includes("FROM items i")) {
         return {
           rows: [...items.values()],
@@ -529,6 +554,9 @@ function createStatefulPool(): StatefulPool {
     },
     get runtimeTopicSeeds() {
       return runtimeTopicSeeds;
+    },
+    get unifiedContents() {
+      return [...unifiedContents.values()];
     },
     pool: {
       async connect() {
@@ -621,6 +649,15 @@ test("persistCollectedPayloads keeps prior sources and rebuilds global signals",
   );
   assert.equal(state.sourceRuns.length, 2);
   assert.equal(state.rawSnapshots.length, 2);
+  assert.equal(state.unifiedContents.length, 2);
+  assert.ok(
+    state.unifiedContents.every((record) => record.legacy_item_id.length > 0),
+  );
+  assert.ok(
+    state.unifiedContents.every((record) =>
+      Object.hasOwn(record.source_features, "shared"),
+    ),
+  );
   assert.ok(
     state.signalPayloads.some((signal) => {
       const distribution = signal.sourceDistribution as Record<string, number>;
@@ -674,6 +711,7 @@ test("persistCollectedPayloads reuses prior snapshots as fallback and degrades s
 
   assert.equal(state.sourceRuns.length, 2);
   assert.equal(state.rawSnapshots.length, 1);
+  assert.equal(state.unifiedContents.length, 1);
   assert.equal(state.sourceRuns[1]?.status, "fallback");
   assert.equal(state.sourceHealth[0]?.status, "degraded");
   assert.equal(state.sourceHealth[0]?.fallback_used, true);
@@ -717,6 +755,7 @@ test("persistCollectedPayloads records failed sources when no fallback snapshot 
   assert.equal(state.sourceRuns.length, 1);
   assert.equal(state.sourceRuns[0]?.status, "failed");
   assert.equal(state.rawSnapshots.length, 0);
+  assert.equal(state.unifiedContents.length, 0);
   assert.equal(state.sourceHealth[0]?.status, "failed");
   assert.equal(state.sourceHealth[0]?.fallback_used, false);
   assert.equal(state.items.length, 0);

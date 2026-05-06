@@ -1,0 +1,9 @@
+- [x] unified content record 与 source_features schema 已在 contracts/domain 定义并可校验
+- [x] Question Layer 与 Topic Layer 的读取边界已文档化且在实现中可追踪
+- [x] migration 可执行并具备回滚路径，新旧模型可并存
+- [x] repository 已支持统一模型读写且不破坏既有查询
+- [x] HN / SO / DEVTO / OSSInsight proxy 输入可映射到统一模型
+- [x] worker pipeline 已接入统一模型写入路径且旧流程可运行
+- [x] contract/schema/repository/normalizer/pipeline 测试已补齐并通过
+- [x] `question pressure` 回归检查通过，现有 API 行为无破坏
+- [x] 相关文档已同步（统一模型说明、feature schema、兼容策略）

@@ -4,10 +4,24 @@ import { fileURLToPath } from "node:url";
 import { loadConfig } from "@devtrend/config";
 import { createPool } from "./client.js";
 
-export async function runMigrations(databaseUrl: string): Promise<string[]> {
-  const pool = createPool(databaseUrl);
+interface MigrationPoolLike {
+  query(sql: string): Promise<unknown>;
+  end(): Promise<void>;
+}
+
+interface RunMigrationsOptions {
+  migrationsDir?: string;
+  createPool?: (databaseUrl: string) => MigrationPoolLike;
+}
+
+export async function runMigrations(
+  databaseUrl: string,
+  options: RunMigrationsOptions = {},
+): Promise<string[]> {
+  const pool = (options.createPool ?? createPool)(databaseUrl);
   const appliedFiles: string[] = [];
-  const migrationsDir = resolve(process.cwd(), "packages/db/migrations");
+  const migrationsDir =
+    options.migrationsDir ?? resolve(process.cwd(), "packages/db/migrations");
 
   try {
     const files = (await readdir(migrationsDir))

@@ -6,7 +6,14 @@ import { createPool, getWorkerBootstrapState } from "@devtrend/db";
 import { collectLiveSourcePayloads } from "@devtrend/sources";
 import { type Job, Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
-import { QUEUES } from "./jobs/definitions.js";
+import {
+  type CollectJobData,
+  type ContractAuditJobData,
+  createPipelineStageJobData,
+  type PipelineStageJobData,
+  QUEUES,
+  type TopicSeedRefreshJobData,
+} from "./jobs/definitions.js";
 import { invalidateApiReadCaches } from "./services/cache.js";
 import { createWorkerLogger, type WorkerLogger } from "./services/logger.js";
 import {
@@ -252,7 +259,7 @@ async function bootstrapQueues() {
 
 new Worker(
   QUEUES.topicSeedRefresh,
-  async (job) =>
+  async (job: Job<TopicSeedRefreshJobData>) =>
     runJobWithLogging(QUEUES.topicSeedRefresh, job, async (jobLogger) =>
       refreshRuntimeTopicSeeds(
         pool,
@@ -268,7 +275,7 @@ new Worker(
 
 new Worker(
   QUEUES.contractAudit,
-  async (job) =>
+  async (job: Job<ContractAuditJobData>) =>
     runJobWithLogging(QUEUES.contractAudit, job, async (jobLogger) => {
       const source = job.data.source as SourceKey | undefined;
       const payloads = await collectLiveSourcePayloads({
@@ -299,7 +306,7 @@ new Worker(
 
 new Worker(
   QUEUES.collect,
-  async (job) =>
+  async (job: Job<CollectJobData>) =>
     runJobWithLogging(QUEUES.collect, job, async (jobLogger) => {
       const source = job.data.source as SourceKey | undefined;
       const runtimeTopics = await loadRuntimeTopics(pool);
@@ -319,7 +326,14 @@ new Worker(
         payloadCount: payloads.length,
       });
 
-      await normalizeQueue.add("normalize", { payloads, source });
+      await normalizeQueue.add(
+        "normalize",
+        createPipelineStageJobData({
+          payloads,
+          source,
+          bootstrap: job.data.bootstrap,
+        }),
+      );
       await jobLogger.info("pipeline.collect.enqueue.normalize", {
         payloadCount: payloads.length,
       });
@@ -331,7 +345,7 @@ new Worker(
 
 new Worker(
   QUEUES.normalize,
-  async (job) =>
+  async (job: Job<PipelineStageJobData>) =>
     runJobWithLogging(QUEUES.normalize, job, async (jobLogger) => {
       await matchQueue.add("match", job.data);
       const normalizedCount = Array.isArray(job.data.payloads)
@@ -347,7 +361,7 @@ new Worker(
 
 new Worker(
   QUEUES.match,
-  async (job) =>
+  async (job: Job<PipelineStageJobData>) =>
     runJobWithLogging(QUEUES.match, job, async (jobLogger) => {
       await clusterQueue.add("cluster", job.data);
       const matchedCount = Array.isArray(job.data.payloads)
@@ -363,7 +377,7 @@ new Worker(
 
 new Worker(
   QUEUES.cluster,
-  async (job) =>
+  async (job: Job<PipelineStageJobData>) =>
     runJobWithLogging(QUEUES.cluster, job, async (jobLogger) => {
       await scoreQueue.add("score", job.data);
       const clusteredCount = Array.isArray(job.data.payloads)
@@ -379,7 +393,7 @@ new Worker(
 
 new Worker(
   QUEUES.score,
-  async (job) =>
+  async (job: Job<PipelineStageJobData>) =>
     runJobWithLogging(QUEUES.score, job, async (jobLogger) => {
       const payloads = Array.isArray(job.data.payloads)
         ? job.data.payloads

@@ -12,6 +12,7 @@ import type {
   RuntimeTopicSeed,
   RuntimeTopicSeedRun,
   SourceStatus,
+  UnifiedContentRecord,
 } from "@devtrend/contracts";
 import type { PipelineOutput } from "@devtrend/domain";
 import type { CollectedSourcePayload } from "@devtrend/sources";
@@ -32,6 +33,27 @@ interface ItemRow {
   tags: string[];
   content_type: string;
   is_question: boolean;
+  raw_meta: Record<string, unknown>;
+}
+
+interface UnifiedContentRow {
+  canonical_id: string;
+  source: string;
+  source_item_id: string;
+  title: string;
+  summary: string;
+  body_excerpt: string | null;
+  url: string;
+  author: string | null;
+  published_at: string;
+  collected_at: string;
+  timestamp_origin: string;
+  tags: string[];
+  source_features: Record<string, unknown>;
+  fingerprint: string;
+  evidence_refs: string[];
+  legacy_item_id: string;
+  legacy_item_source_id: string | null;
   raw_meta: Record<string, unknown>;
 }
 
@@ -70,9 +92,20 @@ export interface WorkerBootstrapState {
   hasPersistedItems: boolean;
 }
 
+export interface UnifiedModelCompatibilityReport {
+  legacyItemMissingCount: number;
+  legacyItemSourceMissingCount: number;
+  sourceMismatchCount: number;
+  sourceItemIdMismatchCount: number;
+}
+
 type PersistedSourceStatus = SourceStatus & {
   metadata?: Record<string, unknown>;
 };
+
+function isObjectLike(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
 
 function canonicalKey(item: NormalizedItem): string {
   return item.title
@@ -188,6 +221,47 @@ function mapItemRow(row: ItemRow): NormalizedItem {
     tags: row.tags ?? [],
     contentType: row.content_type,
     isQuestion: row.is_question,
+    rawMeta: row.raw_meta ?? {},
+  };
+}
+
+function normalizeSourceFeatures(
+  value: unknown,
+): UnifiedContentRecord["sourceFeatures"] {
+  if (!isObjectLike(value)) {
+    return { shared: {} };
+  }
+
+  const features = value as Record<string, unknown>;
+  const shared = isObjectLike(features.shared) ? features.shared : {};
+  return {
+    ...features,
+    shared,
+  } as UnifiedContentRecord["sourceFeatures"];
+}
+
+function mapUnifiedContentRow(row: UnifiedContentRow): UnifiedContentRecord {
+  return {
+    canonicalId: row.canonical_id,
+    source: row.source as UnifiedContentRecord["source"],
+    sourceItemId: row.source_item_id,
+    title: row.title,
+    summary: row.summary,
+    bodyExcerpt: row.body_excerpt ?? undefined,
+    url: row.url,
+    author: row.author ?? undefined,
+    publishedAt: new Date(row.published_at).toISOString(),
+    collectedAt: new Date(row.collected_at).toISOString(),
+    timestampOrigin:
+      row.timestamp_origin === "collected" ? "collected" : "source",
+    tags: row.tags ?? [],
+    sourceFeatures: normalizeSourceFeatures(row.source_features),
+    fingerprint: row.fingerprint,
+    evidenceRefs: row.evidence_refs ?? [],
+    legacyRefs: {
+      itemId: row.legacy_item_id,
+      itemSourceId: row.legacy_item_source_id,
+    },
     rawMeta: row.raw_meta ?? {},
   };
 }
@@ -1046,6 +1120,174 @@ export async function listAllNormalizedItems(
   );
 
   return result.rows.map((row: unknown) => mapItemRow(row as ItemRow));
+}
+
+export async function upsertUnifiedContentRecords(
+  db: Queryable,
+  records: UnifiedContentRecord[],
+) {
+  for (const record of records) {
+    await db.query(
+      `
+        INSERT INTO unified_contents (
+          canonical_id,
+          source,
+          source_item_id,
+          title,
+          summary,
+          body_excerpt,
+          url,
+          author,
+          published_at,
+          collected_at,
+          timestamp_origin,
+          tags,
+          source_features,
+          fingerprint,
+          evidence_refs,
+          legacy_item_id,
+          legacy_item_source_id,
+          raw_meta
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9,
+          $10, $11, $12, $13, $14, $15, $16, $17, $18
+        )
+        ON CONFLICT (source, source_item_id) DO UPDATE
+        SET canonical_id = EXCLUDED.canonical_id,
+            title = EXCLUDED.title,
+            summary = EXCLUDED.summary,
+            body_excerpt = EXCLUDED.body_excerpt,
+            url = EXCLUDED.url,
+            author = EXCLUDED.author,
+            published_at = EXCLUDED.published_at,
+            collected_at = EXCLUDED.collected_at,
+            timestamp_origin = EXCLUDED.timestamp_origin,
+            tags = EXCLUDED.tags,
+            source_features = EXCLUDED.source_features,
+            fingerprint = EXCLUDED.fingerprint,
+            evidence_refs = EXCLUDED.evidence_refs,
+            legacy_item_id = EXCLUDED.legacy_item_id,
+            legacy_item_source_id = EXCLUDED.legacy_item_source_id,
+            raw_meta = EXCLUDED.raw_meta,
+            updated_at = NOW()
+      `,
+      [
+        record.canonicalId,
+        record.source,
+        record.sourceItemId,
+        record.title,
+        record.summary,
+        record.bodyExcerpt ?? null,
+        record.url,
+        record.author ?? null,
+        record.publishedAt,
+        record.collectedAt,
+        record.timestampOrigin,
+        record.tags,
+        JSON.stringify(record.sourceFeatures),
+        record.fingerprint,
+        record.evidenceRefs,
+        record.legacyRefs.itemId,
+        record.legacyRefs.itemSourceId,
+        JSON.stringify(record.rawMeta),
+      ],
+    );
+  }
+}
+
+export async function listUnifiedContentRecords(
+  db: Queryable,
+  query: { source?: UnifiedContentRecord["source"]; limit?: number } = {},
+): Promise<UnifiedContentRecord[]> {
+  const result = await db.query(
+    `
+      SELECT
+        canonical_id,
+        source,
+        source_item_id,
+        title,
+        summary,
+        body_excerpt,
+        url,
+        author,
+        published_at,
+        collected_at,
+        timestamp_origin,
+        tags,
+        source_features,
+        fingerprint,
+        evidence_refs,
+        legacy_item_id,
+        legacy_item_source_id,
+        raw_meta
+      FROM unified_contents
+      WHERE ($1::text IS NULL OR source = $1)
+      ORDER BY collected_at DESC
+      LIMIT $2
+    `,
+    [query.source ?? null, query.limit ?? 20],
+  );
+
+  return result.rows.map((row: unknown) =>
+    mapUnifiedContentRow(row as UnifiedContentRow),
+  );
+}
+
+export async function getUnifiedModelCompatibilityReport(
+  db: Queryable,
+): Promise<UnifiedModelCompatibilityReport> {
+  const result = await db.query(
+    `
+      SELECT
+        COUNT(*) FILTER (WHERE i.id IS NULL) AS legacy_item_missing_count,
+        COUNT(*) FILTER (
+          WHERE uc.legacy_item_source_id IS NOT NULL
+            AND s.id IS NULL
+        ) AS legacy_item_source_missing_count,
+        COUNT(*) FILTER (
+          WHERE i.id IS NOT NULL
+            AND uc.source <> i.source
+        ) AS source_mismatch_count,
+        COUNT(*) FILTER (
+          WHERE i.id IS NOT NULL
+            AND uc.source_item_id <> i.source_item_id
+        ) AS source_item_id_mismatch_count
+      FROM unified_contents uc
+      LEFT JOIN items i ON i.id = uc.legacy_item_id
+      LEFT JOIN item_sources s ON s.id = uc.legacy_item_source_id
+    `,
+  );
+
+  const row = result.rows[0] as Record<string, unknown> | undefined;
+  return {
+    legacyItemMissingCount: Number(row?.legacy_item_missing_count ?? 0),
+    legacyItemSourceMissingCount: Number(
+      row?.legacy_item_source_missing_count ?? 0,
+    ),
+    sourceMismatchCount: Number(row?.source_mismatch_count ?? 0),
+    sourceItemIdMismatchCount: Number(row?.source_item_id_mismatch_count ?? 0),
+  };
+}
+
+export async function rollbackUnifiedContentBySources(
+  db: Queryable,
+  sources: UnifiedContentRecord["source"][],
+): Promise<number> {
+  if (sources.length === 0) {
+    return 0;
+  }
+
+  const result = await db.query(
+    `
+      DELETE FROM unified_contents
+      WHERE source = ANY($1::text[])
+      RETURNING canonical_id
+    `,
+    [sources],
+  );
+
+  return result.rows.length;
 }
 
 export async function listFeed(

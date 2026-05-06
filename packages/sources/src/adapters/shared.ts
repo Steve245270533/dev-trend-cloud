@@ -1,7 +1,8 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type {
   NormalizedItem,
   RuntimeTopicSeed,
+  SourceFeatures,
   SourceKey,
 } from "@devtrend/contracts";
 import type {
@@ -304,6 +305,70 @@ export function baseItem(
     isQuestion: false,
     rawMeta: {},
     ...overrides,
+  };
+}
+
+function normalizeForFingerprint(value: string): string {
+  return value
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9 ]/g, " ")
+    .replaceAll(/\s+/g, " ")
+    .trim();
+}
+
+export function buildUnifiedFingerprint(input: {
+  source: SourceKey;
+  sourceItemId: string;
+  title: string;
+  summary: string;
+  url: string;
+}): string {
+  const canonicalText = [
+    input.source,
+    input.sourceItemId,
+    normalizeForFingerprint(input.title),
+    normalizeForFingerprint(input.summary),
+    input.url.trim().toLowerCase(),
+  ].join("|");
+
+  return `sha256:${createHash("sha256").update(canonicalText).digest("hex")}`;
+}
+
+export function composeUnifiedRawMeta(input: {
+  source: SourceKey;
+  sourceItemId: string;
+  title: string;
+  summary: string;
+  url: string;
+  bodyExcerpt?: string;
+  sourceFeatures: SourceFeatures;
+  evidenceRefs?: string[];
+}): {
+  canonicalId: string;
+  bodyExcerpt?: string;
+  sourceFeatures: SourceFeatures;
+  fingerprint: string;
+  evidenceRefs: string[];
+} {
+  const evidenceRefs = uniqueStrings(
+    (input.evidenceRefs ?? []).filter((ref) => ref.trim().length > 0),
+  );
+  if (input.url.trim().length > 0) {
+    evidenceRefs.unshift(input.url.trim());
+  }
+
+  return {
+    canonicalId: `${input.source}:${input.sourceItemId}`,
+    bodyExcerpt: input.bodyExcerpt,
+    sourceFeatures: input.sourceFeatures,
+    fingerprint: buildUnifiedFingerprint({
+      source: input.source,
+      sourceItemId: input.sourceItemId,
+      title: input.title,
+      summary: input.summary,
+      url: input.url,
+    }),
+    evidenceRefs: uniqueStrings(evidenceRefs),
   };
 }
 

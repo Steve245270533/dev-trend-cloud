@@ -3,42 +3,42 @@ import test from "node:test";
 import { buildQuestionPressurePipeline } from "@devtrend/domain";
 import { normalizedDemoItems, sourceCommands } from "@devtrend/sources";
 
-test("question pressure pipeline returns feed, signals, and evidence", () => {
-  const sourceStatus = {
-    stackoverflow: {
-      status: "healthy" as const,
-      lastSuccessAt: "2026-04-29T00:00:00.000Z",
-      lastErrorAt: null,
-      lastErrorText: null,
-      fallbackUsed: false,
-      lastLatencyMs: 120,
-    },
-    hackernews: {
-      status: "healthy" as const,
-      lastSuccessAt: "2026-04-29T00:00:00.000Z",
-      lastErrorAt: null,
-      lastErrorText: null,
-      fallbackUsed: false,
-      lastLatencyMs: 120,
-    },
-    devto: {
-      status: "healthy" as const,
-      lastSuccessAt: "2026-04-29T00:00:00.000Z",
-      lastErrorAt: null,
-      lastErrorText: null,
-      fallbackUsed: false,
-      lastLatencyMs: 120,
-    },
-    ossinsight: {
-      status: "healthy" as const,
-      lastSuccessAt: "2026-04-29T00:00:00.000Z",
-      lastErrorAt: null,
-      lastErrorText: null,
-      fallbackUsed: false,
-      lastLatencyMs: 120,
-    },
-  };
+const sourceStatus = {
+  stackoverflow: {
+    status: "healthy" as const,
+    lastSuccessAt: "2026-04-29T00:00:00.000Z",
+    lastErrorAt: null,
+    lastErrorText: null,
+    fallbackUsed: false,
+    lastLatencyMs: 120,
+  },
+  hackernews: {
+    status: "healthy" as const,
+    lastSuccessAt: "2026-04-29T00:00:00.000Z",
+    lastErrorAt: null,
+    lastErrorText: null,
+    fallbackUsed: false,
+    lastLatencyMs: 120,
+  },
+  devto: {
+    status: "healthy" as const,
+    lastSuccessAt: "2026-04-29T00:00:00.000Z",
+    lastErrorAt: null,
+    lastErrorText: null,
+    fallbackUsed: false,
+    lastLatencyMs: 120,
+  },
+  ossinsight: {
+    status: "healthy" as const,
+    lastSuccessAt: "2026-04-29T00:00:00.000Z",
+    lastErrorAt: null,
+    lastErrorText: null,
+    fallbackUsed: false,
+    lastLatencyMs: 120,
+  },
+};
 
+test("question pressure pipeline returns feed, signals, and evidence", () => {
   const pipeline = buildQuestionPressurePipeline(
     normalizedDemoItems(sourceCommands),
     sourceStatus,
@@ -89,4 +89,41 @@ test("question pressure pipeline returns feed, signals, and evidence", () => {
     pipeline.signals.map((signal) => signal.clusterId).sort(),
     secondPipeline.signals.map((signal) => signal.clusterId).sort(),
   );
+});
+
+test("question pressure regression keeps demo signal baselines stable", () => {
+  const pipeline = buildQuestionPressurePipeline(
+    normalizedDemoItems(sourceCommands),
+    sourceStatus,
+  );
+
+  assert.equal(pipeline.signals.length, 8);
+
+  const mcpSignal = pipeline.signals.find(
+    (signal) =>
+      signal.canonicalQuestion ===
+      "Ask HN: How are you debugging MCP tool calling failures?",
+  );
+  assert.ok(mcpSignal);
+  assert.equal(mcpSignal.evidenceCount, 4);
+  assert.equal(mcpSignal.pressureScore, 31);
+  assert.deepEqual(mcpSignal.sourceDistribution, {
+    devto: 1,
+    hackernews: 2,
+    stackoverflow: 1,
+  });
+
+  const pgvectorSignal = pipeline.signals.find(
+    (signal) =>
+      signal.canonicalQuestion ===
+      "Why pgvector is becoming the default RAG storage layer",
+  );
+  assert.ok(pgvectorSignal);
+  assert.equal(pgvectorSignal.evidenceCount, 4);
+  assert.equal(pgvectorSignal.pressureScore, 36);
+  assert.deepEqual(pgvectorSignal.sourceDistribution, {
+    devto: 2,
+    hackernews: 1,
+    stackoverflow: 1,
+  });
 });

@@ -1,4 +1,4 @@
-import type { NormalizedItem } from "@devtrend/contracts";
+import type { NormalizedItem, SourceFeatures } from "@devtrend/contracts";
 import {
   collectStaticSourceCommands,
   dynamicSourceCommandTemplates,
@@ -12,6 +12,7 @@ import type {
 } from "../types.js";
 import {
   baseItem,
+  composeUnifiedRawMeta,
   createSourceTask,
   filterRuntimeTopics,
   normalizeTags,
@@ -22,6 +23,45 @@ import {
   topicSearchTerms,
   uniqueStrings,
 } from "./shared.js";
+
+function pickOptionalInteger(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0
+    ? value
+    : undefined;
+}
+
+function resolveStackOverflowSourceFeatures(
+  entry: Record<string, unknown>,
+  score: number,
+  answerCount: number,
+  commentCount: number,
+): SourceFeatures {
+  const viewCount =
+    pickOptionalInteger(entry.view_count) ??
+    pickOptionalInteger(entry.viewCount) ??
+    pickOptionalInteger(entry.views);
+  const hasAcceptedAnswer =
+    typeof entry.is_answered === "boolean"
+      ? entry.is_answered
+      : entry.accepted_answer_id !== undefined
+        ? true
+        : undefined;
+
+  return {
+    shared: {
+      score,
+      answerCount,
+      commentCount,
+      viewCount,
+    },
+    stackoverflow: {
+      answerCount,
+      commentCount,
+      viewCount,
+      hasAcceptedAnswer,
+    },
+  };
+}
 
 function resolveStackOverflowUrl(entry: Record<string, unknown>): string {
   const directUrl = normalizeUrl(entry.url);
@@ -50,31 +90,57 @@ function normalizeStackOverflow(
 ): NormalizedItem[] {
   return entries.map((entry, index) => {
     const collectedAt = new Date().toISOString();
-    return baseItem(
-      "stackoverflow",
-      String(entry.url ?? `${commandName}-${index}`),
-      {
-        title: normalizeText(entry.title, `Stack Overflow item ${index + 1}`),
-        summary: normalizeText(entry.title, ""),
-        url: resolveStackOverflowUrl(entry),
-        collectedAt,
-        ...resolvePublishedAt(
-          collectedAt,
-          entry.creation_date,
-          entry.creationDate,
-          entry.created_at,
-          entry.published_at,
-          entry.last_activity_date,
-          entry.date,
-        ),
-        score: Number(entry.score ?? 0),
-        answerCount: Number(entry.answers ?? 0),
-        tags: normalizeTags(entry.tags),
-        contentType: commandName === "bounties" ? "bounty" : commandName,
-        isQuestion: true,
-        rawMeta: { commandName, ...metadata, ...entry },
-      },
+    const title = normalizeText(
+      entry.title,
+      `Stack Overflow item ${index + 1}`,
     );
+    const summary = normalizeText(entry.title, "");
+    const url = resolveStackOverflowUrl(entry);
+    const answerCount = Number(entry.answers ?? 0);
+    const commentCount = Number(entry.comments ?? 0);
+    const score = Number(entry.score ?? 0);
+    const sourceItemId = String(entry.url ?? `${commandName}-${index}`);
+    const sourceFeatures = resolveStackOverflowSourceFeatures(
+      entry,
+      score,
+      answerCount,
+      commentCount,
+    );
+    const unifiedMeta = composeUnifiedRawMeta({
+      source: "stackoverflow",
+      sourceItemId,
+      title,
+      summary,
+      url,
+      bodyExcerpt:
+        typeof entry.body_markdown === "string"
+          ? entry.body_markdown.slice(0, 400)
+          : undefined,
+      sourceFeatures,
+    });
+
+    return baseItem("stackoverflow", sourceItemId, {
+      title,
+      summary,
+      url,
+      collectedAt,
+      ...resolvePublishedAt(
+        collectedAt,
+        entry.creation_date,
+        entry.creationDate,
+        entry.created_at,
+        entry.published_at,
+        entry.last_activity_date,
+        entry.date,
+      ),
+      score,
+      answerCount,
+      commentCount,
+      tags: normalizeTags(entry.tags),
+      contentType: commandName === "bounties" ? "bounty" : commandName,
+      isQuestion: true,
+      rawMeta: { commandName, ...metadata, ...entry, ...unifiedMeta },
+    });
   });
 }
 

@@ -1,4 +1,4 @@
-import type { NormalizedItem } from "@devtrend/contracts";
+import type { NormalizedItem, SourceFeatures } from "@devtrend/contracts";
 import {
   collectStaticSourceCommands,
   dynamicSourceCommandTemplates,
@@ -18,6 +18,7 @@ import {
 } from "./runtime-topic-shared.js";
 import {
   baseItem,
+  composeUnifiedRawMeta,
   createSourceTask,
   filterRuntimeTopics,
   isExplicitQuestionTitle,
@@ -40,28 +41,66 @@ function normalizeDevTo(
 ): NormalizedItem[] {
   return entries.map((entry, index) => {
     const collectedAt = new Date().toISOString();
-    return baseItem(
-      "devto",
-      String(entry.url ?? entry.title ?? `${commandName}-${index}`),
-      {
-        title: normalizeText(entry.title, `DEV item ${index + 1}`),
-        summary: normalizeText(entry.author, ""),
-        url: resolveDevToUrl(entry),
-        collectedAt,
-        ...resolvePublishedAt(
-          collectedAt,
-          entry.published_at,
-          entry.publishedAt,
-          entry.created_at,
-        ),
-        score: Number(entry.reactions ?? 0),
-        commentCount: Number(entry.comments ?? 0),
-        tags: normalizeTags(entry.tags),
-        contentType: commandName,
-        isQuestion: isExplicitQuestionTitle(String(entry.title ?? "")),
-        rawMeta: { commandName, ...metadata, ...entry },
-      },
+    const title = normalizeText(entry.title, `DEV item ${index + 1}`);
+    const summary = normalizeText(entry.author, "");
+    const url = resolveDevToUrl(entry);
+    const sourceItemId = String(
+      entry.url ?? entry.title ?? `${commandName}-${index}`,
     );
+    const score = Number(entry.reactions ?? 0);
+    const commentCount = Number(entry.comments ?? 0);
+    const tags = normalizeTags(entry.tags);
+    const readingTimeMinutes =
+      typeof entry.reading_time_minutes === "number" &&
+      Number.isInteger(entry.reading_time_minutes) &&
+      entry.reading_time_minutes >= 0
+        ? entry.reading_time_minutes
+        : undefined;
+    const sourceFeatures: SourceFeatures = {
+      shared: {
+        score,
+        reactionCount: score,
+        commentCount,
+      },
+      devto: {
+        readingTimeMinutes,
+        reactionsCount: score,
+        commentsCount: commentCount,
+        tagDensity: tags.length / Math.max(1, title.split(/\s+/).length),
+        tutorialIntent: /(^how to\b)|(\btutorial\b)|(\bguide\b)/i.test(title),
+      },
+    };
+    const unifiedMeta = composeUnifiedRawMeta({
+      source: "devto",
+      sourceItemId,
+      title,
+      summary,
+      url,
+      bodyExcerpt:
+        typeof entry.description === "string"
+          ? entry.description.slice(0, 400)
+          : undefined,
+      sourceFeatures,
+    });
+
+    return baseItem("devto", sourceItemId, {
+      title,
+      summary,
+      url,
+      collectedAt,
+      ...resolvePublishedAt(
+        collectedAt,
+        entry.published_at,
+        entry.publishedAt,
+        entry.created_at,
+      ),
+      score,
+      commentCount,
+      tags,
+      contentType: commandName,
+      isQuestion: isExplicitQuestionTitle(String(entry.title ?? "")),
+      rawMeta: { commandName, ...metadata, ...entry, ...unifiedMeta },
+    });
   });
 }
 

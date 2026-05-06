@@ -14,6 +14,9 @@ test("normalize source payload creates normalized items for Stack Overflow", () 
   assert.ok(items[0].collectedAt);
   assert.equal(items[0].timestampOrigin, "collected");
   assert.ok(items[0].title.includes("Model Context Protocol"));
+  assert.equal(typeof items[0].rawMeta.sourceFeatures, "object");
+  assert.equal(typeof items[0].rawMeta.fingerprint, "string");
+  assert.ok(Array.isArray(items[0].rawMeta.evidenceRefs));
 });
 
 test("normalize source payload creates normalized items for OSSInsight", () => {
@@ -27,6 +30,7 @@ test("normalize source payload creates normalized items for OSSInsight", () => {
   assert.equal(items[0].isQuestion, false);
   assert.ok(items[0].url.includes("github.com"));
   assert.equal(items[0].timestampOrigin, "collected");
+  assert.equal(typeof items[0].rawMeta.sourceFeatures, "object");
 });
 
 test("normalize source payload handles DEV tag strings and source timestamps", () => {
@@ -45,6 +49,8 @@ test("normalize source payload handles DEV tag strings and source timestamps", (
   assert.deepEqual(items[0]?.tags, ["mcp", "tool-calling", "typescript"]);
   assert.equal(items[0]?.timestampOrigin, "source");
   assert.equal(items[0]?.publishedAt, "2026-04-28T09:30:00.000Z");
+  assert.equal(typeof items[0]?.rawMeta.canonicalId, "string");
+  assert.equal(typeof items[0]?.rawMeta.fingerprint, "string");
 });
 
 test("normalize source payload only emits URLs derived from real source fields", () => {

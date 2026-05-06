@@ -134,6 +134,96 @@ export const NormalizedItemSchema = Type.Object({
 
 export type NormalizedItem = Static<typeof NormalizedItemSchema>;
 
+export const SourceFeatureSharedSchema = Type.Object({
+  score: Type.Optional(Type.Number()),
+  answerCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  commentCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  reactionCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  viewCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  trendScore: Type.Optional(Type.Number()),
+});
+
+export type SourceFeatureShared = Static<typeof SourceFeatureSharedSchema>;
+
+export const HackerNewsFeatureSchema = Type.Object({
+  points: Type.Optional(Type.Integer({ minimum: 0 })),
+  comments: Type.Optional(Type.Integer({ minimum: 0 })),
+  postKind: Type.Optional(
+    Type.Union([
+      Type.Literal("ask"),
+      Type.Literal("show"),
+      Type.Literal("story"),
+      Type.Literal("job"),
+      Type.Literal("poll"),
+    ]),
+  ),
+});
+
+export type HackerNewsFeatures = Static<typeof HackerNewsFeatureSchema>;
+
+export const StackOverflowFeatureSchema = Type.Object({
+  answerCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  commentCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  viewCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  hasAcceptedAnswer: Type.Optional(Type.Boolean()),
+});
+
+export type StackOverflowFeatures = Static<typeof StackOverflowFeatureSchema>;
+
+export const DevtoFeatureSchema = Type.Object({
+  readingTimeMinutes: Type.Optional(Type.Integer({ minimum: 0 })),
+  reactionsCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  commentsCount: Type.Optional(Type.Integer({ minimum: 0 })),
+  tagDensity: Type.Optional(Type.Number({ minimum: 0 })),
+  tutorialIntent: Type.Optional(Type.Boolean()),
+});
+
+export type DevtoFeatures = Static<typeof DevtoFeatureSchema>;
+
+export const OssInsightFeatureSchema = Type.Object({
+  starsGrowth: Type.Optional(Type.Number()),
+  issueCreatorGrowth: Type.Optional(Type.Number()),
+  prCreatorGrowth: Type.Optional(Type.Number()),
+  collectionMembership: Type.Optional(Type.Array(Type.String())),
+});
+
+export type OssInsightFeatures = Static<typeof OssInsightFeatureSchema>;
+
+export const SourceFeaturesSchema = Type.Object({
+  shared: SourceFeatureSharedSchema,
+  stackoverflow: Type.Optional(StackOverflowFeatureSchema),
+  hackernews: Type.Optional(HackerNewsFeatureSchema),
+  devto: Type.Optional(DevtoFeatureSchema),
+  ossinsight: Type.Optional(OssInsightFeatureSchema),
+});
+
+export type SourceFeatures = Static<typeof SourceFeaturesSchema>;
+
+export const UnifiedContentRecordSchema = Type.Object({
+  canonicalId: Type.String(),
+  source: SourceKeySchema,
+  sourceItemId: Type.String(),
+  title: Type.String(),
+  summary: Type.String(),
+  bodyExcerpt: Type.Optional(Type.String()),
+  url: Type.String(),
+  author: Type.Optional(Type.String()),
+  publishedAt: Type.String({ format: "date-time" }),
+  collectedAt: Type.String({ format: "date-time" }),
+  timestampOrigin: TimestampOriginSchema,
+  tags: Type.Array(Type.String()),
+  sourceFeatures: SourceFeaturesSchema,
+  fingerprint: Type.String(),
+  evidenceRefs: Type.Array(Type.String()),
+  legacyRefs: Type.Object({
+    itemId: Type.String({ format: "uuid" }),
+    itemSourceId: Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+  }),
+  rawMeta: Type.Record(Type.String(), Type.Unknown()),
+});
+
+export type UnifiedContentRecord = Static<typeof UnifiedContentRecordSchema>;
+
 export const FeedItemSchema = Type.Composite([
   NormalizedItemSchema,
   Type.Object({

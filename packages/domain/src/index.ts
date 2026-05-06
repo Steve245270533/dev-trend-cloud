@@ -3,14 +3,22 @@ import type {
   NormalizedItem,
   QuestionEvidence,
   QuestionPressureSignal,
+  SourceFeatures,
   SourceStatus,
+  UnifiedContentRecord,
 } from "@devtrend/contracts";
 import { matchCatalog } from "./matching/matcher.js";
 import { clusterQuestionItems } from "./questions/cluster.js";
 import { extractQuestionFeatures } from "./questions/extract.js";
 import { scoreClusters } from "./scoring/question-pressure.js";
+import {
+  isUnifiedContentRecord,
+  isValidSourceFeatures,
+} from "./unified-content.js";
 
 export { entitySeeds, topicSeeds, watchlistSeeds } from "./matching/catalog.js";
+export type { SourceFeatures, UnifiedContentRecord };
+export { isUnifiedContentRecord, isValidSourceFeatures };
 
 export interface PipelineOutput {
   feed: FeedItem[];

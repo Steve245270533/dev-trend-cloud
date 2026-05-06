@@ -1,4 +1,4 @@
-import type { NormalizedItem } from "@devtrend/contracts";
+import type { NormalizedItem, SourceFeatures } from "@devtrend/contracts";
 import {
   collectStaticSourceCommands,
   dynamicSourceCommandTemplates,
@@ -12,6 +12,7 @@ import type {
 } from "../types.js";
 import {
   baseItem,
+  composeUnifiedRawMeta,
   createSourceTask,
   filterRuntimeTopics,
   isExplicitQuestionTitle,
@@ -71,6 +72,24 @@ function resolveHackerNewsUrl(entry: Record<string, unknown>): string {
   return "";
 }
 
+function resolveHackerNewsPostKind(
+  title: string,
+): NonNullable<SourceFeatures["hackernews"]>["postKind"] {
+  if (/^ask hn:/i.test(title)) {
+    return "ask";
+  }
+  if (/^show hn:/i.test(title)) {
+    return "show";
+  }
+  if (/^poll:/i.test(title)) {
+    return "poll";
+  }
+  if (/^job:/i.test(title)) {
+    return "job";
+  }
+  return "story";
+}
+
 function normalizeHackerNews(
   entries: Record<string, unknown>[],
   commandName: string,
@@ -79,29 +98,56 @@ function normalizeHackerNews(
   return entries.map((entry, index) => {
     const collectedAt = new Date().toISOString();
     const title = normalizeText(entry.title, `Hacker News item ${index + 1}`);
-    return baseItem(
-      "hackernews",
-      resolveHackerNewsSourceItemId(entry, commandName, index),
-      {
-        title,
-        summary: normalizeText(entry.author, ""),
-        url: resolveHackerNewsUrl(entry),
-        collectedAt,
-        ...resolvePublishedAt(
-          collectedAt,
-          entry.created_at,
-          entry.createdAt,
-          entry.time,
-          entry.published_at,
-          entry.date,
-        ),
-        score: Number(entry.score ?? 0),
-        commentCount: Number(entry.comments ?? 0),
-        contentType: commandName,
-        isQuestion: inferHackerNewsQuestion(title),
-        rawMeta: { commandName, ...metadata, ...entry },
-      },
+    const summary = normalizeText(entry.author, "");
+    const url = resolveHackerNewsUrl(entry);
+    const sourceItemId = resolveHackerNewsSourceItemId(
+      entry,
+      commandName,
+      index,
     );
+    const score = Number(entry.score ?? 0);
+    const commentCount = Number(entry.comments ?? 0);
+    const sourceFeatures: SourceFeatures = {
+      shared: {
+        score,
+        commentCount,
+      },
+      hackernews: {
+        points: score,
+        comments: commentCount,
+        postKind: resolveHackerNewsPostKind(title),
+      },
+    };
+    const unifiedMeta = composeUnifiedRawMeta({
+      source: "hackernews",
+      sourceItemId,
+      title,
+      summary,
+      url,
+      bodyExcerpt:
+        typeof entry.text === "string" ? entry.text.slice(0, 400) : undefined,
+      sourceFeatures,
+    });
+
+    return baseItem("hackernews", sourceItemId, {
+      title,
+      summary,
+      url,
+      collectedAt,
+      ...resolvePublishedAt(
+        collectedAt,
+        entry.created_at,
+        entry.createdAt,
+        entry.time,
+        entry.published_at,
+        entry.date,
+      ),
+      score,
+      commentCount,
+      contentType: commandName,
+      isQuestion: inferHackerNewsQuestion(title),
+      rawMeta: { commandName, ...metadata, ...entry, ...unifiedMeta },
+    });
   });
 }
 

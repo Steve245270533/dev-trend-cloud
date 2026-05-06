@@ -16,6 +16,7 @@
 - source health
 - runtime topic seed runs / runtime topic seeds
 - watchlists / watchlist events（当前仍主要用于 seed/demo 语义）
+- unified contents（统一模型基线表，与 `items/item_sources` 并存）
 
 ## 下一阶段规划对象（planned，不代表当前 schema 已存在）
 
@@ -38,7 +39,7 @@
 - Repository helpers： [repository.ts](./src/repository.ts)
 - 迁移执行： [migrate.ts](./src/migrate.ts)
 - 种子写入： [seed.ts](./src/seed.ts)
-- Migrations： [001_initial.sql](./migrations/001_initial.sql)
+- Migrations： [001_initial.sql](./migrations/001_initial.sql)、[002_runtime_topic_seeds.sql](./migrations/002_runtime_topic_seeds.sql)、[003_unified_content.sql](./migrations/003_unified_content.sql)
 
 ## 验证方式
 
