@@ -723,7 +723,8 @@ test("markSupersededTopicClusters updates old active rows", async () => {
 
   const count = await markSupersededTopicClusters(db, {
     ruleVersion: "topic-cluster-rules-v1",
-    keepTopicClusterIds: ["88888888-8888-5888-8888-888888888888"],
+    batchTopicClusterIds: ["88888888-8888-5888-8888-888888888888"],
+    keepRowIds: ["77777777-7777-5777-8777-777777777777"],
   });
 
   assert.equal(calls.length, 1);
@@ -731,6 +732,7 @@ test("markSupersededTopicClusters updates old active rows", async () => {
   assert.deepEqual(calls[0]?.params, [
     "topic-cluster-rules-v1",
     ["88888888-8888-5888-8888-888888888888"],
+    ["77777777-7777-5777-8777-777777777777"],
   ]);
   assert.equal(count, 1);
 });

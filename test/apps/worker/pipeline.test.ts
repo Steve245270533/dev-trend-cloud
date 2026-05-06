@@ -375,12 +375,28 @@ function createStatefulPool(): StatefulPool {
       }
 
       if (text.includes("UPDATE topic_clusters")) {
+        const ruleVersion = String(params?.[0] ?? "");
+        const batchTopicClusterIds = Array.isArray(params?.[1])
+          ? new Set(params[1].map(String))
+          : new Set<string>();
+        const keepRowIds = Array.isArray(params?.[2])
+          ? new Set(params[2].map(String))
+          : new Set<string>();
+        const superseded: FakeTopicClusterRow[] = [];
         for (const row of topicClusters.values()) {
-          if (row.rule_version === String(params?.[0])) {
+          if (
+            row.rule_version === ruleVersion &&
+            batchTopicClusterIds.has(row.topic_cluster_id) &&
+            !keepRowIds.has(row.id) &&
+            row.status === "active"
+          ) {
             row.status = "superseded";
+            superseded.push(row);
           }
         }
-        return { rows: [] } as unknown as QueryResult;
+        return {
+          rows: superseded.map((row) => ({ id: row.id })),
+        } as unknown as QueryResult;
       }
 
       if (text.includes("INSERT INTO runtime_topic_seed_runs")) {
@@ -1492,6 +1508,135 @@ test("runTopicClusteringJob persists topic clusters from succeeded embeddings", 
       (entry) => entry.event === "pipeline.topic-clustering.batch.done",
     ),
   );
+});
+
+test("runTopicClusteringJob only supersedes clusters touched by the current batch", async () => {
+  const state = createStatefulPool();
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title: "How do I stabilize pgvector ranking in production?",
+        score: 18,
+        answers: 2,
+        tags: ["pgvector", "postgres", "rag"],
+        url: "https://stackoverflow.com/questions/10001001/pgvector-stability",
+      },
+    ]),
+  ]);
+
+  await runIncrementalEmbeddingJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { source: "stackoverflow", limit: 10 },
+    createTestLogger([]),
+    async () => [0.93, 0.06, 0.01],
+  );
+
+  await runTopicClusteringJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { source: "stackoverflow", limit: 10 },
+    createTestLogger([]),
+  );
+
+  const firstCluster = state.topicClusters.find(
+    (row) => row.status === "active",
+  );
+  assert.ok(firstCluster);
+
+  state.addTopicCluster({
+    id: "cluster-row-unrelated",
+    topic_cluster_id: "99999999-9999-5999-8999-999999999999",
+    stable_key: "topic-cluster:unrelated",
+    cluster_version: "v1",
+    rule_version: "topic-cluster-rules-v1",
+    status: "active",
+    slug: "unrelated-topic",
+    display_name: "Unrelated Topic",
+    summary: "unrelated cluster",
+    keywords: ["unrelated"],
+    anchor_canonical_id: "stackoverflow:10009999",
+    representative_evidence: [],
+    source_mix: [],
+    related_repos: [],
+    related_entities: [],
+    item_count: 1,
+    cluster_confidence: 0.8,
+    runtime_fallback_reason: null,
+    metadata: {},
+    created_at: "2026-05-06T00:00:00.000Z",
+    updated_at: "2026-05-06T00:10:00.000Z",
+  });
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title: "How do I stabilize pgvector ranking in production?",
+        score: 18,
+        answers: 2,
+        tags: ["pgvector", "postgres", "rag"],
+        url: "https://stackoverflow.com/questions/10001001/pgvector-stability",
+      },
+      {
+        title: "Why does pgvector retrieval drift between reruns?",
+        score: 12,
+        answers: 1,
+        tags: ["pgvector", "postgres"],
+        url: "https://stackoverflow.com/questions/10001002/pgvector-rerun-drift",
+      },
+    ]),
+  ]);
+
+  await runIncrementalEmbeddingJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { source: "stackoverflow", limit: 10 },
+    createTestLogger([]),
+    async () => [0.93, 0.06, 0.01],
+  );
+
+  await runTopicClusteringJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { source: "stackoverflow", limit: 10 },
+    createTestLogger([]),
+  );
+
+  const sameTopicRows = state.topicClusters.filter(
+    (row) => row.topic_cluster_id === firstCluster?.topic_cluster_id,
+  );
+  assert.equal(sameTopicRows.length >= 2, true);
+  assert.ok(
+    sameTopicRows.some(
+      (row) => row.id === firstCluster?.id && row.status === "superseded",
+    ),
+  );
+
+  const unrelatedRow = state.topicClusters.find(
+    (row) => row.id === "cluster-row-unrelated",
+  );
+  assert.equal(unrelatedRow?.status, "active");
 });
 
 test("loadRuntimeTopics prefers dynamic topic clusters before fallback seeds", async () => {

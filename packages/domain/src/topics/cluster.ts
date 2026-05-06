@@ -463,17 +463,10 @@ function buildSummary(
     .join(" | ");
 }
 
-function buildStableKey(
-  anchor: TopicClusterCandidateInput,
-  signals: ClusterSignals,
-): string {
-  const signature = [
-    anchor.content.canonicalId,
-    signals.relatedRepos.join(","),
-    signals.relatedEntities.join(","),
-    signals.keywords.slice(0, 4).join(","),
-  ].join("|");
-  return `topic-cluster:${createHash("sha1").update(signature).digest("hex")}`;
+function buildStableKey(anchorCanonicalId: string): string {
+  return `topic-cluster:${createHash("sha1")
+    .update(`${TOPIC_CLUSTER_RULE_VERSION}|${anchorCanonicalId}`)
+    .digest("hex")}`;
 }
 
 function buildClusterVersion(
@@ -650,7 +643,7 @@ export function clusterTopicContents(
     const signals = aggregateSignals(candidate.items);
     const slug = buildSlug(signals, anchor);
     const displayName = toDisplayName(slug, anchor);
-    const stableKey = buildStableKey(anchor, signals);
+    const stableKey = buildStableKey(anchor.content.canonicalId);
     const topicClusterId = stableUuid(stableKey);
     const clusterVersion = buildClusterVersion(
       candidate.items,

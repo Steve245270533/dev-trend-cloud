@@ -834,7 +834,8 @@ async function persistTopicClusters(
 > {
   return withTransaction(pool, async (client) => {
     let memberships = 0;
-    const keepTopicClusterIds: string[] = [];
+    const batchTopicClusterIds: string[] = [];
+    const keepRowIds: string[] = [];
 
     for (const result of clusters) {
       const persisted = await upsertTopicCluster(client, result.cluster);
@@ -842,13 +843,15 @@ async function persistTopicClusters(
         topicClusterRowId: persisted.rowId,
         memberships: result.memberships,
       });
-      keepTopicClusterIds.push(result.cluster.topicClusterId);
+      batchTopicClusterIds.push(result.cluster.topicClusterId);
+      keepRowIds.push(persisted.rowId);
       memberships += result.memberships.length;
     }
 
     const superseded = await markSupersededTopicClusters(client, {
       ruleVersion: TOPIC_CLUSTER_RULE_VERSION,
-      keepTopicClusterIds,
+      batchTopicClusterIds,
+      keepRowIds,
     });
 
     return {

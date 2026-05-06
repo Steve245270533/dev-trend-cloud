@@ -1978,7 +1978,8 @@ export async function markSupersededTopicClusters(
   db: Queryable,
   query: {
     ruleVersion: string;
-    keepTopicClusterIds: string[];
+    batchTopicClusterIds: string[];
+    keepRowIds: string[];
   },
 ): Promise<number> {
   const result = await db.query(
@@ -1989,13 +1990,11 @@ export async function markSupersededTopicClusters(
           updated_at = NOW()
       WHERE rule_version = $1
         AND status = 'active'
-        AND (
-          COALESCE(array_length($2::uuid[], 1), 0) = 0
-          OR topic_cluster_id <> ALL($2::uuid[])
-        )
+        AND topic_cluster_id = ANY($2::uuid[])
+        AND id <> ALL($3::uuid[])
       RETURNING id
     `,
-    [query.ruleVersion, query.keepTopicClusterIds],
+    [query.ruleVersion, query.batchTopicClusterIds, query.keepRowIds],
   );
 
   return result.rows.length;

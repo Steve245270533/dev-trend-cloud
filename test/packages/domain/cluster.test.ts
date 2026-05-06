@@ -387,3 +387,56 @@ test("topic clustering keeps stable ids across repeated runs", () => {
     secondRun.map((cluster) => cluster.cluster.topicClusterId),
   );
 });
+
+test("topic clustering keeps cluster id stable when membership changes", () => {
+  const baseInputs = [
+    buildTopicContentInput({
+      canonicalId: "stackoverflow:pgvector-anchor",
+      source: "stackoverflow",
+      title: "How to stabilize pgvector ranking for production RAG workloads?",
+      summary: "pgvector ranking drifts and postgres tuning strategies",
+      tags: ["pgvector", "postgres", "rag"],
+      vector: [0.93, 0.06, 0.01],
+      rawMeta: {
+        repo: "pgvector/pgvector",
+        entitySlugs: ["pgvector"],
+      },
+    }),
+    buildTopicContentInput({
+      canonicalId: "devto:pgvector-neighbor",
+      source: "devto",
+      title: "Stabilizing pgvector relevance in production",
+      summary: "shared pgvector recall issues and postgres query planning",
+      tags: ["pgvector", "postgres"],
+      vector: [0.92, 0.07, 0.01],
+      rawMeta: {
+        repo: "pgvector/pgvector",
+        entitySlugs: ["pgvector"],
+      },
+    }),
+  ];
+
+  const expandedInputs = [
+    ...baseInputs,
+    buildTopicContentInput({
+      canonicalId: "ossinsight:pgvector-third",
+      source: "ossinsight",
+      title: "Pgvector adoption and operational tuning trends",
+      summary: "ecosystem signals for pgvector and postgres AI workloads",
+      tags: ["pgvector", "postgres", "vector"],
+      vector: [0.91, 0.08, 0.01],
+      rawMeta: {
+        repo: "pgvector/pgvector",
+        entitySlugs: ["pgvector"],
+      },
+    }),
+  ];
+
+  const baseCluster = clusterTopicContents(baseInputs)[0]?.cluster;
+  const expandedCluster = clusterTopicContents(expandedInputs)[0]?.cluster;
+
+  assert.ok(baseCluster);
+  assert.ok(expandedCluster);
+  assert.equal(baseCluster?.topicClusterId, expandedCluster?.topicClusterId);
+  assert.notEqual(baseCluster?.clusterVersion, expandedCluster?.clusterVersion);
+});
