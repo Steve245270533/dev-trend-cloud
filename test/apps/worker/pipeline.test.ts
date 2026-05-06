@@ -6,6 +6,7 @@ import {
   persistCollectedPayloads,
   planWorkerBootstrap,
   refreshRuntimeTopicSeeds,
+  requestOllamaTopicNaming,
   runEmbeddingBackfillJob,
   runIncrementalEmbeddingJob,
   runTopicClusteringBackfillJob,
@@ -2008,9 +2009,8 @@ test("runTopicNamingJob persists label candidates and taxonomy assets when LLM o
   const result = await runTopicNamingJob(
     state.pool,
     {
-      apiToken: "token",
-      model: "@cf/meta/llama",
-      accountId: "acc-1",
+      baseUrl: "http://127.0.0.1:11434",
+      model: "qwen3.5:4b",
       timeoutMs: 1000,
     },
     { limit: 10 },
@@ -2061,9 +2061,8 @@ test("runTopicNamingJob falls back when provider fails", async () => {
   const result = await runTopicNamingJob(
     state.pool,
     {
-      apiToken: "token",
-      model: "@cf/meta/llama",
-      accountId: "acc-1",
+      baseUrl: "http://127.0.0.1:11434",
+      model: "qwen3.5:4b",
       timeoutMs: 1000,
     },
     { limit: 10 },
@@ -2081,4 +2080,65 @@ test("runTopicNamingJob falls back when provider fails", async () => {
     state.topicLabelCandidates[0]?.fallback_reason,
     "provider-error",
   );
+});
+
+test("requestOllamaTopicNaming sends a non-thinking JSON chat request", async () => {
+  let capturedBody: string | null = null;
+  let capturedUrl = "";
+
+  const output = (await requestOllamaTopicNaming(
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "qwen3.5:4b",
+      timeoutMs: 1000,
+    },
+    '{"clusterId":"cluster-3"}',
+    async (input, init) => {
+      capturedUrl = String(input);
+      capturedBody = typeof init?.body === "string" ? init.body : null;
+      return new Response(
+        JSON.stringify({
+          model: "qwen3.5:4b",
+          created_at: "2026-05-06T00:00:00.000Z",
+          message: {
+            role: "assistant",
+            content:
+              '{"label":"Local Model Topics","summary":"Local model naming result for clustered topics.","keywords":["local","model","topics"],"taxonomy":{"l1":"Software Engineering","l2":"Developer Tooling","l3":"Topic Modeling"}}',
+          },
+          done: true,
+          done_reason: "stop",
+          total_duration: 1,
+          load_duration: 1,
+          prompt_eval_count: 1,
+          prompt_eval_duration: 1,
+          eval_count: 1,
+          eval_duration: 1,
+        }),
+        {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+          },
+        },
+      );
+    },
+  )) as string;
+
+  assert.equal(output.includes("Local Model Topics"), true);
+  assert.equal(capturedUrl.endsWith("/api/chat"), true);
+  assert.ok(capturedBody);
+
+  const request = JSON.parse(capturedBody ?? "{}") as {
+    model?: string;
+    think?: boolean;
+    stream?: boolean;
+    format?: string;
+    messages?: { role?: string; content?: string }[];
+  };
+  assert.equal(request.model, "qwen3.5:4b");
+  assert.equal(request.think, false);
+  assert.equal(request.stream, false);
+  assert.equal(request.format, "json");
+  assert.equal(request.messages?.[0]?.role, "system");
+  assert.equal(request.messages?.[1]?.role, "user");
 });

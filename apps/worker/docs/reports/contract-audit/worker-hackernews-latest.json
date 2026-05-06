@@ -16,13 +16,54 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-06T08:58:05.106Z",
-    "finishedAt": "2026-05-06T08:58:15.792Z",
-    "latencyMs": 10686,
-    "status": "failed",
-    "errorText": "Error: Command failed: opencli hackernews ask --limit 5 -f json\nok: false\nerror:\n  code: UNKNOWN\n  message: fetch failed\n  exitCode: 1\n  cause: >-\n    Connect Timeout Error (attempted addresses: 35.190.39.113:443, 2600:1901:0:4d00:::443, 34.120.206.254:443,\n    34.120.160.131:443, 35.201.97.85:443, timeout: 10000ms)\n# AutoFix: re-run with --trace=retain-on-failure for trace artifact\n# opencli hackernews ask --trace retain-on-failure\n",
+    "startedAt": "2026-05-06T14:10:12.992Z",
+    "finishedAt": "2026-05-06T14:10:15.248Z",
+    "latencyMs": 2256,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli hackernews ask [options]\n\n[read] Hacker News Ask HN posts\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews ask -f yaml\nOutput columns: rank, id, title, score, author, comments, url",
-    "payload": []
+    "payload": [
+      {
+        "rank": 1,
+        "id": 48033457,
+        "title": "Ask HN: Who got hired with Who wants to be hired? (On 2026)",
+        "score": 8,
+        "author": "Gooblebrai",
+        "comments": 6
+      },
+      {
+        "rank": 2,
+        "id": 48032863,
+        "title": "Ask HN: Is the future everyone having 100 MCP processes running on their PC?",
+        "score": 6,
+        "author": "ex-aws-dude",
+        "comments": 2
+      },
+      {
+        "rank": 3,
+        "id": 47975676,
+        "title": "I'm Peter Roberts, immigration attorney who does work for YC and startups. AMA",
+        "score": 206,
+        "author": "proberts",
+        "comments": 249
+      },
+      {
+        "rank": 4,
+        "id": 48029559,
+        "title": ".de TLD Issue Solved",
+        "score": 12,
+        "author": "kaltsturm",
+        "comments": 0
+      },
+      {
+        "rank": 5,
+        "id": 47975570,
+        "title": "Ask HN: Who wants to be hired? (May 2026)",
+        "score": 149,
+        "author": "whoishiring",
+        "comments": 463
+      }
+    ]
   },
   {
     "source": "hackernews",
@@ -41,13 +82,59 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-06T08:58:15.792Z",
-    "finishedAt": "2026-05-06T08:58:26.611Z",
-    "latencyMs": 10819,
-    "status": "failed",
-    "errorText": "Error: Command failed: opencli hackernews top --limit 5 -f json\nok: false\nerror:\n  code: UNKNOWN\n  message: fetch failed\n  exitCode: 1\n  cause: >-\n    Connect Timeout Error (attempted addresses: 35.190.39.113:443, 2600:1901:0:4d00:::443, 34.120.206.254:443,\n    34.120.160.131:443, 35.201.97.85:443, timeout: 10000ms)\n# AutoFix: re-run with --trace=retain-on-failure for trace artifact\n# opencli hackernews top --trace retain-on-failure\n",
+    "startedAt": "2026-05-06T14:10:15.248Z",
+    "finishedAt": "2026-05-06T14:10:19.592Z",
+    "latencyMs": 4344,
+    "status": "success",
+    "errorText": null,
     "helpOutput": "Usage: opencli hackernews top [options]\n\n[read] Hacker News top stories\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews top -f yaml\nOutput columns: rank, id, title, score, author, comments, url",
-    "payload": []
+    "payload": [
+      {
+        "rank": 1,
+        "id": 48034587,
+        "title": "Show HN: Red Squares – GitHub outages as contributions",
+        "score": 465,
+        "author": "cianmm",
+        "comments": 94,
+        "url": "https://red-squares.cian.lol/"
+      },
+      {
+        "rank": 2,
+        "id": 48006967,
+        "title": "The bottleneck was never the code",
+        "score": 155,
+        "author": "Anon84",
+        "comments": 105,
+        "url": "https://www.thetypicalset.com/blog/thoughts-on-coding-agents"
+      },
+      {
+        "rank": 3,
+        "id": 48034762,
+        "title": "Setting up a Sun Ray server on OpenIndiana Hipster 2025.10",
+        "score": 64,
+        "author": "jandeboevrie",
+        "comments": 13,
+        "url": "https://catstret.ch/202605/srss-hipster202510/"
+      },
+      {
+        "rank": 4,
+        "id": 48031684,
+        "title": "Agents can now create Cloudflare accounts, buy domains, and deploy",
+        "score": 461,
+        "author": "rolph",
+        "comments": 248,
+        "url": "https://blog.cloudflare.com/agents-stripe-projects/"
+      },
+      {
+        "rank": 5,
+        "id": 48031261,
+        "title": "StarFighter 16-Inch",
+        "score": 486,
+        "author": "signa11",
+        "comments": 238,
+        "url": "https://us.starlabs.systems/pages/starfighter"
+      }
+    ]
   },
   {
     "source": "hackernews",
@@ -67,9 +154,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-06T08:58:26.611Z",
-    "finishedAt": "2026-05-06T08:58:29.047Z",
-    "latencyMs": 2436,
+    "startedAt": "2026-05-06T14:10:19.592Z",
+    "finishedAt": "2026-05-06T14:10:23.400Z",
+    "latencyMs": 3808,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli hackernews search [options] <query>\n\n[read] Search Hacker News stories\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Number of results (default: \"20\")\n  --sort [value]      Sort by relevance or date (default: \"relevance\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\n  --sort: relevance, date  (default: relevance)\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews search <query> -f yaml\nOutput columns: rank, id, title, score, author, comments, url",

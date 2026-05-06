@@ -13,9 +13,10 @@
     "@devtrend/sources": "workspace:*",
     "bullmq": "catalog:worker",
     "ioredis": "catalog:worker",
+    "ollama": "^0.6.3",
+    "pg": "catalog:",
     "pino": "catalog:worker",
-    "pino-roll": "catalog:worker",
-    "pg": "catalog:"
+    "pino-roll": "catalog:worker"
   },
   "scripts": {
     "dev": "tsx watch src/worker.ts",

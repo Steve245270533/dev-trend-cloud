@@ -108,10 +108,9 @@ const embeddingConfig = {
 };
 
 const topicNamingConfig = {
-  apiToken: config.CLOUDFLARE_API_TOKEN,
-  model: config.CLOUDFLARE_MODEL,
-  accountId: config.CLOUDFLARE_ACCOUNT_ID,
-  timeoutMs: 20000,
+  baseUrl: config.OLLAMA_TOPIC_NAMING_BASE_URL,
+  model: config.OLLAMA_TOPIC_NAMING_MODEL,
+  timeoutMs: config.OLLAMA_TOPIC_NAMING_TIMEOUT_MS,
 };
 
 const sourcePollCrons: Record<SourceKey, string> = {

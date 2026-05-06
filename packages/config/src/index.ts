@@ -32,9 +32,11 @@ export const AppConfigSchema = Type.Object({
   OLLAMA_EMBEDDING_MODEL: Type.String({ default: "nomic-embed-text-v2-moe" }),
   OLLAMA_EMBEDDING_DIMENSIONS: Type.Number({ default: 768 }),
   OLLAMA_EMBEDDING_TIMEOUT_MS: Type.Number({ default: 30000 }),
-  CLOUDFLARE_API_TOKEN: Type.String({ default: "" }),
-  CLOUDFLARE_MODEL: Type.String({ default: "" }),
-  CLOUDFLARE_ACCOUNT_ID: Type.String({ default: "" }),
+  OLLAMA_TOPIC_NAMING_BASE_URL: Type.String({
+    default: "http://127.0.0.1:11434",
+  }),
+  OLLAMA_TOPIC_NAMING_MODEL: Type.String({ default: "qwen3.5:4b" }),
+  OLLAMA_TOPIC_NAMING_TIMEOUT_MS: Type.Number({ default: 30000 }),
 });
 
 export type AppConfig = Static<typeof AppConfigSchema>;

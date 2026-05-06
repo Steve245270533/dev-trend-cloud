@@ -80,9 +80,9 @@ test("GET /healthz works", async () => {
       OLLAMA_EMBEDDING_MODEL: "nomic-embed-text-v2-moe",
       OLLAMA_EMBEDDING_DIMENSIONS: 768,
       OLLAMA_EMBEDDING_TIMEOUT_MS: 30000,
-      CLOUDFLARE_API_TOKEN: "",
-      CLOUDFLARE_MODEL: "",
-      CLOUDFLARE_ACCOUNT_ID: "",
+      OLLAMA_TOPIC_NAMING_BASE_URL: "http://127.0.0.1:11434",
+      OLLAMA_TOPIC_NAMING_MODEL: "qwen3.5:4b",
+      OLLAMA_TOPIC_NAMING_TIMEOUT_MS: 30000,
     },
   });
 
@@ -119,9 +119,9 @@ test("GET /signals/question-pressure returns metadata and signals", async () => 
       OLLAMA_EMBEDDING_MODEL: "nomic-embed-text-v2-moe",
       OLLAMA_EMBEDDING_DIMENSIONS: 768,
       OLLAMA_EMBEDDING_TIMEOUT_MS: 30000,
-      CLOUDFLARE_API_TOKEN: "",
-      CLOUDFLARE_MODEL: "",
-      CLOUDFLARE_ACCOUNT_ID: "",
+      OLLAMA_TOPIC_NAMING_BASE_URL: "http://127.0.0.1:11434",
+      OLLAMA_TOPIC_NAMING_MODEL: "qwen3.5:4b",
+      OLLAMA_TOPIC_NAMING_TIMEOUT_MS: 30000,
     },
   });
 
@@ -166,9 +166,9 @@ test("GET /question-clusters/:id/evidence returns evidence rows", async () => {
       OLLAMA_EMBEDDING_MODEL: "nomic-embed-text-v2-moe",
       OLLAMA_EMBEDDING_DIMENSIONS: 768,
       OLLAMA_EMBEDDING_TIMEOUT_MS: 30000,
-      CLOUDFLARE_API_TOKEN: "",
-      CLOUDFLARE_MODEL: "",
-      CLOUDFLARE_ACCOUNT_ID: "",
+      OLLAMA_TOPIC_NAMING_BASE_URL: "http://127.0.0.1:11434",
+      OLLAMA_TOPIC_NAMING_MODEL: "qwen3.5:4b",
+      OLLAMA_TOPIC_NAMING_TIMEOUT_MS: 30000,
     },
   });
 

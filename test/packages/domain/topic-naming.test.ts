@@ -54,8 +54,8 @@ test("validateTopicNamingCandidate accepts high-quality LLM output", () => {
         l3: "Vector Search",
       },
     },
-    "cloudflare-workers-ai",
-    "@cf/meta/llama",
+    "ollama",
+    "qwen3.5:4b",
   );
   assert.ok(validated);
   assert.equal(validated?.status, "llm-generated");
@@ -74,8 +74,8 @@ test("validateTopicNamingCandidate rejects low-quality output and fallback remai
         l1: "",
       },
     },
-    "cloudflare-workers-ai",
-    "@cf/meta/llama",
+    "ollama",
+    "qwen3.5:4b",
   );
   assert.equal(validated, null);
 

@@ -61,6 +61,7 @@ import {
   mergeRuntimeTopicCandidates,
   normalizeCollectedPayloads,
 } from "@devtrend/sources";
+import { Ollama } from "ollama";
 import type { Pool } from "pg";
 import { noopWorkerLogger, type WorkerLogger } from "./logger.js";
 
@@ -102,10 +103,9 @@ export interface TopicClusteringJobResult {
   superseded: number;
 }
 
-export interface TopicNamingCloudflareConfig {
-  apiToken: string;
+export interface TopicNamingOllamaConfig {
+  baseUrl: string;
   model: string;
-  accountId: string;
   timeoutMs: number;
 }
 
@@ -121,7 +121,7 @@ export type EmbeddingVectorGenerator = (
 ) => Promise<number[]>;
 
 export type TopicNamingGenerator = (
-  config: TopicNamingCloudflareConfig,
+  config: TopicNamingOllamaConfig,
   prompt: string,
 ) => Promise<unknown>;
 
@@ -209,61 +209,82 @@ export async function requestOllamaEmbedding(
   }
 }
 
-function cloudflareEndpoint(config: TopicNamingCloudflareConfig): string {
-  const modelPath = config.model.trim().replace(/^\/+/, "");
-  return `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/ai/run/${modelPath}`;
+function createTimeoutFetch(
+  timeoutMs: number,
+  fetchImpl: typeof fetch = fetch,
+): typeof fetch {
+  return async (
+    input: Parameters<typeof fetch>[0],
+    init?: Parameters<typeof fetch>[1],
+  ) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      Math.max(timeoutMs, 1000),
+    );
+    const upstreamSignal = init?.signal;
+    const abortOnUpstreamSignal = () => controller.abort();
+
+    if (upstreamSignal) {
+      if (upstreamSignal.aborted) {
+        controller.abort();
+      } else {
+        upstreamSignal.addEventListener("abort", abortOnUpstreamSignal, {
+          once: true,
+        });
+      }
+    }
+
+    try {
+      return await fetchImpl(input, {
+        ...init,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+      upstreamSignal?.removeEventListener("abort", abortOnUpstreamSignal);
+    }
+  };
 }
 
-export async function requestCloudflareTopicNaming(
-  config: TopicNamingCloudflareConfig,
+export async function requestOllamaTopicNaming(
+  config: TopicNamingOllamaConfig,
   prompt: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<unknown> {
-  const controller = new AbortController();
-  const timeout = setTimeout(
-    () => controller.abort(),
-    Math.max(config.timeoutMs, 1000),
-  );
+  const client = new Ollama({
+    host: config.baseUrl,
+    fetch: createTimeoutFetch(config.timeoutMs, fetchImpl),
+  });
 
-  try {
-    const response = await fetchImpl(cloudflareEndpoint(config), {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${config.apiToken}`,
+  const response = await client.chat({
+    model: config.model,
+    think: false,
+    stream: false,
+    format: "json",
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a topic naming assistant. Return only strict JSON with keys: label, summary, keywords, taxonomy{l1,l2,l3}.",
       },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a topic naming assistant. Return only strict JSON with keys: label, summary, keywords, taxonomy{l1,l2,l3}.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      }),
-      signal: controller.signal,
-    });
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+  });
 
-    if (!response.ok) {
-      let errorBody = "";
-      try {
-        errorBody = await response.text();
-      } catch {
-        errorBody = "";
-      }
-      throw new Error(
-        `Cloudflare naming HTTP ${response.status}${errorBody ? `: ${errorBody}` : ""}`,
-      );
-    }
-
-    return (await response.json()) as unknown;
-  } finally {
-    clearTimeout(timeout);
+  const content = response.message.content.trim();
+  if (content.length === 0) {
+    throw new Error("Ollama naming response is empty.");
   }
+
+  return content;
+}
+
+function topicNamingConfigAvailable(config: TopicNamingOllamaConfig): boolean {
+  return config.baseUrl.trim().length > 0 && config.model.trim().length > 0;
 }
 
 function toStringArray(value: unknown): string[] {
@@ -1063,16 +1084,6 @@ function buildTopicNamingPrompt(cluster: TopicCluster): string {
   return JSON.stringify(payload);
 }
 
-function cloudflareConfigAvailable(
-  config: TopicNamingCloudflareConfig,
-): boolean {
-  return (
-    config.apiToken.trim().length > 0 &&
-    config.accountId.trim().length > 0 &&
-    config.model.trim().length > 0
-  );
-}
-
 function deriveTopicMemberships(
   topicClusterId: string,
   clusterVersion: string,
@@ -1097,13 +1108,13 @@ function deriveTopicMemberships(
 
 async function runTopicNamingBatch(
   pool: Pool,
-  config: TopicNamingCloudflareConfig,
+  config: TopicNamingOllamaConfig,
   options: {
     source?: SourceKey;
     limit?: number;
   } = {},
   logger: WorkerLogger,
-  generate: TopicNamingGenerator = requestCloudflareTopicNaming,
+  generate: TopicNamingGenerator = requestOllamaTopicNaming,
 ): Promise<TopicNamingJobResult> {
   const clusters = await withTransaction(pool, async (client) => {
     const rows = await listActiveTopicClusters(client, {
@@ -1134,7 +1145,7 @@ async function runTopicNamingBatch(
       promptSize: prompt.length,
     };
 
-    if (!cloudflareConfigAvailable(config)) {
+    if (!topicNamingConfigAvailable(config)) {
       namingCandidate = buildFallbackTopicNaming(cluster, "missing-config");
     } else {
       try {
@@ -1144,7 +1155,7 @@ async function runTopicNamingBatch(
           ? validateTopicNamingCandidate(
               cluster,
               parsed,
-              "cloudflare-workers-ai",
+              "ollama",
               config.model,
             )
           : null;
@@ -1258,26 +1269,26 @@ async function runTopicNamingBatch(
 
 export async function runTopicNamingJob(
   pool: Pool,
-  config: TopicNamingCloudflareConfig,
+  config: TopicNamingOllamaConfig,
   options: {
     source?: SourceKey;
     limit?: number;
   } = {},
   logger: WorkerLogger = noopWorkerLogger(),
-  generate: TopicNamingGenerator = requestCloudflareTopicNaming,
+  generate: TopicNamingGenerator = requestOllamaTopicNaming,
 ): Promise<TopicNamingJobResult> {
   return runTopicNamingBatch(pool, config, options, logger, generate);
 }
 
 export async function runTopicNamingBackfillJob(
   pool: Pool,
-  config: TopicNamingCloudflareConfig,
+  config: TopicNamingOllamaConfig,
   options: {
     source?: SourceKey;
     limit?: number;
   } = {},
   logger: WorkerLogger = noopWorkerLogger(),
-  generate: TopicNamingGenerator = requestCloudflareTopicNaming,
+  generate: TopicNamingGenerator = requestOllamaTopicNaming,
 ): Promise<TopicNamingJobResult> {
   return runTopicNamingBatch(pool, config, options, logger, generate);
 }

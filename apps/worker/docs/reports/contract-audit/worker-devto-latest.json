@@ -16,9 +16,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-06T08:48:20.072Z",
-    "finishedAt": "2026-05-06T08:48:20.898Z",
-    "latencyMs": 826,
+    "startedAt": "2026-05-06T14:09:00.068Z",
+    "finishedAt": "2026-05-06T14:09:04.208Z",
+    "latencyMs": 4140,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli devto top [options]\n\n[read] Top DEV.to articles of the day\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: dev.to\nExample: opencli devto top -f yaml\nOutput columns: rank, id, title, author, reactions, comments, reading_time, published_at, tags, url",
@@ -28,8 +28,8 @@
         "id": 3616786,
         "title": "What Even Is AI? (I Took a Break & Had to Relearn Everything)",
         "author": "rohini_gaonkar",
-        "reactions": 36,
-        "comments": 3,
+        "reactions": 38,
+        "comments": 5,
         "reading_time": 5,
         "published_at": "2026-05-05T18:38:06Z",
         "tags": "ai, beginners, aws, learning",
@@ -37,42 +37,18 @@
       },
       {
         "rank": 2,
-        "id": 3614671,
-        "title": "Am I a Developer or Just a Prompt Engineer?",
-        "author": "harsh2644",
-        "reactions": 56,
-        "comments": 30,
-        "reading_time": 5,
-        "published_at": "2026-05-05T10:52:28Z",
-        "tags": "ai, career, programming, discuss",
-        "url": "https://dev.to/harsh2644/am-i-a-developer-or-just-a-prompt-engineer-4ece"
+        "id": 3610492,
+        "title": "I Didn’t Stop Building. I Just Left My Laptop.",
+        "author": "itsugo",
+        "reactions": 20,
+        "comments": 2,
+        "reading_time": 4,
+        "published_at": "2026-05-06T06:28:42Z",
+        "tags": "career, learning, development, workplace",
+        "url": "https://dev.to/itsugo/i-didnt-stop-building-i-just-left-my-laptop-27da"
       },
       {
         "rank": 3,
-        "id": 3615670,
-        "title": "The Next Casualty of the GenAI Revolution",
-        "author": "maishsk",
-        "reactions": 39,
-        "comments": 3,
-        "reading_time": 7,
-        "published_at": "2026-05-05T13:25:34Z",
-        "tags": "ai, cloud, aws, genai",
-        "url": "https://dev.to/aws/the-next-casualty-of-the-genai-revolution-3in7"
-      },
-      {
-        "rank": 4,
-        "id": 3612429,
-        "title": "Kimi K2.6 vs. Claude Opus 4.7 in a Weird Game Coding Test ✅",
-        "author": "shricodev",
-        "reactions": 18,
-        "comments": 0,
-        "reading_time": 12,
-        "published_at": "2026-05-05T13:04:03Z",
-        "tags": "ai, programming, gamedev, typescript",
-        "url": "https://dev.to/composiodev/kimi-k26-vs-claude-opus-47-in-a-weird-game-coding-test-2ck3"
-      },
-      {
-        "rank": 5,
         "id": 3615692,
         "title": "Copilot Squad",
         "author": "ruarfff",
@@ -82,6 +58,30 @@
         "published_at": "2026-05-05T14:49:33Z",
         "tags": "githubcopilot",
         "url": "https://dev.to/ruarfff/copilot-squad-4nda"
+      },
+      {
+        "rank": 4,
+        "id": 3603637,
+        "title": "🫡We'll Support You with All Our Might (AI Avatar v7: Pose Capture and More (VS Code and Chrome Extension))",
+        "author": "webdeveloperhyper",
+        "reactions": 28,
+        "comments": 8,
+        "reading_time": 6,
+        "published_at": "2026-05-06T03:38:45Z",
+        "tags": "ai, webdev, javascript, discuss",
+        "url": "https://dev.to/webdeveloperhyper/well-support-you-with-all-our-might-ai-avatar-v7-pose-capture-and-more-vs-code-and-chrome-3aab"
+      },
+      {
+        "rank": 5,
+        "id": 3615957,
+        "title": "Blue Ridge Ruby 2026: A Conference About the Long Game",
+        "author": "cseeman",
+        "reactions": 2,
+        "comments": 0,
+        "reading_time": 5,
+        "published_at": "2026-05-05T14:33:56Z",
+        "tags": "ruby, techtalks, workplace",
+        "url": "https://dev.to/cseeman/blue-ridge-ruby-2026-a-conference-about-the-long-game-357a"
       }
     ]
   },
@@ -103,15 +103,63 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-06T08:48:20.898Z",
-    "finishedAt": "2026-05-06T08:48:21.795Z",
-    "latencyMs": 897,
+    "startedAt": "2026-05-06T14:09:04.209Z",
+    "finishedAt": "2026-05-06T14:09:06.669Z",
+    "latencyMs": 2460,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli devto tag [options] <tag>\n\n[read] Latest DEV.to articles for a specific tag\n\nArguments:\n  tag                 Tag name (e.g. javascript, python, webdev)\n\nOptions:\n  --limit [value]     Number of articles (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: dev.to\nExample: opencli devto tag <tag> -f yaml\nOutput columns: rank, id, title, author, reactions, comments, reading_time, published_at, tags, url",
     "payload": [
       {
         "rank": 1,
+        "id": 3621503,
+        "title": "How to Use Claude Code as an AI Agent with Email Verification",
+        "author": "francofuji",
+        "reactions": 0,
+        "comments": 0,
+        "reading_time": 10,
+        "published_at": "2026-05-06T13:51:58Z",
+        "tags": "claudecode, mcp, ai, automation",
+        "url": "https://dev.to/francofuji/how-to-use-claude-code-as-an-ai-agent-with-email-verification-4b1a"
+      },
+      {
+        "rank": 2,
+        "id": 3606167,
+        "title": "Why I Built matthiasmeyer.tech and What Lives Inside",
+        "author": "studiomeyer_io",
+        "reactions": 0,
+        "comments": 0,
+        "reading_time": 9,
+        "published_at": "2026-05-06T11:56:26Z",
+        "tags": "mcp, opensource, webdev, ai",
+        "url": "https://dev.to/studiomeyer_io/why-i-built-matthiasmeyertech-and-what-lives-inside-3mof"
+      },
+      {
+        "rank": 3,
+        "id": 3621169,
+        "title": "I shipped ejentum-mcp today: four cognitive harnesses as MCP tools",
+        "author": "frank_brsrk",
+        "reactions": 0,
+        "comments": 0,
+        "reading_time": 3,
+        "published_at": "2026-05-06T12:38:06Z",
+        "tags": "mcp, claude, ai, agents",
+        "url": "https://dev.to/frank_brsrk/i-shipped-ejentum-mcp-today-four-cognitive-harnesses-as-mcp-tools-2heb"
+      },
+      {
+        "rank": 4,
+        "id": 3619350,
+        "title": "Using an MCP Gateway with Claude Code: A Practical Guide",
+        "author": "nakul_tk",
+        "reactions": 0,
+        "comments": 0,
+        "reading_time": 6,
+        "published_at": "2026-05-06T07:52:25Z",
+        "tags": "ai, mcp, claude, llm",
+        "url": "https://dev.to/nakul_tk/using-an-mcp-gateway-with-claude-code-a-practical-guide-31dc"
+      },
+      {
+        "rank": 5,
         "id": 3618865,
         "title": "Claude Code as an MCP Hub: What We Learned",
         "author": "forgeflows",
@@ -121,54 +169,6 @@
         "published_at": "2026-05-06T06:13:49Z",
         "tags": "claudecode, mcp, aiautomation, workflowconsolidation",
         "url": "https://dev.to/forgeflows/claude-code-as-an-mcp-hub-what-we-learned-dlg"
-      },
-      {
-        "rank": 2,
-        "id": 3617990,
-        "title": "Turn Any OpenAPI Spec into Safe MCP Tools for Claude in Seconds",
-        "author": "shad_tech",
-        "reactions": 0,
-        "comments": 0,
-        "reading_time": 6,
-        "published_at": "2026-05-06T02:38:49Z",
-        "tags": "mcp, openapi, agents",
-        "url": "https://dev.to/shad_tech/turn-any-openapi-spec-into-safe-mcp-tools-for-claude-in-seconds-bf4"
-      },
-      {
-        "rank": 3,
-        "id": 3615805,
-        "title": "MCP Explained Simply: How AI Talk to Your Data",
-        "author": "shahjalalbu",
-        "reactions": 0,
-        "comments": 1,
-        "reading_time": 28,
-        "published_at": "2026-05-06T03:39:36Z",
-        "tags": "mcp, llm, ai, typescript",
-        "url": "https://dev.to/shahjalalbu/mcp-explained-simply-how-ai-talk-to-your-data-1p44"
-      },
-      {
-        "rank": 4,
-        "id": 3586000,
-        "title": "38% of MCP servers have no auth -- inside the OWASP MCP Top 10",
-        "author": "kenimo49",
-        "reactions": 0,
-        "comments": 1,
-        "reading_time": 6,
-        "published_at": "2026-05-06T01:43:00Z",
-        "tags": "ai, security, mcp, devtools",
-        "url": "https://dev.to/kenimo49/38-of-mcp-servers-have-no-auth-inside-the-owasp-mcp-top-10-hm"
-      },
-      {
-        "rank": 5,
-        "id": 3617510,
-        "title": "I built an MCP server so AI agents can flash 1,000+ embedded boards",
-        "author": "tonythehacker",
-        "reactions": 1,
-        "comments": 0,
-        "reading_time": 5,
-        "published_at": "2026-05-05T23:13:31Z",
-        "tags": "iot, mcp, ai, firmware",
-        "url": "https://dev.to/tonythehacker/i-built-an-mcp-server-so-ai-agents-can-flash-1000-embedded-boards-5bbd"
       }
     ]
   }

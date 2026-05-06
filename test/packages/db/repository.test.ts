@@ -802,7 +802,7 @@ test("topic naming persistence helpers upsert candidate, nodes and lineage", asy
               taxonomy_l2: "Databases",
               taxonomy_l3: "Vector Search",
               fallback_reason: null,
-              provider: "cloudflare-workers-ai",
+              provider: "ollama",
               model: "@cf/meta/llama",
               metadata: {},
               created_at: "2026-05-06T00:00:00.000Z",
@@ -861,7 +861,7 @@ test("topic naming persistence helpers upsert candidate, nodes and lineage", asy
     taxonomyL1: "Data Infrastructure",
     taxonomyL2: "Databases",
     taxonomyL3: "Vector Search",
-    provider: "cloudflare-workers-ai",
+    provider: "ollama",
     model: "@cf/meta/llama",
     metadata: {},
   });

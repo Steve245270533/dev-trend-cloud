@@ -22,7 +22,7 @@
 - embedding incremental / backfill
 - topic clustering incremental / backfill
 - dynamic-cluster-first runtime topic projection
-- topic naming（Cloudflare LLM + deterministic fallback）
+- topic naming（Ollama local LLM + deterministic fallback）
 - taxonomy persistence（topic nodes / lineage / memberships）
 
 ### 尚未实现

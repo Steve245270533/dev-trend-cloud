@@ -15,7 +15,7 @@
 - normalize / match / question cluster / score
 - embedding incremental / backfill（provider 调用 + 持久化 + 失败降级日志）
 - topic clustering incremental / backfill（cluster 持久化 + membership 更新 + supersede）
-- topic naming incremental / backfill（Cloudflare LLM + deterministic fallback）
+- topic naming incremental / backfill（Ollama local LLM + deterministic fallback）
 - taxonomy persistence（topic nodes / lineage / memberships）
 - dynamic-cluster-first runtime topic loading（低置信度或异常时回退到 runtime seeds）
 - bootstrap enqueue on cold start
