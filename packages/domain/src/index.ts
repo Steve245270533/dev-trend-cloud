@@ -12,6 +12,11 @@ import { clusterQuestionItems } from "./questions/cluster.js";
 import { extractQuestionFeatures } from "./questions/extract.js";
 import { scoreClusters } from "./scoring/question-pressure.js";
 import {
+  buildRuntimeTopicSeedsFromTopicClusters,
+  clusterTopicContents,
+  TOPIC_CLUSTER_RULE_VERSION,
+} from "./topics/cluster.js";
+import {
   buildEmbeddingInput,
   buildEmbeddingInputFromUnifiedContent,
   isEmbeddingInputRecord,
@@ -24,9 +29,12 @@ export type { SourceFeatures, UnifiedContentRecord };
 export {
   buildEmbeddingInput,
   buildEmbeddingInputFromUnifiedContent,
+  buildRuntimeTopicSeedsFromTopicClusters,
+  clusterTopicContents,
   isEmbeddingInputRecord,
   isUnifiedContentRecord,
   isValidSourceFeatures,
+  TOPIC_CLUSTER_RULE_VERSION,
 };
 
 export interface PipelineOutput {

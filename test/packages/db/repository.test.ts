@@ -4,17 +4,23 @@ import {
   getUnifiedModelCompatibilityReport,
   getWorkerBootstrapState,
   listActiveRuntimeTopicSeeds,
+  listActiveTopicClusters,
   listEmbeddingBackfillCandidates,
   listEmbeddingRecords,
   listFeed,
   listQuestionPressureSignals,
+  listRuntimeTopicClusterSeeds,
+  listTopicClusterMemberships,
   listUnifiedContentRecords,
   markSupersededEmbeddings,
+  markSupersededTopicClusters,
   replaceRuntimeTopicSeeds,
   replaceSourceItems,
+  replaceTopicClusterMemberships,
   rollbackUnifiedContentBySources,
   updateEmbeddingRecordStatus,
   upsertEmbeddingRecord,
+  upsertTopicCluster,
   upsertUnifiedContentRecords,
 } from "@devtrend/db";
 import type { QueryResult } from "pg";
@@ -539,4 +545,232 @@ test("markSupersededEmbeddings applies dedupe superseded rule", async () => {
     "fp-latest",
   ]);
   assert.equal(count, 2);
+});
+
+test("upsertTopicCluster persists versioned cluster payload", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      return {
+        rows: [
+          {
+            id: "77777777-7777-5777-8777-777777777777",
+            topic_cluster_id: "88888888-8888-5888-8888-888888888888",
+            stable_key: "topic-cluster:abc",
+            cluster_version: "v1",
+            rule_version: "topic-cluster-rules-v1",
+            status: "active",
+            slug: "pgvector-postgres-rag",
+            display_name: "Pgvector Postgres Rag",
+            summary: "cluster summary",
+            keywords: ["pgvector", "postgres"],
+            anchor_canonical_id: "stackoverflow:123",
+            representative_evidence: [],
+            source_mix: [],
+            related_repos: ["pgvector/pgvector"],
+            related_entities: ["pgvector"],
+            item_count: 3,
+            cluster_confidence: 0.91,
+            runtime_fallback_reason: null,
+            metadata: {},
+            created_at: "2026-05-06T00:00:00.000Z",
+            updated_at: "2026-05-06T00:10:00.000Z",
+          },
+        ],
+      } as unknown as QueryResult;
+    },
+  };
+
+  const cluster = await upsertTopicCluster(db, {
+    topicClusterId: "88888888-8888-5888-8888-888888888888",
+    stableKey: "topic-cluster:abc",
+    clusterVersion: "v1",
+    ruleVersion: "topic-cluster-rules-v1",
+    status: "active",
+    slug: "pgvector-postgres-rag",
+    displayName: "Pgvector Postgres Rag",
+    summary: "cluster summary",
+    keywords: ["pgvector", "postgres"],
+    anchorCanonicalId: "stackoverflow:123",
+    representativeEvidence: [],
+    sourceMix: [],
+    relatedRepos: ["pgvector/pgvector"],
+    relatedEntities: ["pgvector"],
+    itemCount: 3,
+    clusterConfidence: 0.91,
+    metadata: {},
+  });
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0]?.text ?? "", /INSERT INTO topic_clusters/);
+  assert.match(
+    calls[0]?.text ?? "",
+    /ON CONFLICT \(topic_cluster_id, cluster_version\) DO UPDATE/,
+  );
+  assert.equal(cluster.rowId, "77777777-7777-5777-8777-777777777777");
+  assert.equal(cluster.topicClusterId, "88888888-8888-5888-8888-888888888888");
+});
+
+test("replaceTopicClusterMemberships rewrites active memberships", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      return { rows: [] } as unknown as QueryResult;
+    },
+  };
+
+  const written = await replaceTopicClusterMemberships(db, {
+    topicClusterRowId: "77777777-7777-5777-8777-777777777777",
+    memberships: [
+      {
+        topicClusterId: "88888888-8888-5888-8888-888888888888",
+        clusterVersion: "v1",
+        canonicalId: "stackoverflow:123",
+        itemId: "11111111-1111-5111-8111-111111111111",
+        embeddingRecordId: "22222222-2222-5222-8222-222222222222",
+        source: "stackoverflow",
+        membershipConfidence: 0.95,
+        primaryEvidence: true,
+        evidenceRank: 1,
+        reasoningTags: ["cluster-anchor"],
+        metadata: {},
+      },
+    ],
+  });
+
+  assert.equal(calls.length, 2);
+  assert.match(calls[0]?.text ?? "", /DELETE FROM topic_cluster_memberships/);
+  assert.match(calls[1]?.text ?? "", /INSERT INTO topic_cluster_memberships/);
+  assert.equal(written, 1);
+});
+
+test("listActiveTopicClusters and memberships map persisted topic cluster rows", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      if (text.includes("FROM topic_clusters")) {
+        return {
+          rows: [
+            {
+              id: "77777777-7777-5777-8777-777777777777",
+              topic_cluster_id: "88888888-8888-5888-8888-888888888888",
+              stable_key: "topic-cluster:abc",
+              cluster_version: "v1",
+              rule_version: "topic-cluster-rules-v1",
+              status: "active",
+              slug: "mcp-tool-calling",
+              display_name: "Mcp Tool Calling",
+              summary: "cluster summary",
+              keywords: ["mcp", "tool-calling"],
+              anchor_canonical_id: "hackernews:1",
+              representative_evidence: [],
+              source_mix: [{ source: "hackernews", count: 1, ratio: 1 }],
+              related_repos: [],
+              related_entities: ["mcp-protocol"],
+              item_count: 1,
+              cluster_confidence: 0.82,
+              runtime_fallback_reason: null,
+              metadata: {},
+              created_at: "2026-05-06T00:00:00.000Z",
+              updated_at: "2026-05-06T00:10:00.000Z",
+            },
+          ],
+        } as unknown as QueryResult;
+      }
+
+      return {
+        rows: [
+          {
+            topic_cluster_id: "88888888-8888-5888-8888-888888888888",
+            cluster_version: "v1",
+            canonical_id: "hackernews:1",
+            item_id: "11111111-1111-5111-8111-111111111111",
+            embedding_record_id: null,
+            source: "hackernews",
+            membership_confidence: 1,
+            primary_evidence: true,
+            evidence_rank: 1,
+            reasoning_tags: ["cluster-anchor"],
+            metadata: {},
+          },
+        ],
+      } as unknown as QueryResult;
+    },
+  };
+
+  const clusters = await listActiveTopicClusters(db, { limit: 10 });
+  const memberships = await listTopicClusterMemberships(
+    db,
+    "88888888-8888-5888-8888-888888888888",
+  );
+
+  assert.equal(calls.length, 2);
+  assert.equal(clusters[0]?.slug, "mcp-tool-calling");
+  assert.equal(memberships[0]?.canonicalId, "hackernews:1");
+});
+
+test("markSupersededTopicClusters updates old active rows", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      return { rows: [{ id: "old-1" }] } as unknown as QueryResult;
+    },
+  };
+
+  const count = await markSupersededTopicClusters(db, {
+    ruleVersion: "topic-cluster-rules-v1",
+    keepTopicClusterIds: ["88888888-8888-5888-8888-888888888888"],
+  });
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0]?.text ?? "", /UPDATE topic_clusters/);
+  assert.deepEqual(calls[0]?.params, [
+    "topic-cluster-rules-v1",
+    ["88888888-8888-5888-8888-888888888888"],
+  ]);
+  assert.equal(count, 1);
+});
+
+test("listRuntimeTopicClusterSeeds projects active clusters into runtime topics", async () => {
+  const db = {
+    async query() {
+      return {
+        rows: [
+          {
+            id: "77777777-7777-5777-8777-777777777777",
+            topic_cluster_id: "88888888-8888-5888-8888-888888888888",
+            stable_key: "topic-cluster:abc",
+            cluster_version: "v1",
+            rule_version: "topic-cluster-rules-v1",
+            status: "active",
+            slug: "pgvector-postgres-rag",
+            display_name: "Pgvector Postgres Rag",
+            summary: "cluster summary",
+            keywords: ["pgvector", "postgres"],
+            anchor_canonical_id: "stackoverflow:123",
+            representative_evidence: [],
+            source_mix: [],
+            related_repos: ["pgvector/pgvector"],
+            related_entities: ["pgvector"],
+            item_count: 3,
+            cluster_confidence: 0.91,
+            runtime_fallback_reason: null,
+            metadata: {},
+            created_at: "2026-05-06T00:00:00.000Z",
+            updated_at: "2026-05-06T00:10:00.000Z",
+          },
+        ],
+      } as unknown as QueryResult;
+    },
+  };
+
+  const seeds = await listRuntimeTopicClusterSeeds(db, 10);
+
+  assert.equal(seeds.length, 1);
+  assert.equal(seeds[0]?.sources[0], "topic-cluster");
+  assert.equal(seeds[0]?.slug, "pgvector-postgres-rag");
 });

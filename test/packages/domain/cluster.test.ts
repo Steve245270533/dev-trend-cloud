@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { entitySeeds, topicSeeds } from "@devtrend/domain";
+import {
+  clusterTopicContents,
+  entitySeeds,
+  topicSeeds,
+} from "@devtrend/domain";
 import type {
   MatchedEntity,
   MatchedTopic,
@@ -222,5 +226,164 @@ test("Tell HN titles do not become question evidence unless they are actual ques
   assert.equal(
     tellCluster[0]?.cluster.canonicalQuestion,
     "Ask HN: Why is MCP tool calling so brittle in production?",
+  );
+});
+
+function buildTopicContentInput(input: {
+  canonicalId: string;
+  source: "stackoverflow" | "hackernews" | "devto" | "ossinsight";
+  title: string;
+  summary: string;
+  tags: string[];
+  vector: number[];
+  publishedAt?: string;
+  rawMeta?: Record<string, unknown>;
+}) {
+  return {
+    embeddingId: `${input.canonicalId}-embedding-id`.padEnd(36, "0"),
+    vector: input.vector,
+    content: {
+      canonicalId: input.canonicalId,
+      source: input.source,
+      sourceItemId: input.canonicalId.split(":")[1] ?? input.canonicalId,
+      title: input.title,
+      summary: input.summary,
+      bodyExcerpt: input.summary,
+      url: `https://example.com/${encodeURIComponent(input.canonicalId)}`,
+      publishedAt: input.publishedAt ?? "2026-05-06T00:00:00.000Z",
+      collectedAt: "2026-05-06T00:05:00.000Z",
+      timestampOrigin: "source" as const,
+      tags: input.tags,
+      sourceFeatures: {
+        shared: {
+          score: 10,
+        },
+      },
+      fingerprint: `${input.canonicalId}-fp`,
+      evidenceRefs: [],
+      legacyRefs: {
+        itemId: "11111111-1111-5111-8111-111111111111",
+        itemSourceId: null,
+      },
+      rawMeta: input.rawMeta ?? {},
+    },
+  };
+}
+
+test("topic clustering merges cross-source content with repo/entity guardrails", () => {
+  const clusters = clusterTopicContents([
+    buildTopicContentInput({
+      canonicalId: "stackoverflow:pgvector-1",
+      source: "stackoverflow",
+      title: "Why does pgvector return unstable similarity results?",
+      summary: "pgvector and postgres ranking drift across reruns",
+      tags: ["pgvector", "postgres", "rag"],
+      vector: [0.93, 0.07, 0.01],
+      rawMeta: {
+        repo: "pgvector/pgvector",
+        entitySlugs: ["pgvector"],
+      },
+    }),
+    buildTopicContentInput({
+      canonicalId: "devto:pgvector-2",
+      source: "devto",
+      title: "Why pgvector ranking feels unstable in production RAG",
+      summary: "Teams compare pgvector recall and postgres query planning",
+      tags: ["pgvector", "postgres"],
+      vector: [0.92, 0.06, 0.02],
+      rawMeta: {
+        repo: "pgvector/pgvector",
+        entitySlugs: ["pgvector"],
+      },
+    }),
+    buildTopicContentInput({
+      canonicalId: "ossinsight:pgvector-3",
+      source: "ossinsight",
+      title: "Pgvector adoption keeps rising with Postgres AI workflows",
+      summary: "OSSInsight proxy data highlights pgvector usage and activity",
+      tags: ["pgvector", "postgres", "vector"],
+      vector: [0.91, 0.08, 0.01],
+      rawMeta: {
+        repo: "pgvector/pgvector",
+        entitySlugs: ["pgvector"],
+      },
+    }),
+  ]);
+
+  assert.equal(clusters.length, 1);
+  assert.equal(clusters[0]?.cluster.itemCount, 3);
+  assert.equal(clusters[0]?.cluster.sourceMix.length, 3);
+  assert.equal(clusters[0]?.cluster.relatedRepos[0], "pgvector pgvector");
+  assert.equal(
+    clusters[0]?.cluster.representativeEvidence.some(
+      (evidence) => evidence.role === "primary",
+    ),
+    true,
+  );
+});
+
+test("topic clustering rejects merge when repo anchors conflict despite similar vectors", () => {
+  const clusters = clusterTopicContents([
+    buildTopicContentInput({
+      canonicalId: "stackoverflow:fastify-1",
+      source: "stackoverflow",
+      title: "How do teams debug Fastify MCP schemas?",
+      summary: "Fastify plugins and schema validation around MCP tool calls",
+      tags: ["fastify", "mcp"],
+      vector: [0.88, 0.1, 0.02],
+      rawMeta: {
+        repo: "fastify/fastify",
+        entitySlugs: ["fastify"],
+      },
+    }),
+    buildTopicContentInput({
+      canonicalId: "devto:express-2",
+      source: "devto",
+      title: "How do teams debug Express MCP schemas?",
+      summary: "Express middleware and schema validation around MCP tool calls",
+      tags: ["express", "mcp"],
+      vector: [0.87, 0.11, 0.02],
+      rawMeta: {
+        repo: "expressjs/express",
+        entitySlugs: ["express"],
+      },
+    }),
+  ]);
+
+  assert.equal(clusters.length, 2);
+});
+
+test("topic clustering keeps stable ids across repeated runs", () => {
+  const inputs = [
+    buildTopicContentInput({
+      canonicalId: "hackernews:mcp-1",
+      source: "hackernews",
+      title: "Ask HN: What MCP servers are you deploying?",
+      summary: "MCP servers, tool calling and deployment stories",
+      tags: ["mcp", "tool-calling"],
+      vector: [0.75, 0.21, 0.04],
+      rawMeta: {
+        entitySlugs: ["mcp-protocol"],
+      },
+    }),
+    buildTopicContentInput({
+      canonicalId: "devto:mcp-2",
+      source: "devto",
+      title: "Shipping MCP servers with deterministic tool contracts",
+      summary: "MCP protocol rollout and tool calling guardrails",
+      tags: ["mcp", "contracts"],
+      vector: [0.76, 0.2, 0.04],
+      rawMeta: {
+        entitySlugs: ["mcp-protocol"],
+      },
+    }),
+  ];
+
+  const firstRun = clusterTopicContents(inputs);
+  const secondRun = clusterTopicContents([...inputs].reverse());
+
+  assert.deepEqual(
+    firstRun.map((cluster) => cluster.cluster.topicClusterId),
+    secondRun.map((cluster) => cluster.cluster.topicClusterId),
   );
 });

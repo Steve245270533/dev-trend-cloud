@@ -14,6 +14,8 @@ import {
   type EmbeddingJobData,
   type PipelineStageJobData,
   QUEUES,
+  type TopicClusteringBackfillJobData,
+  type TopicClusteringJobData,
   type TopicSeedRefreshJobData,
 } from "./jobs/definitions.js";
 import { invalidateApiReadCaches } from "./services/cache.js";
@@ -25,6 +27,8 @@ import {
   refreshRuntimeTopicSeeds,
   runEmbeddingBackfillJob,
   runIncrementalEmbeddingJob,
+  runTopicClusteringBackfillJob,
+  runTopicClusteringJob,
 } from "./services/pipeline.js";
 import { RedisCircuitBreakerStore } from "./services/source-breaker.js";
 
@@ -72,6 +76,17 @@ const _embeddingBackfillQueue = new Queue(QUEUES.embeddingBackfill, {
   connection: redis,
   prefix: config.QUEUE_PREFIX,
 });
+const topicClusteringQueue = new Queue(QUEUES.topicClustering, {
+  connection: redis,
+  prefix: config.QUEUE_PREFIX,
+});
+const _topicClusteringBackfillQueue = new Queue(
+  QUEUES.topicClusteringBackfill,
+  {
+    connection: redis,
+    prefix: config.QUEUE_PREFIX,
+  },
+);
 
 const embeddingConfig = {
   baseUrl: config.OLLAMA_EMBEDDING_BASE_URL,
@@ -328,7 +343,10 @@ new Worker(
   async (job: Job<CollectJobData>) =>
     runJobWithLogging(QUEUES.collect, job, async (jobLogger) => {
       const source = job.data.source as SourceKey | undefined;
-      const runtimeTopics = await loadRuntimeTopics(pool);
+      const runtimeTopics = await loadRuntimeTopics(
+        pool,
+        jobLogger.child({ stage: "runtime-topics.load" }),
+      );
       await jobLogger.info("pipeline.collect.runtime-topics.loaded", {
         runtimeTopicCount: runtimeTopics.length,
       });
@@ -459,8 +477,8 @@ new Worker(
 new Worker(
   QUEUES.embedding,
   async (job: Job<EmbeddingJobData>) =>
-    runJobWithLogging(QUEUES.embedding, job, async (jobLogger) =>
-      runIncrementalEmbeddingJob(
+    runJobWithLogging(QUEUES.embedding, job, async (jobLogger) => {
+      const result = await runIncrementalEmbeddingJob(
         pool,
         embeddingConfig,
         {
@@ -468,8 +486,28 @@ new Worker(
           limit: job.data.limit,
         },
         jobLogger.child({ stage: "embedding.incremental" }),
-      ),
-    ),
+      );
+      try {
+        await topicClusteringQueue.add("topic-clustering", {
+          source: job.data.source,
+          limit: job.data.limit,
+          bootstrap: job.data.bootstrap,
+          reason: "embedding-stage",
+        } satisfies TopicClusteringJobData);
+        await jobLogger.info("pipeline.embedding.enqueue.topic-clustering", {
+          source: job.data.source ?? null,
+          limit: job.data.limit ?? null,
+        });
+      } catch (error) {
+        await jobLogger.warn(
+          "pipeline.embedding.enqueue.topic-clustering.failed",
+          {
+            error: toErrorContext(error),
+          },
+        );
+      }
+      return result;
+    }),
   { connection: redis, prefix: config.QUEUE_PREFIX },
 );
 
@@ -486,6 +524,40 @@ new Worker(
           includeFailed: job.data.includeFailed,
         },
         jobLogger.child({ stage: "embedding.backfill" }),
+      ),
+    ),
+  { connection: redis, prefix: config.QUEUE_PREFIX },
+);
+
+new Worker(
+  QUEUES.topicClustering,
+  async (job: Job<TopicClusteringJobData>) =>
+    runJobWithLogging(QUEUES.topicClustering, job, async (jobLogger) =>
+      runTopicClusteringJob(
+        pool,
+        embeddingConfig,
+        {
+          source: job.data.source,
+          limit: job.data.limit,
+        },
+        jobLogger.child({ stage: "topic-clustering.incremental" }),
+      ),
+    ),
+  { connection: redis, prefix: config.QUEUE_PREFIX },
+);
+
+new Worker(
+  QUEUES.topicClusteringBackfill,
+  async (job: Job<TopicClusteringBackfillJobData>) =>
+    runJobWithLogging(QUEUES.topicClusteringBackfill, job, async (jobLogger) =>
+      runTopicClusteringBackfillJob(
+        pool,
+        embeddingConfig,
+        {
+          source: job.data.source,
+          limit: job.data.limit,
+        },
+        jobLogger.child({ stage: "topic-clustering.backfill" }),
       ),
     ),
   { connection: redis, prefix: config.QUEUE_PREFIX },

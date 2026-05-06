@@ -14,12 +14,13 @@
 - question extraction
 - question clustering
 - question pressure scoring
+- embedding-assisted topic clustering guardrails
+- topic cluster stable id / representative evidence / runtime topic seed projection
 
 ## 下一阶段目标
 
-- unified content / feature interpretation 规则
-- embedding-assisted topic clustering guardrails
-- topic merge / split 规则
+- unified content / feature interpretation 规则收口
+- topic merge / split 规则回归与调优
 - taxonomy 归并规则（L1 / L2 / L3）
 - topic label validation 规则
 
@@ -35,7 +36,8 @@
 - Domain 导出入口： [index.ts](./src/index.ts)
 - 匹配： [matcher.ts](./src/matching/matcher.ts)
 - 抽取： [extract.ts](./src/questions/extract.ts)
-- 聚类： [cluster.ts](./src/questions/cluster.ts)
+- 问题聚类： [cluster.ts](./src/questions/cluster.ts)
+- Topic 聚类： [cluster.ts](./src/topics/cluster.ts)
 - 评分： [question-pressure.ts](./src/scoring/question-pressure.ts)
 
 ## 验证方式

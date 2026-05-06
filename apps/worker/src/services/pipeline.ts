@@ -15,24 +15,32 @@ import {
   insertRuntimeTopicSeedRun,
   insertSourceStatus,
   listActiveRuntimeTopicSeeds,
+  listActiveTopicClusters,
   listAllNormalizedItems,
   listCatalogTopics,
   listEmbeddingBackfillCandidates,
+  listEmbeddingRecords,
+  listRuntimeTopicClusterSeeds,
   listUnifiedContentRecordsByCanonicalIds,
+  markSupersededTopicClusters,
   recordCollectionArtifacts,
   replaceDerivedPipelineOutput,
   replaceRuntimeTopicSeeds,
   replaceSourceItems,
+  replaceTopicClusterMemberships,
   upsertCatalog,
   upsertEmbeddingRecord,
+  upsertTopicCluster,
   upsertUnifiedContentRecords,
   withTransaction,
 } from "@devtrend/db";
 import {
   buildEmbeddingInputFromUnifiedContent,
   buildQuestionPressurePipeline,
+  clusterTopicContents,
   entitySeeds,
   isValidSourceFeatures,
+  TOPIC_CLUSTER_RULE_VERSION,
   topicSeeds,
 } from "@devtrend/domain";
 import type { CollectedSourcePayload } from "@devtrend/sources";
@@ -74,6 +82,13 @@ export interface EmbeddingJobResult {
   succeeded: number;
   failed: number;
   skipped: number;
+}
+
+export interface TopicClusteringJobResult {
+  embeddings: number;
+  clusters: number;
+  memberships: number;
+  superseded: number;
 }
 
 export type EmbeddingVectorGenerator = (
@@ -811,6 +826,137 @@ export async function runEmbeddingBackfillJob(
   return runEmbeddingBatch(pool, config, options, logger, embed);
 }
 
+async function persistTopicClusters(
+  pool: Pool,
+  clusters: ReturnType<typeof clusterTopicContents>,
+): Promise<
+  Pick<TopicClusteringJobResult, "clusters" | "memberships" | "superseded">
+> {
+  return withTransaction(pool, async (client) => {
+    let memberships = 0;
+    const keepTopicClusterIds: string[] = [];
+
+    for (const result of clusters) {
+      const persisted = await upsertTopicCluster(client, result.cluster);
+      await replaceTopicClusterMemberships(client, {
+        topicClusterRowId: persisted.rowId,
+        memberships: result.memberships,
+      });
+      keepTopicClusterIds.push(result.cluster.topicClusterId);
+      memberships += result.memberships.length;
+    }
+
+    const superseded = await markSupersededTopicClusters(client, {
+      ruleVersion: TOPIC_CLUSTER_RULE_VERSION,
+      keepTopicClusterIds,
+    });
+
+    return {
+      clusters: clusters.length,
+      memberships,
+      superseded,
+    };
+  });
+}
+
+async function runTopicClusteringBatch(
+  pool: Pool,
+  config: EmbeddingPipelineConfig,
+  options: {
+    source?: SourceKey;
+    limit?: number;
+  } = {},
+  logger: WorkerLogger,
+): Promise<TopicClusteringJobResult> {
+  const limit = resolveEmbeddingLimit(options.limit);
+  const embeddings = await withTransaction(pool, (client) =>
+    listEmbeddingRecords(client, {
+      source: options.source,
+      model: config.model,
+      status: "succeeded",
+      limit,
+    }),
+  );
+
+  await logger.info("pipeline.topic-clustering.batch.start", {
+    source: options.source ?? null,
+    limit,
+    embeddingCount: embeddings.length,
+  });
+
+  if (embeddings.length === 0) {
+    return {
+      embeddings: 0,
+      clusters: 0,
+      memberships: 0,
+      superseded: 0,
+    };
+  }
+
+  const canonicalIds = [
+    ...new Set(embeddings.map((embedding) => embedding.canonicalId)),
+  ];
+  const records = await withTransaction(pool, (client) =>
+    listUnifiedContentRecordsByCanonicalIds(client, canonicalIds),
+  );
+  const recordByCanonicalId = new Map(
+    records.map((record) => [record.canonicalId, record]),
+  );
+  const clusteringInputs = embeddings.flatMap((embedding) => {
+    const record = recordByCanonicalId.get(embedding.canonicalId);
+    if (!record) {
+      return [];
+    }
+    return [
+      {
+        embeddingId: embedding.id,
+        vector: embedding.vector,
+        content: record,
+      },
+    ];
+  });
+
+  const clusters = clusterTopicContents(clusteringInputs);
+  const persisted = await persistTopicClusters(pool, clusters);
+  await logger.info("pipeline.topic-clustering.batch.done", {
+    embeddings: clusteringInputs.length,
+    clusters: persisted.clusters,
+    memberships: persisted.memberships,
+    superseded: persisted.superseded,
+  });
+
+  return {
+    embeddings: clusteringInputs.length,
+    clusters: persisted.clusters,
+    memberships: persisted.memberships,
+    superseded: persisted.superseded,
+  };
+}
+
+export async function runTopicClusteringJob(
+  pool: Pool,
+  config: EmbeddingPipelineConfig,
+  options: {
+    source?: SourceKey;
+    limit?: number;
+  } = {},
+  logger: WorkerLogger = noopWorkerLogger(),
+): Promise<TopicClusteringJobResult> {
+  return runTopicClusteringBatch(pool, config, options, logger);
+}
+
+export async function runTopicClusteringBackfillJob(
+  pool: Pool,
+  config: EmbeddingPipelineConfig,
+  options: {
+    source?: SourceKey;
+    limit?: number;
+  } = {},
+  logger: WorkerLogger = noopWorkerLogger(),
+): Promise<TopicClusteringJobResult> {
+  return runTopicClusteringBatch(pool, config, options, logger);
+}
+
 function runtimeTopicRunStatus(
   remoteTopics: RuntimeTopicSeed[],
   sourceStatuses: {
@@ -848,10 +994,28 @@ export function planWorkerBootstrap(
 
 export async function loadRuntimeTopics(
   pool: Pool,
+  logger: WorkerLogger = noopWorkerLogger(),
 ): Promise<RuntimeTopicSeed[]> {
-  return withTransaction(pool, async (client) =>
-    listActiveRuntimeTopicSeeds(client),
-  );
+  return withTransaction(pool, async (client) => {
+    const dynamicTopics = await listRuntimeTopicClusterSeeds(client);
+    if (dynamicTopics.length > 0) {
+      await logger.info("pipeline.runtime-topics.load.dynamic", {
+        topics: dynamicTopics.length,
+        fallbackReason: null,
+      });
+      return dynamicTopics;
+    }
+
+    const activeClusters = await listActiveTopicClusters(client, { limit: 1 });
+    const fallbackReason =
+      activeClusters[0]?.runtimeFallbackReason ?? "missing-cluster";
+    const fallbackTopics = await listActiveRuntimeTopicSeeds(client);
+    await logger.warn("pipeline.runtime-topics.load.fallback", {
+      topics: fallbackTopics.length,
+      fallbackReason,
+    });
+    return fallbackTopics;
+  });
 }
 
 export async function refreshRuntimeTopicSeeds(

@@ -11,6 +11,8 @@ export const QUEUES = {
   score: "score",
   embedding: "embedding",
   embeddingBackfill: "embedding-backfill",
+  topicClustering: "topic-clustering",
+  topicClusteringBackfill: "topic-clustering-backfill",
 } as const;
 
 export interface ContractAuditJobData {
@@ -47,6 +49,20 @@ export interface EmbeddingBackfillJobData {
   includeFailed?: boolean;
   bootstrap?: boolean;
   reason?: "manual-backfill" | "retry-failed";
+}
+
+export interface TopicClusteringJobData {
+  source?: SourceKey;
+  limit?: number;
+  bootstrap?: boolean;
+  reason?: "incremental" | "embedding-stage";
+}
+
+export interface TopicClusteringBackfillJobData {
+  source?: SourceKey;
+  limit?: number;
+  bootstrap?: boolean;
+  reason?: "manual-backfill" | "rule-version-change";
 }
 
 export function createPipelineStageJobData(input: {

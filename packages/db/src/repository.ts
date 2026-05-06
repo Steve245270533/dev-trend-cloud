@@ -10,9 +10,12 @@ import type {
   QuestionEvidence,
   QuestionPressureQuery,
   QuestionPressureSignal,
+  RuntimeTopicFallbackReason,
   RuntimeTopicSeed,
   RuntimeTopicSeedRun,
   SourceStatus,
+  TopicCluster,
+  TopicClusterMembership,
   UnifiedContentRecord,
 } from "@devtrend/contracts";
 import type { PipelineOutput } from "@devtrend/domain";
@@ -127,6 +130,44 @@ interface EmbeddingRow {
   succeeded_at: string | null;
 }
 
+interface TopicClusterRow {
+  id: string;
+  topic_cluster_id: string;
+  stable_key: string;
+  cluster_version: string;
+  rule_version: string;
+  status: string;
+  slug: string;
+  display_name: string;
+  summary: string;
+  keywords: string[];
+  anchor_canonical_id: string;
+  representative_evidence: unknown;
+  source_mix: unknown;
+  related_repos: string[];
+  related_entities: string[];
+  item_count: number;
+  cluster_confidence: number;
+  runtime_fallback_reason: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TopicClusterMembershipRow {
+  topic_cluster_id: string;
+  cluster_version: string;
+  canonical_id: string;
+  item_id: string;
+  embedding_record_id: string | null;
+  source: string;
+  membership_confidence: number;
+  primary_evidence: boolean;
+  evidence_rank: number;
+  reasoning_tags: string[];
+  metadata: Record<string, unknown>;
+}
+
 export interface EmbeddingRecordPersisted {
   id: string;
   canonicalId: string;
@@ -187,6 +228,19 @@ export interface UpdateEmbeddingStatusInput {
   status: Exclude<EmbeddingStatus, "superseded">;
   errorText?: string | null;
   retryCount?: number;
+}
+
+export interface TopicClusterPersisted extends TopicCluster {
+  rowId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpsertTopicClusterInput extends TopicCluster {}
+
+export interface ReplaceTopicClusterMembershipsInput {
+  topicClusterRowId: string;
+  memberships: TopicClusterMembership[];
 }
 
 type PersistedSourceStatus = SourceStatus & {
@@ -407,6 +461,61 @@ function mapEmbeddingRow(row: EmbeddingRow): EmbeddingRecordPersisted {
     succeededAt: row.succeeded_at
       ? new Date(row.succeeded_at).toISOString()
       : null,
+  };
+}
+
+function mapTopicClusterRow(row: TopicClusterRow): TopicClusterPersisted {
+  return {
+    rowId: row.id,
+    topicClusterId: row.topic_cluster_id,
+    stableKey: row.stable_key,
+    clusterVersion: row.cluster_version,
+    ruleVersion: row.rule_version,
+    status: row.status as TopicCluster["status"],
+    slug: row.slug,
+    displayName: row.display_name,
+    summary: row.summary,
+    keywords: row.keywords ?? [],
+    anchorCanonicalId: row.anchor_canonical_id,
+    representativeEvidence: Array.isArray(row.representative_evidence)
+      ? row.representative_evidence.map(
+          (entry) => entry as TopicCluster["representativeEvidence"][number],
+        )
+      : [],
+    sourceMix: Array.isArray(row.source_mix)
+      ? row.source_mix.map(
+          (entry) => entry as TopicCluster["sourceMix"][number],
+        )
+      : [],
+    relatedRepos: row.related_repos ?? [],
+    relatedEntities: row.related_entities ?? [],
+    itemCount: Number(row.item_count ?? 0),
+    clusterConfidence: Number(row.cluster_confidence ?? 0),
+    runtimeFallbackReason:
+      typeof row.runtime_fallback_reason === "string"
+        ? (row.runtime_fallback_reason as RuntimeTopicFallbackReason)
+        : undefined,
+    metadata: row.metadata ?? {},
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+  };
+}
+
+function mapTopicClusterMembershipRow(
+  row: TopicClusterMembershipRow,
+): TopicClusterMembership {
+  return {
+    topicClusterId: row.topic_cluster_id,
+    clusterVersion: row.cluster_version,
+    canonicalId: row.canonical_id,
+    itemId: row.item_id,
+    embeddingRecordId: row.embedding_record_id ?? undefined,
+    source: row.source as TopicClusterMembership["source"],
+    membershipConfidence: Number(row.membership_confidence ?? 0),
+    primaryEvidence: row.primary_evidence === true,
+    evidenceRank: Number(row.evidence_rank ?? 1),
+    reasoningTags: row.reasoning_tags ?? [],
+    metadata: row.metadata ?? {},
   };
 }
 
@@ -1706,6 +1815,300 @@ export async function updateEmbeddingRecordStatus(
   );
 
   return result.rows.length > 0;
+}
+
+export async function upsertTopicCluster(
+  db: Queryable,
+  input: UpsertTopicClusterInput,
+): Promise<TopicClusterPersisted> {
+  const result = await db.query(
+    `
+      INSERT INTO topic_clusters (
+        topic_cluster_id,
+        stable_key,
+        cluster_version,
+        rule_version,
+        status,
+        slug,
+        display_name,
+        summary,
+        keywords,
+        anchor_canonical_id,
+        representative_evidence,
+        source_mix,
+        related_repos,
+        related_entities,
+        item_count,
+        cluster_confidence,
+        runtime_fallback_reason,
+        metadata
+      )
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+        $11::jsonb, $12::jsonb, $13, $14, $15, $16, $17, $18::jsonb
+      )
+      ON CONFLICT (topic_cluster_id, cluster_version) DO UPDATE
+      SET stable_key = EXCLUDED.stable_key,
+          rule_version = EXCLUDED.rule_version,
+          status = EXCLUDED.status,
+          slug = EXCLUDED.slug,
+          display_name = EXCLUDED.display_name,
+          summary = EXCLUDED.summary,
+          keywords = EXCLUDED.keywords,
+          anchor_canonical_id = EXCLUDED.anchor_canonical_id,
+          representative_evidence = EXCLUDED.representative_evidence,
+          source_mix = EXCLUDED.source_mix,
+          related_repos = EXCLUDED.related_repos,
+          related_entities = EXCLUDED.related_entities,
+          item_count = EXCLUDED.item_count,
+          cluster_confidence = EXCLUDED.cluster_confidence,
+          runtime_fallback_reason = EXCLUDED.runtime_fallback_reason,
+          metadata = EXCLUDED.metadata,
+          updated_at = NOW(),
+          superseded_at = CASE
+            WHEN EXCLUDED.status = 'superseded' THEN NOW()
+            ELSE NULL
+          END
+      RETURNING
+        id,
+        topic_cluster_id,
+        stable_key,
+        cluster_version,
+        rule_version,
+        status,
+        slug,
+        display_name,
+        summary,
+        keywords,
+        anchor_canonical_id,
+        representative_evidence,
+        source_mix,
+        related_repos,
+        related_entities,
+        item_count,
+        cluster_confidence,
+        runtime_fallback_reason,
+        metadata,
+        created_at,
+        updated_at
+    `,
+    [
+      input.topicClusterId,
+      input.stableKey,
+      input.clusterVersion,
+      input.ruleVersion,
+      input.status,
+      input.slug,
+      input.displayName,
+      input.summary,
+      input.keywords,
+      input.anchorCanonicalId,
+      JSON.stringify(input.representativeEvidence),
+      JSON.stringify(input.sourceMix),
+      input.relatedRepos,
+      input.relatedEntities,
+      input.itemCount,
+      input.clusterConfidence,
+      input.runtimeFallbackReason ?? null,
+      JSON.stringify(input.metadata),
+    ],
+  );
+
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error("Failed to upsert topic cluster.");
+  }
+  return mapTopicClusterRow(row as TopicClusterRow);
+}
+
+export async function replaceTopicClusterMemberships(
+  db: Queryable,
+  input: ReplaceTopicClusterMembershipsInput,
+): Promise<number> {
+  await db.query(
+    `
+      DELETE FROM topic_cluster_memberships
+      WHERE topic_cluster_row_id = $1
+    `,
+    [input.topicClusterRowId],
+  );
+
+  for (const membership of input.memberships) {
+    await db.query(
+      `
+        INSERT INTO topic_cluster_memberships (
+          topic_cluster_row_id,
+          topic_cluster_id,
+          cluster_version,
+          canonical_id,
+          item_id,
+          embedding_record_id,
+          source,
+          membership_confidence,
+          primary_evidence,
+          evidence_rank,
+          reasoning_tags,
+          metadata
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb
+        )
+      `,
+      [
+        input.topicClusterRowId,
+        membership.topicClusterId,
+        membership.clusterVersion,
+        membership.canonicalId,
+        membership.itemId,
+        membership.embeddingRecordId ?? null,
+        membership.source,
+        membership.membershipConfidence,
+        membership.primaryEvidence,
+        membership.evidenceRank,
+        membership.reasoningTags,
+        JSON.stringify(membership.metadata),
+      ],
+    );
+  }
+
+  return input.memberships.length;
+}
+
+export async function markSupersededTopicClusters(
+  db: Queryable,
+  query: {
+    ruleVersion: string;
+    keepTopicClusterIds: string[];
+  },
+): Promise<number> {
+  const result = await db.query(
+    `
+      UPDATE topic_clusters
+      SET status = 'superseded',
+          superseded_at = NOW(),
+          updated_at = NOW()
+      WHERE rule_version = $1
+        AND status = 'active'
+        AND (
+          COALESCE(array_length($2::uuid[], 1), 0) = 0
+          OR topic_cluster_id <> ALL($2::uuid[])
+        )
+      RETURNING id
+    `,
+    [query.ruleVersion, query.keepTopicClusterIds],
+  );
+
+  return result.rows.length;
+}
+
+export async function listActiveTopicClusters(
+  db: Queryable,
+  query: {
+    limit?: number;
+  } = {},
+): Promise<TopicClusterPersisted[]> {
+  const result = await db.query(
+    `
+      SELECT
+        id,
+        topic_cluster_id,
+        stable_key,
+        cluster_version,
+        rule_version,
+        status,
+        slug,
+        display_name,
+        summary,
+        keywords,
+        anchor_canonical_id,
+        representative_evidence,
+        source_mix,
+        related_repos,
+        related_entities,
+        item_count,
+        cluster_confidence,
+        runtime_fallback_reason,
+        metadata,
+        created_at,
+        updated_at
+      FROM topic_clusters
+      WHERE status = 'active'
+      ORDER BY cluster_confidence DESC, updated_at DESC, topic_cluster_id ASC
+      LIMIT $1
+    `,
+    [query.limit ?? 100],
+  );
+
+  return result.rows.map((row: unknown) =>
+    mapTopicClusterRow(row as TopicClusterRow),
+  );
+}
+
+export async function listTopicClusterMemberships(
+  db: Queryable,
+  topicClusterId: string,
+): Promise<TopicClusterMembership[]> {
+  const result = await db.query(
+    `
+      SELECT
+        m.topic_cluster_id,
+        m.cluster_version,
+        m.canonical_id,
+        m.item_id,
+        m.embedding_record_id,
+        m.source,
+        m.membership_confidence,
+        m.primary_evidence,
+        m.evidence_rank,
+        m.reasoning_tags,
+        m.metadata
+      FROM topic_cluster_memberships m
+      JOIN topic_clusters tc ON tc.id = m.topic_cluster_row_id
+      WHERE tc.status = 'active'
+        AND m.topic_cluster_id = $1
+      ORDER BY m.evidence_rank ASC, m.created_at ASC
+    `,
+    [topicClusterId],
+  );
+
+  return result.rows.map((row: unknown) =>
+    mapTopicClusterMembershipRow(row as TopicClusterMembershipRow),
+  );
+}
+
+export async function listRuntimeTopicClusterSeeds(
+  db: Queryable,
+  limit = 24,
+): Promise<RuntimeTopicSeed[]> {
+  const clusters = await listActiveTopicClusters(db, { limit });
+  return clusters
+    .filter(
+      (cluster) =>
+        cluster.runtimeFallbackReason === undefined &&
+        cluster.keywords.length > 0,
+    )
+    .map((cluster) => ({
+      runId: cluster.topicClusterId,
+      slug: cluster.slug,
+      name: cluster.displayName,
+      keywords: cluster.keywords,
+      sourcePriority: Math.max(1, Math.round(cluster.clusterConfidence * 100)),
+      sources: ["topic-cluster"],
+      devtoTags: cluster.keywords.slice(0, 3),
+      score: Number((cluster.clusterConfidence * 100).toFixed(2)),
+      active: true,
+      refreshedAt: cluster.updatedAt,
+      expiresAt: new Date(
+        new Date(cluster.updatedAt).getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString(),
+      metadata: {
+        topicClusterId: cluster.topicClusterId,
+        clusterVersion: cluster.clusterVersion,
+        runtimeFallbackReason: cluster.runtimeFallbackReason ?? null,
+        relatedRepos: cluster.relatedRepos,
+        relatedEntities: cluster.relatedEntities,
+      },
+    }));
 }
 
 export async function listFeed(

@@ -8,6 +8,8 @@ import {
   refreshRuntimeTopicSeeds,
   runEmbeddingBackfillJob,
   runIncrementalEmbeddingJob,
+  runTopicClusteringBackfillJob,
+  runTopicClusteringJob,
 } from "@devtrend/worker";
 import type { Pool, PoolClient, QueryResult } from "pg";
 import type { WorkerLogger } from "../../../apps/worker/src/services/logger.js";
@@ -121,8 +123,48 @@ interface FakeEmbeddingRow {
   source: string;
   content_fingerprint: string;
   input_schema_version: string;
+  vector?: number[];
   model: string;
   status: "succeeded" | "failed" | "superseded";
+}
+
+interface FakeTopicClusterRow {
+  id: string;
+  topic_cluster_id: string;
+  stable_key: string;
+  cluster_version: string;
+  rule_version: string;
+  status: "active" | "superseded";
+  slug: string;
+  display_name: string;
+  summary: string;
+  keywords: string[];
+  anchor_canonical_id: string;
+  representative_evidence: Record<string, unknown>[];
+  source_mix: Record<string, unknown>[];
+  related_repos: string[];
+  related_entities: string[];
+  item_count: number;
+  cluster_confidence: number;
+  runtime_fallback_reason: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+interface FakeTopicClusterMembershipRow {
+  topic_cluster_row_id: string;
+  topic_cluster_id: string;
+  cluster_version: string;
+  canonical_id: string;
+  item_id: string;
+  embedding_record_id: string | null;
+  source: string;
+  membership_confidence: number;
+  primary_evidence: boolean;
+  evidence_rank: number;
+  reasoning_tags: string[];
+  metadata: Record<string, unknown>;
 }
 
 interface StatefulPool {
@@ -137,6 +179,10 @@ interface StatefulPool {
   runtimeTopicSeeds: FakeRuntimeTopicSeedRow[];
   unifiedContents: FakeUnifiedContentRow[];
   embeddingRecords: FakeEmbeddingRow[];
+  topicClusters: FakeTopicClusterRow[];
+  topicClusterMemberships: FakeTopicClusterMembershipRow[];
+  addRuntimeTopicSeed: (seed: FakeRuntimeTopicSeedRow) => void;
+  addTopicCluster: (cluster: FakeTopicClusterRow) => void;
   pool: Pool;
 }
 
@@ -220,6 +266,11 @@ function createStatefulPool(): StatefulPool {
   const topics = new Map<string, FakeTopicRow>();
   const unifiedContents = new Map<string, FakeUnifiedContentRow>();
   const embeddingRecords = new Map<string, FakeEmbeddingRow>();
+  const topicClusters = new Map<string, FakeTopicClusterRow>();
+  const topicClusterMemberships = new Map<
+    string,
+    FakeTopicClusterMembershipRow[]
+  >();
   let runtimeTopicSeeds: FakeRuntimeTopicSeedRow[] = [];
   const runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[] = [];
   let signalPayloads: Record<string, unknown>[] = [];
@@ -243,6 +294,92 @@ function createStatefulPool(): StatefulPool {
         text.includes("INSERT INTO signal_evidence") ||
         text.includes("INSERT INTO question_cluster_items")
       ) {
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO topic_clusters")) {
+        const key = `${String(params?.[0])}:${String(params?.[2])}`;
+        const row: FakeTopicClusterRow = {
+          id:
+            topicClusters.get(key)?.id ??
+            `topic-cluster-row-${topicClusters.size + 1}`,
+          topic_cluster_id: String(params?.[0]),
+          stable_key: String(params?.[1]),
+          cluster_version: String(params?.[2]),
+          rule_version: String(params?.[3]),
+          status: String(params?.[4]) as FakeTopicClusterRow["status"],
+          slug: String(params?.[5]),
+          display_name: String(params?.[6]),
+          summary: String(params?.[7]),
+          keywords: Array.isArray(params?.[8]) ? params[8].map(String) : [],
+          anchor_canonical_id: String(params?.[9]),
+          representative_evidence:
+            typeof params?.[10] === "string"
+              ? (JSON.parse(String(params[10])) as Record<string, unknown>[])
+              : [],
+          source_mix:
+            typeof params?.[11] === "string"
+              ? (JSON.parse(String(params[11])) as Record<string, unknown>[])
+              : [],
+          related_repos: Array.isArray(params?.[12])
+            ? params[12].map(String)
+            : [],
+          related_entities: Array.isArray(params?.[13])
+            ? params[13].map(String)
+            : [],
+          item_count: Number(params?.[14] ?? 0),
+          cluster_confidence: Number(params?.[15] ?? 0),
+          runtime_fallback_reason:
+            typeof params?.[16] === "string" ? String(params[16]) : null,
+          metadata:
+            typeof params?.[17] === "string"
+              ? (JSON.parse(String(params[17])) as Record<string, unknown>)
+              : {},
+          created_at: "2026-05-06T00:00:00.000Z",
+          updated_at: "2026-05-06T00:10:00.000Z",
+        };
+        topicClusters.set(key, row);
+        return { rows: [row] } as unknown as QueryResult;
+      }
+
+      if (text.includes("DELETE FROM topic_cluster_memberships")) {
+        topicClusterMemberships.set(String(params?.[0]), []);
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO topic_cluster_memberships")) {
+        const key = String(params?.[0]);
+        const rows = topicClusterMemberships.get(key) ?? [];
+        rows.push({
+          topic_cluster_row_id: key,
+          topic_cluster_id: String(params?.[1]),
+          cluster_version: String(params?.[2]),
+          canonical_id: String(params?.[3]),
+          item_id: String(params?.[4]),
+          embedding_record_id:
+            typeof params?.[5] === "string" ? String(params[5]) : null,
+          source: String(params?.[6]),
+          membership_confidence: Number(params?.[7] ?? 0),
+          primary_evidence: params?.[8] === true,
+          evidence_rank: Number(params?.[9] ?? 0),
+          reasoning_tags: Array.isArray(params?.[10])
+            ? params[10].map(String)
+            : [],
+          metadata:
+            typeof params?.[11] === "string"
+              ? (JSON.parse(String(params[11])) as Record<string, unknown>)
+              : {},
+        });
+        topicClusterMemberships.set(key, rows);
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("UPDATE topic_clusters")) {
+        for (const row of topicClusters.values()) {
+          if (row.rule_version === String(params?.[0])) {
+            row.status = "superseded";
+          }
+        }
         return { rows: [] } as unknown as QueryResult;
       }
 
@@ -603,10 +740,67 @@ function createStatefulPool(): StatefulPool {
           source,
           content_fingerprint: contentFingerprint,
           input_schema_version: inputSchemaVersion,
+          vector:
+            typeof params?.[8] === "string"
+              ? String(params[8])
+                  .slice(1, -1)
+                  .split(",")
+                  .map((value) => Number(value))
+              : [],
           model,
           status: "succeeded",
         });
         return { rows: [{ id }] } as unknown as QueryResult;
+      }
+
+      if (
+        text.includes("FROM embedding_records") &&
+        text.includes("embedding_vector::text AS embedding_vector_text")
+      ) {
+        const source =
+          typeof params?.[1] === "string" ? String(params[1]) : null;
+        const model =
+          typeof params?.[2] === "string" ? String(params[2]) : null;
+        const status =
+          typeof params?.[3] === "string" ? String(params[3]) : null;
+        const limit = Number(params?.[4] ?? 50);
+        const rows = [...embeddingRecords.values()]
+          .filter((record) => !source || record.source === source)
+          .filter((record) => !model || record.model === model)
+          .filter((record) => !status || record.status === status)
+          .slice(0, limit)
+          .map((record) => ({
+            id: record.id,
+            canonical_id: record.canonical_id,
+            source: record.source,
+            content_fingerprint: record.content_fingerprint,
+            input_schema_version: record.input_schema_version,
+            provider: "ollama",
+            model: record.model,
+            model_version: record.model,
+            dimensions: record.vector?.length ?? 0,
+            embedding_vector_text: `[${(record.vector ?? []).join(",")}]`,
+            status: record.status,
+            error_text: null,
+            retry_count: 0,
+            metadata: {},
+            created_at: "2026-05-06T00:00:00.000Z",
+            updated_at: "2026-05-06T00:10:00.000Z",
+            succeeded_at: "2026-05-06T00:10:01.000Z",
+          }));
+        return { rows } as unknown as QueryResult;
+      }
+
+      if (
+        text.includes("FROM topic_clusters") &&
+        text.includes("WHERE status = 'active'")
+      ) {
+        const rows = [...topicClusters.values()]
+          .filter((row) => row.status === "active")
+          .sort(
+            (left, right) => right.cluster_confidence - left.cluster_confidence,
+          );
+        return { rows } as unknown as QueryResult;
       }
 
       if (text.includes("SELECT i.*") && text.includes("FROM items i")) {
@@ -685,6 +879,21 @@ function createStatefulPool(): StatefulPool {
     },
     get embeddingRecords() {
       return [...embeddingRecords.values()];
+    },
+    get topicClusters() {
+      return [...topicClusters.values()];
+    },
+    get topicClusterMemberships() {
+      return [...topicClusterMemberships.values()].flat();
+    },
+    addRuntimeTopicSeed(seed) {
+      runtimeTopicSeeds.push(seed);
+    },
+    addTopicCluster(cluster) {
+      topicClusters.set(
+        `${cluster.topic_cluster_id}:${cluster.cluster_version}`,
+        cluster,
+      );
     },
     pool: {
       async connect() {
@@ -1214,4 +1423,221 @@ test("runEmbeddingBackfillJob degrades on provider failure and continues process
   assert.ok(
     logs.some((entry) => entry.event === "pipeline.embedding.batch.done"),
   );
+});
+
+test("runTopicClusteringJob persists topic clusters from succeeded embeddings", async () => {
+  const state = createStatefulPool();
+  const logs: TestLogEntry[] = [];
+  const logger = createTestLogger(logs);
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title: "Why does pgvector return unstable ranking results?",
+        score: 18,
+        answers: 1,
+        url: "https://stackoverflow.com/questions/10000003/pgvector-ranking",
+        tags: ["pgvector", "postgres", "rag"],
+      },
+    ]),
+    buildCollectedPayload("devto", "top", [
+      {
+        title: "Why pgvector ranking feels unstable in production RAG",
+        author: "alice",
+        reactions: 42,
+        comments: 9,
+        tags: ["pgvector", "postgres"],
+        url: "https://dev.to/example/pgvector-ranking",
+        published_at: "2026-04-28T10:00:00.000Z",
+      },
+    ]),
+  ]);
+
+  await runIncrementalEmbeddingJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { limit: 10 },
+    logger,
+    async (_config, input) => {
+      if (input.includes("pgvector")) {
+        return [0.92, 0.06, 0.02];
+      }
+      return [0.2, 0.2, 0.6];
+    },
+  );
+
+  const result = await runTopicClusteringJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { limit: 10 },
+    logger,
+  );
+
+  assert.equal(result.embeddings >= 2, true);
+  assert.equal(result.clusters >= 1, true);
+  assert.equal(state.topicClusters.length >= 1, true);
+  assert.equal(state.topicClusterMemberships.length >= 2, true);
+  assert.ok(
+    logs.some(
+      (entry) => entry.event === "pipeline.topic-clustering.batch.done",
+    ),
+  );
+});
+
+test("loadRuntimeTopics prefers dynamic topic clusters before fallback seeds", async () => {
+  const state = createStatefulPool();
+  const logger = createTestLogger([]);
+
+  state.addRuntimeTopicSeed({
+    run_id: "fallback-run",
+    slug: "fallback-mcp",
+    name: "Fallback MCP",
+    keywords: ["mcp"],
+    source_priority: 10,
+    sources: ["fallback-topics"],
+    collection_id: null,
+    devto_tags: [],
+    score: 10,
+    active: true,
+    refreshed_at: "2099-05-06T00:00:00.000Z",
+    expires_at: "2099-05-06T02:00:00.000Z",
+    metadata: {},
+  });
+  state.addTopicCluster({
+    id: "cluster-row-1",
+    topic_cluster_id: "cluster-1",
+    stable_key: "topic-cluster:1",
+    cluster_version: "v1",
+    rule_version: "topic-cluster-rules-v1",
+    status: "active",
+    slug: "dynamic-pgvector",
+    display_name: "Dynamic Pgvector",
+    summary: "dynamic cluster",
+    keywords: ["pgvector", "postgres"],
+    anchor_canonical_id: "stackoverflow:123",
+    representative_evidence: [],
+    source_mix: [],
+    related_repos: ["pgvector/pgvector"],
+    related_entities: ["pgvector"],
+    item_count: 2,
+    cluster_confidence: 0.92,
+    runtime_fallback_reason: null,
+    metadata: {},
+    created_at: "2026-05-06T00:00:00.000Z",
+    updated_at: "2026-05-06T00:10:00.000Z",
+  });
+
+  const runtimeTopics = await loadRuntimeTopics(state.pool, logger);
+
+  assert.equal(runtimeTopics[0]?.slug, "dynamic-pgvector");
+  assert.equal(runtimeTopics[0]?.sources[0], "topic-cluster");
+});
+
+test("loadRuntimeTopics falls back to active runtime seeds when cluster confidence is insufficient", async () => {
+  const state = createStatefulPool();
+  const logs: TestLogEntry[] = [];
+  const logger = createTestLogger(logs);
+
+  state.addRuntimeTopicSeed({
+    run_id: "fallback-run",
+    slug: "fallback-mcp",
+    name: "Fallback MCP",
+    keywords: ["mcp"],
+    source_priority: 10,
+    sources: ["fallback-topics"],
+    collection_id: null,
+    devto_tags: [],
+    score: 10,
+    active: true,
+    refreshed_at: "2099-05-06T00:00:00.000Z",
+    expires_at: "2099-05-06T02:00:00.000Z",
+    metadata: {},
+  });
+  state.addTopicCluster({
+    id: "cluster-row-2",
+    topic_cluster_id: "cluster-2",
+    stable_key: "topic-cluster:2",
+    cluster_version: "v1",
+    rule_version: "topic-cluster-rules-v1",
+    status: "active",
+    slug: "low-confidence-topic",
+    display_name: "Low Confidence Topic",
+    summary: "cluster summary",
+    keywords: ["topic"],
+    anchor_canonical_id: "devto:1",
+    representative_evidence: [],
+    source_mix: [],
+    related_repos: [],
+    related_entities: [],
+    item_count: 1,
+    cluster_confidence: 0.4,
+    runtime_fallback_reason: "low-confidence",
+    metadata: {},
+    created_at: "2026-05-06T00:00:00.000Z",
+    updated_at: "2026-05-06T00:10:00.000Z",
+  });
+
+  const runtimeTopics = await loadRuntimeTopics(state.pool, logger);
+
+  assert.equal(runtimeTopics[0]?.slug, "fallback-mcp");
+  assert.ok(
+    logs.some(
+      (entry) =>
+        entry.event === "pipeline.runtime-topics.load.fallback" &&
+        entry.context.fallbackReason === "low-confidence",
+    ),
+  );
+});
+
+test("runTopicClusteringBackfillJob reuses the clustering path for historical batches", async () => {
+  const state = createStatefulPool();
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title: "How do I keep MCP topic clustering stable across reruns?",
+        score: 22,
+        answers: 2,
+        url: "https://stackoverflow.com/questions/10000004/mcp-topic-clustering-stability",
+      },
+    ]),
+  ]);
+
+  await runIncrementalEmbeddingJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { limit: 10 },
+    createTestLogger([]),
+    async () => [0.75, 0.2, 0.05],
+  );
+
+  const result = await runTopicClusteringBackfillJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { limit: 10 },
+    createTestLogger([]),
+  );
+
+  assert.equal(result.embeddings, 1);
+  assert.equal(result.clusters >= 1, true);
 });

@@ -1,0 +1,10 @@
+- [x] `packages/contracts` 已补充 `topic cluster`、`membership`、`representative evidence`、`source mix` 等 `S3` 所需契约字段
+- [x] migration 已新增 topic cluster 相关表、索引、唯一约束与版本字段，且可执行回滚
+- [x] `packages/db` 已支持 cluster 幂等写入、membership 更新、版本追踪与 fallback reason 持久化
+- [x] `packages/domain/src/topics/*` 已实现 deterministic clustering 规则，且 embedding 仅用于候选召回而非最终裁决
+- [x] 已覆盖 merge guardrails、split/dedupe、cluster stability 与 representative evidence 选择测试
+- [x] 已完成 cross-source merge 回归测试，覆盖 HN / DEV / OSSInsight proxy 的主题聚合
+- [x] `apps/worker` 已新增 topic clustering 增量任务与 backfill 任务，并可从 unified content + embeddings 生成 clusters
+- [x] runtime topic 主判定已切换为动态 cluster 优先，固定 allowlist 仅在异常或低置信度时兜底
+- [x] 已完成 `feed/question-pressure/evidence` 回归验证，现有读取行为无破坏
+- [x] 相关文档与 QA 抽样口径已同步，且仅覆盖 `S3` 范围，未提前实现 `S4+` 功能

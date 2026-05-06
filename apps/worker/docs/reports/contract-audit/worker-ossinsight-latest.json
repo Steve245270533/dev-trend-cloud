@@ -16,37 +16,512 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:31.566Z",
-    "finishedAt": "2026-05-01T13:48:34.595Z",
-    "latencyMs": 3029,
+    "startedAt": "2026-05-06T07:30:39.121Z",
+    "finishedAt": "2026-05-06T07:30:41.133Z",
+    "latencyMs": 2012,
     "status": "success",
     "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight trending [options]\n\n获取 OSSInsight 热门仓库\n\nOptions:\n  --limit [value]     返回数量 (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_name, stars, language",
+    "helpOutput": "Usage: opencli ossinsight trending [options]\n\n[read] 获取 OSSInsight 热门仓库\n\nOptions:\n  --limit [value]     返回数量 (default: \"10\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight trending -f yaml\nOutput columns: repo_name, stars, language",
     "payload": [
+      {
+        "repo_name": "ruvnet/ruflo",
+        "language": "TypeScript",
+        "stars": "291"
+      },
       {
         "repo_name": "mattpocock/skills",
         "language": "Shell",
-        "stars": "344"
+        "stars": "206"
       },
       {
-        "repo_name": "warpdotdev/warp",
-        "language": "",
-        "stars": "333"
-      },
-      {
-        "repo_name": "mattpocock/sandcastle",
+        "repo_name": "Lum1104/Understand-Anything",
         "language": "TypeScript",
-        "stars": "66"
+        "stars": "103"
+      },
+      {
+        "repo_name": "addyosmani/agent-skills",
+        "language": "Shell",
+        "stars": "96"
       },
       {
         "repo_name": "safishamsi/graphify",
         "language": "Python",
-        "stars": "63"
+        "stars": "91"
       },
       {
-        "repo_name": "tonhowtf/omniget",
+        "repo_name": "AIDC-AI/Pixelle-Video",
+        "language": "Python",
+        "stars": "86"
+      },
+      {
+        "repo_name": "rtk-ai/rtk",
         "language": "Rust",
+        "stars": "80"
+      },
+      {
+        "repo_name": "raullenchai/Rapid-MLX",
+        "language": "Python",
+        "stars": "66"
+      },
+      {
+        "repo_name": "soxoj/maigret",
+        "language": "Python",
+        "stars": "114"
+      },
+      {
+        "repo_name": "Alishahryar1/free-claude-code",
+        "language": "Python",
+        "stars": "56"
+      },
+      {
+        "repo_name": "docusealco/docuseal",
+        "language": "Ruby",
+        "stars": "90"
+      },
+      {
+        "repo_name": "D4Vinci/Scrapling",
+        "language": "Python",
+        "stars": "84"
+      },
+      {
+        "repo_name": "virattt/dexter",
+        "language": "TypeScript",
         "stars": "55"
+      },
+      {
+        "repo_name": "1jehuang/jcode",
+        "language": "Rust",
+        "stars": "54"
+      },
+      {
+        "repo_name": "fspecii/ace-step-ui",
+        "language": "JavaScript",
+        "stars": "47"
+      },
+      {
+        "repo_name": "abhigyanpatwari/GitNexus",
+        "language": "TypeScript",
+        "stars": "44"
+      },
+      {
+        "repo_name": "liliMozi/openhanako",
+        "language": "JavaScript",
+        "stars": "41"
+      },
+      {
+        "repo_name": "czlonkowski/n8n-mcp",
+        "language": "TypeScript",
+        "stars": "46"
+      },
+      {
+        "repo_name": "hugohe3/ppt-master",
+        "language": "Python",
+        "stars": "45"
+      },
+      {
+        "repo_name": "badlogic/pi-mono",
+        "language": "TypeScript",
+        "stars": "35"
+      },
+      {
+        "repo_name": "ComposioHQ/awesome-codex-skills",
+        "language": "Python",
+        "stars": "39"
+      },
+      {
+        "repo_name": "openai/symphony",
+        "language": "Elixir",
+        "stars": "32"
+      },
+      {
+        "repo_name": "heygen-com/hyperframes",
+        "language": "TypeScript",
+        "stars": "37"
+      },
+      {
+        "repo_name": "browser-use/browser-harness",
+        "language": "Python",
+        "stars": "37"
+      },
+      {
+        "repo_name": "nikzad-avasam/downloader",
+        "language": "HTML",
+        "stars": "9"
+      },
+      {
+        "repo_name": "ronitsingh10/FineTune",
+        "language": "Swift",
+        "stars": "34"
+      },
+      {
+        "repo_name": "iflytek/skillhub",
+        "language": "Java",
+        "stars": "37"
+      },
+      {
+        "repo_name": "freestylefly/awesome-gpt-image-2",
+        "language": "",
+        "stars": "30"
+      },
+      {
+        "repo_name": "warpdotdev/warp",
+        "language": "",
+        "stars": "66"
+      },
+      {
+        "repo_name": "bwya77/vscode-dark-islands",
+        "language": "PowerShell",
+        "stars": "35"
+      },
+      {
+        "repo_name": "multica-ai/multica",
+        "language": "TypeScript",
+        "stars": "30"
+      },
+      {
+        "repo_name": "Wei-Shaw/sub2api",
+        "language": "Go",
+        "stars": "30"
+      },
+      {
+        "repo_name": "kepano/obsidian-skills",
+        "language": "",
+        "stars": "28"
+      },
+      {
+        "repo_name": "browserbase/skills",
+        "language": "JavaScript",
+        "stars": "30"
+      },
+      {
+        "repo_name": "refactoringhq/tolaria",
+        "language": "TypeScript",
+        "stars": "29"
+      },
+      {
+        "repo_name": "pbakaus/impeccable",
+        "language": "JavaScript",
+        "stars": "28"
+      },
+      {
+        "repo_name": "nikzad-avasam/youtube-dl",
+        "language": "",
+        "stars": "13"
+      },
+      {
+        "repo_name": "Leonxlnx/taste-skill",
+        "language": "",
+        "stars": "28"
+      },
+      {
+        "repo_name": "BigBodyCobain/Shadowbroker",
+        "language": "TypeScript",
+        "stars": "23"
+      },
+      {
+        "repo_name": "steipete/RepoBar",
+        "language": "Swift",
+        "stars": "32"
+      },
+      {
+        "repo_name": "ZhuLinsen/daily_stock_analysis",
+        "language": "Python",
+        "stars": "15"
+      },
+      {
+        "repo_name": "santifer/career-ops",
+        "language": "JavaScript",
+        "stars": "20"
+      },
+      {
+        "repo_name": "cocoindex-io/cocoindex",
+        "language": "Python",
+        "stars": "50"
+      },
+      {
+        "repo_name": "butthtio/solidity-cot-auditor",
+        "language": "Python",
+        "stars": "15"
+      },
+      {
+        "repo_name": "webadderallorg/Recordly",
+        "language": "TypeScript",
+        "stars": "24"
+      },
+      {
+        "repo_name": "shiyu-coder/Kronos",
+        "language": "Python",
+        "stars": "22"
+      },
+      {
+        "repo_name": "Imbad0202/academic-research-skills",
+        "language": "Python",
+        "stars": "23"
+      },
+      {
+        "repo_name": "sysprog21/zhtw-mcp",
+        "language": "Rust",
+        "stars": "19"
+      },
+      {
+        "repo_name": "coreyhaines31/marketingskills",
+        "language": "JavaScript",
+        "stars": "22"
+      },
+      {
+        "repo_name": "router-for-me/CLIProxyAPI",
+        "language": "Go",
+        "stars": "21"
+      },
+      {
+        "repo_name": "withastro/flue",
+        "language": "TypeScript",
+        "stars": "24"
+      },
+      {
+        "repo_name": "OpenCoworkAI/open-codesign",
+        "language": "TypeScript",
+        "stars": "21"
+      },
+      {
+        "repo_name": "unipds-engenharia-de-ia-aplicada/engenharia-de-software-com-ia-aplicada",
+        "language": "JavaScript",
+        "stars": "23"
+      },
+      {
+        "repo_name": "Leey21/awesome-ai-research-writing",
+        "language": "",
+        "stars": "21"
+      },
+      {
+        "repo_name": "mksglu/context-mode",
+        "language": "TypeScript",
+        "stars": "21"
+      },
+      {
+        "repo_name": "blader/humanizer",
+        "language": "",
+        "stars": "18"
+      },
+      {
+        "repo_name": "shanraisshan/claude-code-best-practice",
+        "language": "HTML",
+        "stars": "21"
+      },
+      {
+        "repo_name": "lsdefine/GenericAgent",
+        "language": "Python",
+        "stars": "19"
+      },
+      {
+        "repo_name": "walkinglabs/learn-harness-engineering",
+        "language": "TypeScript",
+        "stars": "19"
+      },
+      {
+        "repo_name": "yaojingang/GEOFlow",
+        "language": "PHP",
+        "stars": "19"
+      },
+      {
+        "repo_name": "alchaincyf/nuwa-skill",
+        "language": "Python",
+        "stars": "16"
+      },
+      {
+        "repo_name": "outsourc-e/hermes-workspace",
+        "language": "JavaScript",
+        "stars": "18"
+      },
+      {
+        "repo_name": "tw93/Mole",
+        "language": "Shell",
+        "stars": "16"
+      },
+      {
+        "repo_name": "Thysrael/Horizon",
+        "language": "Python",
+        "stars": "15"
+      },
+      {
+        "repo_name": "iOfficeAI/OfficeCLI",
+        "language": "C#",
+        "stars": "18"
+      },
+      {
+        "repo_name": "op7418/guizang-ppt-skill",
+        "language": "HTML",
+        "stars": "19"
+      },
+      {
+        "repo_name": "calesthio/Crucix",
+        "language": "JavaScript",
+        "stars": "17"
+      },
+      {
+        "repo_name": "siddharthvaddem/openscreen",
+        "language": "TypeScript",
+        "stars": "17"
+      },
+      {
+        "repo_name": "NawfalMotii79/PLFM_RADAR",
+        "language": "PLSQL",
+        "stars": "16"
+      },
+      {
+        "repo_name": "techjarves/OpenClaude-Portable",
+        "language": "HTML",
+        "stars": "16"
+      },
+      {
+        "repo_name": "Fission-AI/OpenSpec",
+        "language": "TypeScript",
+        "stars": "18"
+      },
+      {
+        "repo_name": "midudev/autoskills",
+        "language": "Ruby",
+        "stars": "19"
+      },
+      {
+        "repo_name": "jnMetaCode/agency-agents-zh",
+        "language": "Shell",
+        "stars": "16"
+      },
+      {
+        "repo_name": "kyegomez/OpenMythos",
+        "language": "Python",
+        "stars": "16"
+      },
+      {
+        "repo_name": "Q00/ouroboros",
+        "language": "Python",
+        "stars": "16"
+      },
+      {
+        "repo_name": "decolua/9router",
+        "language": "JavaScript",
+        "stars": "16"
+      },
+      {
+        "repo_name": "koala73/worldmonitor",
+        "language": "TypeScript",
+        "stars": "13"
+      },
+      {
+        "repo_name": "chenglou/pretext",
+        "language": "TypeScript",
+        "stars": "16"
+      },
+      {
+        "repo_name": "hsliuping/TradingAgents-CN",
+        "language": "Python",
+        "stars": "13"
+      },
+      {
+        "repo_name": "tw93/Waza",
+        "language": "Shell",
+        "stars": "14"
+      },
+      {
+        "repo_name": "Zafer-Liu/VizPilot_AI",
+        "language": "HTML",
+        "stars": "24"
+      },
+      {
+        "repo_name": "dodo-reach/hermes-desktop",
+        "language": "Swift",
+        "stars": "15"
+      },
+      {
+        "repo_name": "ruijayfeng/ziwei",
+        "language": "TypeScript",
+        "stars": "13"
+      },
+      {
+        "repo_name": "luckyPipewrench/pipelock",
+        "language": "Go",
+        "stars": "13"
+      },
+      {
+        "repo_name": "awalol/DS5Dongle",
+        "language": "C++",
+        "stars": "14"
+      },
+      {
+        "repo_name": "mattpocock/sandcastle",
+        "language": "TypeScript",
+        "stars": "16"
+      },
+      {
+        "repo_name": "NanmiCoder/cc-haha",
+        "language": "TypeScript",
+        "stars": "12"
+      },
+      {
+        "repo_name": "JoyinJoester/Monica",
+        "language": "Kotlin",
+        "stars": "13"
+      },
+      {
+        "repo_name": "earthtojake/text-to-cad",
+        "language": "JavaScript",
+        "stars": "16"
+      },
+      {
+        "repo_name": "lightningpixel/modly",
+        "language": "TypeScript",
+        "stars": "14"
+      },
+      {
+        "repo_name": "teng-lin/notebooklm-py",
+        "language": "Python",
+        "stars": "13"
+      },
+      {
+        "repo_name": "alirezarezvani/claude-skills",
+        "language": "Python",
+        "stars": "16"
+      },
+      {
+        "repo_name": "usestrix/strix",
+        "language": "Python",
+        "stars": "15"
+      },
+      {
+        "repo_name": "vectorize-io/hindsight",
+        "language": "Python",
+        "stars": "13"
+      },
+      {
+        "repo_name": "therealaleph/MasterHttpRelayVPN-RUST",
+        "language": "Rust",
+        "stars": "15"
+      },
+      {
+        "repo_name": "nesquena/hermes-webui",
+        "language": "Python",
+        "stars": "13"
+      },
+      {
+        "repo_name": "Gitlawb/openclaude",
+        "language": "TypeScript",
+        "stars": "15"
+      },
+      {
+        "repo_name": "garrytan/gbrain",
+        "language": "TypeScript",
+        "stars": "15"
+      },
+      {
+        "repo_name": "gastownhall/beads",
+        "language": "Go",
+        "stars": "13"
+      },
+      {
+        "repo_name": "joshawome/chainreason",
+        "language": "Python",
+        "stars": "9"
       }
     ]
   },
@@ -67,12 +542,12 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:34.595Z",
-    "finishedAt": "2026-05-01T13:48:36.034Z",
-    "latencyMs": 1439,
+    "startedAt": "2026-05-06T07:30:41.133Z",
+    "finishedAt": "2026-05-06T07:30:43.050Z",
+    "latencyMs": 1917,
     "status": "success",
     "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight collections [options]\n\n列出 OSSInsight 所有 collections\n\nOptions:\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: id, name",
+    "helpOutput": "Usage: opencli ossinsight collections [options]\n\n[read] 列出 OSSInsight 所有 collections\n\nOptions:\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight collections -f yaml\nOutput columns: id, name",
     "payload": [
       {
         "id": "1",
@@ -93,6 +568,538 @@
       {
         "id": "10003",
         "name": "Low Code Development Tool"
+      },
+      {
+        "id": "10004",
+        "name": "Web Framework"
+      },
+      {
+        "id": "10005",
+        "name": "Javascript Framework"
+      },
+      {
+        "id": "10006",
+        "name": "Business Intelligence"
+      },
+      {
+        "id": "10007",
+        "name": "Time Series Database"
+      },
+      {
+        "id": "10008",
+        "name": "Graph Database"
+      },
+      {
+        "id": "10009",
+        "name": "Github Alternative"
+      },
+      {
+        "id": "10010",
+        "name": "Artificial Intelligence"
+      },
+      {
+        "id": "10012",
+        "name": "Headless CMS"
+      },
+      {
+        "id": "10013",
+        "name": "Game Engine"
+      },
+      {
+        "id": "10014",
+        "name": "Javascript Game Engine"
+      },
+      {
+        "id": "10015",
+        "name": "Text Editor"
+      },
+      {
+        "id": "10016",
+        "name": "Search Engine"
+      },
+      {
+        "id": "10017",
+        "name": "Chaos Engineering"
+      },
+      {
+        "id": "10018",
+        "name": "APM Tool"
+      },
+      {
+        "id": "10019",
+        "name": "React Framework"
+      },
+      {
+        "id": "10020",
+        "name": "CICD"
+      },
+      {
+        "id": "10023",
+        "name": "Javascript Charting"
+      },
+      {
+        "id": "10024",
+        "name": "Programming Language"
+      },
+      {
+        "id": "10025",
+        "name": "Distributed File Storage"
+      },
+      {
+        "id": "10026",
+        "name": "WebAssembly Runtime"
+      },
+      {
+        "id": "10027",
+        "name": "Testing Tools"
+      },
+      {
+        "id": "10028",
+        "name": "Remote Desktop Tool"
+      },
+      {
+        "id": "10029",
+        "name": "Cross Platform GUI Tool"
+      },
+      {
+        "id": "10030",
+        "name": "Finance"
+      },
+      {
+        "id": "10031",
+        "name": "Web3"
+      },
+      {
+        "id": "10032",
+        "name": "Message and Streaming"
+      },
+      {
+        "id": "10033",
+        "name": "Identity Server"
+      },
+      {
+        "id": "10034",
+        "name": "Diagram as Code"
+      },
+      {
+        "id": "10035",
+        "name": "PaaS"
+      },
+      {
+        "id": "10036",
+        "name": "WYSIWYG Editor"
+      },
+      {
+        "id": "10037",
+        "name": "Hyperledger Foundation"
+      },
+      {
+        "id": "10038",
+        "name": "Hyperledger Besu"
+      },
+      {
+        "id": "10039",
+        "name": "Hyperledger Fabric"
+      },
+      {
+        "id": "10040",
+        "name": "API tool for developer"
+      },
+      {
+        "id": "10041",
+        "name": "Segment Alternative"
+      },
+      {
+        "id": "10042",
+        "name": "Rust Database"
+      },
+      {
+        "id": "10043",
+        "name": "Go Database"
+      },
+      {
+        "id": "10044",
+        "name": "Modern Data Stack"
+      },
+      {
+        "id": "10045",
+        "name": "TUI Framework"
+      },
+      {
+        "id": "10047",
+        "name": "Terminal"
+      },
+      {
+        "id": "10048",
+        "name": "UI Framework and UIkit"
+      },
+      {
+        "id": "10049",
+        "name": "Computer Science Courses"
+      },
+      {
+        "id": "10050",
+        "name": "Open Source Forum Software"
+      },
+      {
+        "id": "10051",
+        "name": "Security Tool"
+      },
+      {
+        "id": "10052",
+        "name": "Golang ORM"
+      },
+      {
+        "id": "10053",
+        "name": "Configuration Management Tools"
+      },
+      {
+        "id": "10054",
+        "name": "Monitoring Tool"
+      },
+      {
+        "id": "10055",
+        "name": "Password Manager"
+      },
+      {
+        "id": "10056",
+        "name": "Data Integration"
+      },
+      {
+        "id": "10057",
+        "name": "Workflow Scheduler"
+      },
+      {
+        "id": "10058",
+        "name": "MLOps Tools"
+      },
+      {
+        "id": "10059",
+        "name": "Key Value Database"
+      },
+      {
+        "id": "10060",
+        "name": "iOS Framework"
+      },
+      {
+        "id": "10061",
+        "name": "Slack Alternative"
+      },
+      {
+        "id": "10062",
+        "name": "Serverless Framework"
+      },
+      {
+        "id": "10063",
+        "name": "Kubernetes Tooling"
+      },
+      {
+        "id": "10064",
+        "name": "Javascript Build Tool"
+      },
+      {
+        "id": "10065",
+        "name": "javascript ORM"
+      },
+      {
+        "id": "10066",
+        "name": "Virtual Reality"
+      },
+      {
+        "id": "10067",
+        "name": "Robotics"
+      },
+      {
+        "id": "10068",
+        "name": "X as Code"
+      },
+      {
+        "id": "10069",
+        "name": "Optimization Solvers"
+      },
+      {
+        "id": "10070",
+        "name": "Approximate Nearest Neighbor Library"
+      },
+      {
+        "id": "10071",
+        "name": "Ansible DevTools"
+      },
+      {
+        "id": "10072",
+        "name": "Business Management"
+      },
+      {
+        "id": "10073",
+        "name": "Cpp CLI Parsing"
+      },
+      {
+        "id": "10074",
+        "name": "Zapier Alternatives"
+      },
+      {
+        "id": "10075",
+        "name": "ChatGPT Alternatives"
+      },
+      {
+        "id": "10076",
+        "name": "LLM Tools"
+      },
+      {
+        "id": "10077",
+        "name": "Vector Search Engine"
+      },
+      {
+        "id": "10078",
+        "name": "ChatGPT Apps"
+      },
+      {
+        "id": "10079",
+        "name": "Stable Diffusion Ecosystem"
+      },
+      {
+        "id": "10080",
+        "name": "Networking for Games"
+      },
+      {
+        "id": "10081",
+        "name": "Cloud Financial Management and Resource Optimization"
+      },
+      {
+        "id": "10082",
+        "name": "Web Scanner"
+      },
+      {
+        "id": "10083",
+        "name": "Programming Language of China"
+      },
+      {
+        "id": "10084",
+        "name": "ML in Rust"
+      },
+      {
+        "id": "10085",
+        "name": "Open Source Data Catalogs"
+      },
+      {
+        "id": "10086",
+        "name": "Reactive Monolith Frameworks"
+      },
+      {
+        "id": "10087",
+        "name": "LLM DevTools"
+      },
+      {
+        "id": "10088",
+        "name": "WebRTC"
+      },
+      {
+        "id": "10089",
+        "name": "Relational Database"
+      },
+      {
+        "id": "10090",
+        "name": "Go Web Frameworks"
+      },
+      {
+        "id": "10091",
+        "name": "Go Logging Libraries"
+      },
+      {
+        "id": "10092",
+        "name": "Browser Extension Frameworks"
+      },
+      {
+        "id": "10093",
+        "name": "3D Physics Engines"
+      },
+      {
+        "id": "10094",
+        "name": "Vector Database & Vector Store"
+      },
+      {
+        "id": "10095",
+        "name": "GraphRAG - Knowledge Graph based RAG"
+      },
+      {
+        "id": "10096",
+        "name": "Project Management"
+      },
+      {
+        "id": "10097",
+        "name": "AI Training Observability"
+      },
+      {
+        "id": "10098",
+        "name": "AI Agent Frameworks"
+      },
+      {
+        "id": "10099",
+        "name": "Model Context Protocol (MCP) Client"
+      },
+      {
+        "id": "10100",
+        "name": "BaaS"
+      },
+      {
+        "id": "10101",
+        "name": "Anomaly Detection Software"
+      },
+      {
+        "id": "10102",
+        "name": "Documentation Generator"
+      },
+      {
+        "id": "10103",
+        "name": "Mocking and Stubbing tools"
+      },
+      {
+        "id": "10104",
+        "name": "ai-gateways"
+      },
+      {
+        "id": "10105",
+        "name": "MCP Servers"
+      },
+      {
+        "id": "10106",
+        "name": "Coding Agents"
+      },
+      {
+        "id": "10107",
+        "name": "Vibe Coding Tools"
+      },
+      {
+        "id": "10108",
+        "name": "RAG Frameworks"
+      },
+      {
+        "id": "10109",
+        "name": "LLM Inference Engines"
+      },
+      {
+        "id": "10110",
+        "name": "LLM Fine-Tuning Tools"
+      },
+      {
+        "id": "10111",
+        "name": "AI Image Generation"
+      },
+      {
+        "id": "10112",
+        "name": "AI Coding Assistants"
+      },
+      {
+        "id": "10113",
+        "name": "AI Browser Agents"
+      },
+      {
+        "id": "10114",
+        "name": "AI Agent Memory"
+      },
+      {
+        "id": "10115",
+        "name": "LLM Gateway & Proxy"
+      },
+      {
+        "id": "10116",
+        "name": "AI Safety & Alignment"
+      },
+      {
+        "id": "10117",
+        "name": "Vector Databases"
+      },
+      {
+        "id": "10118",
+        "name": "Multimodal AI"
+      },
+      {
+        "id": "10119",
+        "name": "AI Evaluation & Testing"
+      },
+      {
+        "id": "10121",
+        "name": "Model Compression"
+      },
+      {
+        "id": "10122",
+        "name": "AI Video Generation"
+      },
+      {
+        "id": "10123",
+        "name": "AI Workflow Orchestration"
+      },
+      {
+        "id": "10124",
+        "name": "Agent Skills & AGENTS.md"
+      },
+      {
+        "id": "10125",
+        "name": "AI Infrastructure"
+      },
+      {
+        "id": "10126",
+        "name": "Edge AI"
+      },
+      {
+        "id": "10127",
+        "name": "AI Governance"
+      },
+      {
+        "id": "10128",
+        "name": "Google ADK"
+      },
+      {
+        "id": "10129",
+        "name": "Neuro-Symbolic AI"
+      },
+      {
+        "id": "10130",
+        "name": "AI FinOps"
+      },
+      {
+        "id": "10131",
+        "name": "Synthetic Data"
+      },
+      {
+        "id": "10132",
+        "name": "AI Quantitative Finance"
+      },
+      {
+        "id": "10133",
+        "name": "AI Agent Marketplace"
+      },
+      {
+        "id": "10134",
+        "name": "Knowledge Graphs for AI"
+      },
+      {
+        "id": "10135",
+        "name": "AI Observability"
+      },
+      {
+        "id": "10136",
+        "name": "AI Code Review"
+      },
+      {
+        "id": "10137",
+        "name": "Agent Sandboxing"
+      },
+      {
+        "id": "10138",
+        "name": "AI Red Teaming"
+      },
+      {
+        "id": "10139",
+        "name": "A2A Protocol"
+      },
+      {
+        "id": "10140",
+        "name": "Google ADK Python"
+      },
+      {
+        "id": "10141",
+        "name": "Agent Harness"
       }
     ]
   },
@@ -113,13 +1120,22 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:36.034Z",
-    "finishedAt": "2026-05-01T13:48:37.213Z",
-    "latencyMs": 1179,
+    "startedAt": "2026-05-06T07:30:43.050Z",
+    "finishedAt": "2026-05-06T07:30:44.181Z",
+    "latencyMs": 1131,
     "status": "success",
     "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight hot-collections [options]\n\n列出 OSSInsight 热门 collections\n\nOptions:\n  --limit [value]     返回数量，默认 20 (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: id, name, repos, repo_name, current_rank, past_rank, rank_change",
+    "helpOutput": "Usage: opencli ossinsight hot-collections [options]\n\n[read] 列出 OSSInsight 热门 collections\n\nOptions:\n  --limit [value]     返回数量，默认 20 (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight hot-collections -f yaml\nOutput columns: id, name, repos, repo_name, current_rank, past_rank, rank_change",
     "payload": [
+      {
+        "id": "2",
+        "name": "Open Source Database",
+        "repos": "40",
+        "repo_name": "milvus-io/milvus",
+        "current_rank": "1",
+        "past_rank": "5",
+        "rank_change": "4"
+      },
       {
         "id": "2",
         "name": "Open Source Database",
@@ -139,13 +1155,13 @@
         "rank_change": "-1"
       },
       {
-        "id": "2",
-        "name": "Open Source Database",
-        "repos": "40",
-        "repo_name": "milvus-io/milvus",
-        "current_rank": "1",
+        "id": "10013",
+        "name": "Game Engine",
+        "repos": "72",
+        "repo_name": "BabylonJS/Babylon.js",
+        "current_rank": "2",
         "past_rank": "5",
-        "rank_change": "4"
+        "rank_change": "3"
       },
       {
         "id": "10013",
@@ -164,6 +1180,492 @@
         "current_rank": "3",
         "past_rank": "2",
         "rank_change": "-1"
+      },
+      {
+        "id": "10005",
+        "name": "Javascript Framework",
+        "repos": "32",
+        "repo_name": "vuejs/vue",
+        "current_rank": "3",
+        "past_rank": "4",
+        "rank_change": "1"
+      },
+      {
+        "id": "10005",
+        "name": "Javascript Framework",
+        "repos": "32",
+        "repo_name": "facebook/react",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10005",
+        "name": "Javascript Framework",
+        "repos": "32",
+        "repo_name": "vuejs/core",
+        "current_rank": "2",
+        "past_rank": "5",
+        "rank_change": "3"
+      },
+      {
+        "id": "10047",
+        "name": "Terminal",
+        "repos": "20",
+        "repo_name": "Eugeny/tabby",
+        "current_rank": "2",
+        "past_rank": "2",
+        "rank_change": "0"
+      },
+      {
+        "id": "10067",
+        "name": "Robotics",
+        "repos": "12",
+        "repo_name": "arduino/Arduino",
+        "current_rank": "3",
+        "past_rank": "3",
+        "rank_change": "0"
+      },
+      {
+        "id": "10010",
+        "name": "Artificial Intelligence",
+        "repos": "36",
+        "repo_name": "pytorch/pytorch",
+        "current_rank": "3",
+        "past_rank": "4",
+        "rank_change": "1"
+      },
+      {
+        "id": "10010",
+        "name": "Artificial Intelligence",
+        "repos": "36",
+        "repo_name": "nebuly-ai/optimate",
+        "current_rank": "2",
+        "past_rank": "2",
+        "rank_change": "0"
+      },
+      {
+        "id": "10047",
+        "name": "Terminal",
+        "repos": "20",
+        "repo_name": "warpdotdev/Warp",
+        "current_rank": "3",
+        "past_rank": "4",
+        "rank_change": "1"
+      },
+      {
+        "id": "10047",
+        "name": "Terminal",
+        "repos": "20",
+        "repo_name": "ohmyzsh/ohmyzsh",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10010",
+        "name": "Artificial Intelligence",
+        "repos": "36",
+        "repo_name": "huggingface/transformers",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10067",
+        "name": "Robotics",
+        "repos": "12",
+        "repo_name": "AtsushiSakai/PythonRobotics",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10067",
+        "name": "Robotics",
+        "repos": "12",
+        "repo_name": "bulletphysics/bullet3",
+        "current_rank": "2",
+        "past_rank": "2",
+        "rank_change": "0"
+      },
+      {
+        "id": "10079",
+        "name": "Stable Diffusion Ecosystem",
+        "repos": "31",
+        "repo_name": "CompVis/stable-diffusion",
+        "current_rank": "3",
+        "past_rank": "3",
+        "rank_change": "0"
+      },
+      {
+        "id": "10079",
+        "name": "Stable Diffusion Ecosystem",
+        "repos": "31",
+        "repo_name": "lllyasviel/ControlNet",
+        "current_rank": "2",
+        "past_rank": "2",
+        "rank_change": "0"
+      },
+      {
+        "id": "10079",
+        "name": "Stable Diffusion Ecosystem",
+        "repos": "31",
+        "repo_name": "AUTOMATIC1111/stable-diffusion-webui",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10020",
+        "name": "CICD",
+        "repos": "23",
+        "repo_name": "dagger/dagger",
+        "current_rank": "3",
+        "past_rank": "6",
+        "rank_change": "3"
+      },
+      {
+        "id": "10078",
+        "name": "ChatGPT Apps",
+        "repos": "38",
+        "repo_name": "chenfei-wu/TaskMatrix",
+        "current_rank": "1",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10078",
+        "name": "ChatGPT Apps",
+        "repos": "38",
+        "repo_name": "openai-translator/openai-translator",
+        "current_rank": "2",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10078",
+        "name": "ChatGPT Apps",
+        "repos": "38",
+        "repo_name": "Chanzhaoyu/chatgpt-web",
+        "current_rank": "3",
+        "past_rank": "6",
+        "rank_change": "3"
+      },
+      {
+        "id": "10020",
+        "name": "CICD",
+        "repos": "23",
+        "repo_name": "argoproj/argo-cd",
+        "current_rank": "2",
+        "past_rank": "2",
+        "rank_change": "0"
+      },
+      {
+        "id": "10020",
+        "name": "CICD",
+        "repos": "23",
+        "repo_name": "nektos/act",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10030",
+        "name": "Finance",
+        "repos": "14",
+        "repo_name": "OpenBB-finance/OpenBB",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10030",
+        "name": "Finance",
+        "repos": "14",
+        "repo_name": "vnpy/vnpy",
+        "current_rank": "2",
+        "past_rank": "2",
+        "rank_change": "0"
+      },
+      {
+        "id": "10030",
+        "name": "Finance",
+        "repos": "14",
+        "repo_name": "microsoft/qlib",
+        "current_rank": "3",
+        "past_rank": "5",
+        "rank_change": "2"
+      },
+      {
+        "id": "10023",
+        "name": "Javascript Charting",
+        "repos": "19",
+        "repo_name": "d3/d3",
+        "current_rank": "1",
+        "past_rank": "2",
+        "rank_change": "1"
+      },
+      {
+        "id": "10023",
+        "name": "Javascript Charting",
+        "repos": "19",
+        "repo_name": "chartjs/Chart.js",
+        "current_rank": "3",
+        "past_rank": "3",
+        "rank_change": "0"
+      },
+      {
+        "id": "10023",
+        "name": "Javascript Charting",
+        "repos": "19",
+        "repo_name": "apache/echarts",
+        "current_rank": "2",
+        "past_rank": "1",
+        "rank_change": "-1"
+      },
+      {
+        "id": "10076",
+        "name": "LLM Tools",
+        "repos": "27",
+        "repo_name": "run-llama/llama_index",
+        "current_rank": "3",
+        "past_rank": "2",
+        "rank_change": "-1"
+      },
+      {
+        "id": "10076",
+        "name": "LLM Tools",
+        "repos": "27",
+        "repo_name": "langchain-ai/langchain",
+        "current_rank": "2",
+        "past_rank": "1",
+        "rank_change": "-1"
+      },
+      {
+        "id": "10076",
+        "name": "LLM Tools",
+        "repos": "27",
+        "repo_name": "openai/chatgpt-retrieval-plugin",
+        "current_rank": "1",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10064",
+        "name": "Javascript Build Tool",
+        "repos": "13",
+        "repo_name": "vercel/turborepo",
+        "current_rank": "3",
+        "past_rank": "2",
+        "rank_change": "-1"
+      },
+      {
+        "id": "10064",
+        "name": "Javascript Build Tool",
+        "repos": "13",
+        "repo_name": "vitejs/vite",
+        "current_rank": "2",
+        "past_rank": "1",
+        "rank_change": "-1"
+      },
+      {
+        "id": "10064",
+        "name": "Javascript Build Tool",
+        "repos": "13",
+        "repo_name": "web-infra-dev/rspack",
+        "current_rank": "1",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10106",
+        "name": "Coding Agents",
+        "repos": "20",
+        "repo_name": "openai/codex",
+        "current_rank": "",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10106",
+        "name": "Coding Agents",
+        "repos": "20",
+        "repo_name": "Codium-ai/pr-agent",
+        "current_rank": "",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10106",
+        "name": "Coding Agents",
+        "repos": "20",
+        "repo_name": "All-Hands-AI/OpenHands",
+        "current_rank": "",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10098",
+        "name": "AI Agent Frameworks",
+        "repos": "17",
+        "repo_name": "yoheinakajima/babyagi",
+        "current_rank": "",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10098",
+        "name": "AI Agent Frameworks",
+        "repos": "17",
+        "repo_name": "microsoft/JARVIS",
+        "current_rank": "",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10098",
+        "name": "AI Agent Frameworks",
+        "repos": "17",
+        "repo_name": "openai/openai-agents-python",
+        "current_rank": "",
+        "past_rank": "",
+        "rank_change": ""
+      },
+      {
+        "id": "10031",
+        "name": "Web3",
+        "repos": "36",
+        "repo_name": "OpenZeppelin/openzeppelin-contracts",
+        "current_rank": "3",
+        "past_rank": "3",
+        "rank_change": "0"
+      },
+      {
+        "id": "10031",
+        "name": "Web3",
+        "repos": "36",
+        "repo_name": "ethereum/go-ethereum",
+        "current_rank": "1",
+        "past_rank": "2",
+        "rank_change": "1"
+      },
+      {
+        "id": "10050",
+        "name": "Open Source Forum Software",
+        "repos": "9",
+        "repo_name": "LemmyNet/lemmy",
+        "current_rank": "3",
+        "past_rank": "4",
+        "rank_change": "1"
+      },
+      {
+        "id": "10050",
+        "name": "Open Source Forum Software",
+        "repos": "9",
+        "repo_name": "discourse/discourse",
+        "current_rank": "2",
+        "past_rank": "2",
+        "rank_change": "0"
+      },
+      {
+        "id": "10050",
+        "name": "Open Source Forum Software",
+        "repos": "9",
+        "repo_name": "apache/answer",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10031",
+        "name": "Web3",
+        "repos": "36",
+        "repo_name": "ethereum-optimism/optimism",
+        "current_rank": "2",
+        "past_rank": "1",
+        "rank_change": "-1"
+      },
+      {
+        "id": "10026",
+        "name": "WebAssembly Runtime",
+        "repos": "12",
+        "repo_name": "bytecodealliance/wasmtime",
+        "current_rank": "2",
+        "past_rank": "1",
+        "rank_change": "-1"
+      },
+      {
+        "id": "10025",
+        "name": "Distributed File Storage",
+        "repos": "16",
+        "repo_name": "minio/minio",
+        "current_rank": "1",
+        "past_rank": "1",
+        "rank_change": "0"
+      },
+      {
+        "id": "10025",
+        "name": "Distributed File Storage",
+        "repos": "16",
+        "repo_name": "seaweedfs/seaweedfs",
+        "current_rank": "2",
+        "past_rank": "3",
+        "rank_change": "1"
+      },
+      {
+        "id": "10025",
+        "name": "Distributed File Storage",
+        "repos": "16",
+        "repo_name": "juicedata/juicefs",
+        "current_rank": "3",
+        "past_rank": "2",
+        "rank_change": "-1"
+      },
+      {
+        "id": "10026",
+        "name": "WebAssembly Runtime",
+        "repos": "12",
+        "repo_name": "wasmerio/wasmer",
+        "current_rank": "1",
+        "past_rank": "2",
+        "rank_change": "1"
+      },
+      {
+        "id": "10063",
+        "name": "Kubernetes Tooling",
+        "repos": "33",
+        "repo_name": "komodorio/helm-dashboard",
+        "current_rank": "3",
+        "past_rank": "1",
+        "rank_change": "-2"
+      },
+      {
+        "id": "10026",
+        "name": "WebAssembly Runtime",
+        "repos": "12",
+        "repo_name": "tetratelabs/wazero",
+        "current_rank": "3",
+        "past_rank": "9",
+        "rank_change": "6"
+      },
+      {
+        "id": "10063",
+        "name": "Kubernetes Tooling",
+        "repos": "33",
+        "repo_name": "portainer/portainer",
+        "current_rank": "1",
+        "past_rank": "2",
+        "rank_change": "1"
+      },
+      {
+        "id": "10063",
+        "name": "Kubernetes Tooling",
+        "repos": "33",
+        "repo_name": "kubeshark/kubeshark",
+        "current_rank": "2",
+        "past_rank": "8",
+        "rank_change": "6"
       }
     ]
   },
@@ -185,34 +1687,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:37.213Z",
-    "finishedAt": "2026-05-01T13:48:38.724Z",
-    "latencyMs": 1511,
-    "status": "success",
-    "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight collection-repos [options] <collectionId>\n\n列出指定 collection 下的仓库\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --limit [value]     返回数量，默认 100 (default: \"100\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name",
-    "payload": [
-      {
-        "repo_id": "6296790",
-        "repo_name": "spring-projects/spring-boot"
-      },
-      {
-        "repo_id": "8514",
-        "repo_name": "rails/rails"
-      },
-      {
-        "repo_id": "1863329",
-        "repo_name": "laravel/laravel"
-      },
-      {
-        "repo_id": "458058",
-        "repo_name": "symfony/symfony"
-      },
-      {
-        "repo_id": "4164482",
-        "repo_name": "django/django"
-      }
-    ]
+    "startedAt": "2026-05-06T07:30:44.181Z",
+    "finishedAt": "2026-05-06T07:30:44.346Z",
+    "latencyMs": 165,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight collection-repos 10004 --limit 5 -f json\nok: false\nerror:\n  code: INVALID_ARGUMENT\n  message: collectionId is required\n  exitCode: 1\n",
+    "helpOutput": "Usage: opencli ossinsight collection-repos [options] <collectionId>\n\n[read] 列出指定 collection 下的仓库\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --limit [value]     返回数量，默认 100 (default: \"100\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight collection-repos <collectionId> -f yaml\nOutput columns: repo_id, repo_name",
+    "payload": []
   },
   {
     "source": "ossinsight",
@@ -232,69 +1713,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:38.724Z",
-    "finishedAt": "2026-05-01T13:48:41.173Z",
-    "latencyMs": 2449,
-    "status": "success",
-    "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight collection-issues [options] <collectionId>\n\n查看 collection 的 issue 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
-    "payload": [
-      {
-        "repo_id": "6296790",
-        "repo_name": "spring-projects/spring-boot",
-        "current_growth": "34",
-        "current_rank": "1",
-        "past_growth": "33",
-        "past_rank": "1",
-        "growth_pop": "3.03",
-        "rank_pop": "0",
-        "total": "40723"
-      },
-      {
-        "repo_id": "327089870",
-        "repo_name": "payloadcms/payload",
-        "current_growth": "10",
-        "current_rank": "2",
-        "past_growth": "9",
-        "past_rank": "5",
-        "growth_pop": "11.11",
-        "rank_pop": "-3",
-        "total": "4217"
-      },
-      {
-        "repo_id": "348060227",
-        "repo_name": "withastro/astro",
-        "current_growth": "9",
-        "current_rank": "3",
-        "past_growth": "18",
-        "past_rank": "3",
-        "growth_pop": "-50.00",
-        "rank_pop": "0",
-        "total": "6163"
-      },
-      {
-        "repo_id": "1148753",
-        "repo_name": "spring-projects/spring-framework",
-        "current_growth": "9",
-        "current_rank": "4",
-        "past_growth": "11",
-        "past_rank": "4",
-        "growth_pop": "-18.18",
-        "rank_pop": "0",
-        "total": "11298"
-      },
-      {
-        "repo_id": "458058",
-        "repo_name": "symfony/symfony",
-        "current_growth": "8",
-        "current_rank": "5",
-        "past_growth": "8",
-        "past_rank": "7",
-        "growth_pop": "0.00",
-        "rank_pop": "-2",
-        "total": "21045"
-      }
-    ]
+    "startedAt": "2026-05-06T07:30:44.346Z",
+    "finishedAt": "2026-05-06T07:30:44.537Z",
+    "latencyMs": 191,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight collection-issues 10004 --limit 5 -f json\nok: false\nerror:\n  code: INVALID_ARGUMENT\n  message: collectionId is required\n  exitCode: 1\n",
+    "helpOutput": "Usage: opencli ossinsight collection-issues [options] <collectionId>\n\n[read] 查看 collection 的 issue 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight collection-issues <collectionId> -f yaml\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
+    "payload": []
   },
   {
     "source": "ossinsight",
@@ -314,69 +1739,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:41.173Z",
-    "finishedAt": "2026-05-01T13:48:42.791Z",
-    "latencyMs": 1618,
-    "status": "success",
-    "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight collection-prs [options] <collectionId>\n\n查看 collection 的 Pull Request 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
-    "payload": [
-      {
-        "repo_id": "17620347",
-        "repo_name": "dotnet/aspnetcore",
-        "current_growth": "38",
-        "current_rank": "1",
-        "past_growth": "28",
-        "past_rank": "3",
-        "growth_pop": "35.71",
-        "rank_pop": "-2",
-        "total": "21048"
-      },
-      {
-        "repo_id": "80945428",
-        "repo_name": "nestjs/nest",
-        "current_growth": "24",
-        "current_rank": "2",
-        "past_growth": "20",
-        "past_rank": "5",
-        "growth_pop": "20.00",
-        "rank_pop": "-3",
-        "total": "9904"
-      },
-      {
-        "repo_id": "4164482",
-        "repo_name": "django/django",
-        "current_growth": "21",
-        "current_rank": "3",
-        "past_growth": "29",
-        "past_rank": "2",
-        "growth_pop": "-27.59",
-        "rank_pop": "1",
-        "total": "19992"
-      },
-      {
-        "repo_id": "348060227",
-        "repo_name": "withastro/astro",
-        "current_growth": "21",
-        "current_rank": "4",
-        "past_growth": "39",
-        "past_rank": "1",
-        "growth_pop": "-46.15",
-        "rank_pop": "3",
-        "total": "8551"
-      },
-      {
-        "repo_id": "43441403",
-        "repo_name": "strapi/strapi",
-        "current_growth": "19",
-        "current_rank": "5",
-        "past_growth": "18",
-        "past_rank": "6",
-        "growth_pop": "5.56",
-        "rank_pop": "-1",
-        "total": "11964"
-      }
-    ]
+    "startedAt": "2026-05-06T07:30:44.537Z",
+    "finishedAt": "2026-05-06T07:30:44.724Z",
+    "latencyMs": 187,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight collection-prs 10004 --limit 5 -f json\nok: false\nerror:\n  code: INVALID_ARGUMENT\n  message: collectionId is required\n  exitCode: 1\n",
+    "helpOutput": "Usage: opencli ossinsight collection-prs [options] <collectionId>\n\n[read] 查看 collection 的 Pull Request 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight collection-prs <collectionId> -f yaml\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
+    "payload": []
   },
   {
     "source": "ossinsight",
@@ -396,69 +1765,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:42.791Z",
-    "finishedAt": "2026-05-01T13:48:45.824Z",
-    "latencyMs": 3033,
-    "status": "success",
-    "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight collection-stars [options] <collectionId>\n\n查看 collection 的 Star 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
-    "payload": [
-      {
-        "repo_id": "160919119",
-        "repo_name": "fastapi/fastapi",
-        "current_growth": "168",
-        "current_rank": "1",
-        "past_growth": "213",
-        "past_rank": "1",
-        "growth_pop": "-21.13",
-        "rank_pop": "0",
-        "total": "92124"
-      },
-      {
-        "repo_id": "348060227",
-        "repo_name": "withastro/astro",
-        "current_growth": "163",
-        "current_rank": "2",
-        "past_growth": "161",
-        "past_rank": "2",
-        "growth_pop": "1.24",
-        "rank_pop": "0",
-        "total": "54430"
-      },
-      {
-        "repo_id": "327089870",
-        "repo_name": "payloadcms/payload",
-        "current_growth": "100",
-        "current_rank": "3",
-        "past_growth": "102",
-        "past_rank": "3",
-        "growth_pop": "-1.96",
-        "rank_pop": "0",
-        "total": "37764"
-      },
-      {
-        "repo_id": "438384984",
-        "repo_name": "honojs/hono",
-        "current_growth": "87",
-        "current_rank": "4",
-        "past_growth": "97",
-        "past_rank": "4",
-        "growth_pop": "-10.31",
-        "rank_pop": "0",
-        "total": "25693"
-      },
-      {
-        "repo_id": "80945428",
-        "repo_name": "nestjs/nest",
-        "current_growth": "69",
-        "current_rank": "5",
-        "past_growth": "72",
-        "past_rank": "8",
-        "growth_pop": "-4.17",
-        "rank_pop": "-3",
-        "total": "75580"
-      }
-    ]
+    "startedAt": "2026-05-06T07:30:44.724Z",
+    "finishedAt": "2026-05-06T07:30:44.960Z",
+    "latencyMs": 236,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight collection-stars 10004 --limit 5 -f json\nok: false\nerror:\n  code: INVALID_ARGUMENT\n  message: collectionId is required\n  exitCode: 1\n",
+    "helpOutput": "Usage: opencli ossinsight collection-stars [options] <collectionId>\n\n[read] 查看 collection 的 Star 增长排行\n\nArguments:\n  collectionId        Collection ID，可通过 \"opencli ossinsight collections\" 查看\n\nOptions:\n  --period [value]    统计周期，例如 past_24_hours、past_7_days、past_28_days (default:\n                      \"past_28_days\")\n  --limit [value]     返回数量，默认 50 (default: \"50\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight collection-stars <collectionId> -f yaml\nOutput columns: repo_id, repo_name, current_growth, current_rank, past_growth, past_rank, growth_pop, rank_pop, total",
+    "payload": []
   },
   {
     "source": "ossinsight",
@@ -478,34 +1791,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:45.824Z",
-    "finishedAt": "2026-05-01T13:48:48.328Z",
-    "latencyMs": 2504,
-    "status": "success",
-    "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight stargazer-history [options] <repo>\n\n查看 stargazer 趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, stargazers",
-    "payload": [
-      {
-        "date": "2016-10-01",
-        "stargazers": "27"
-      },
-      {
-        "date": "2016-11-01",
-        "stargazers": "34"
-      },
-      {
-        "date": "2016-12-01",
-        "stargazers": "48"
-      },
-      {
-        "date": "2017-01-01",
-        "stargazers": "113"
-      },
-      {
-        "date": "2017-02-01",
-        "stargazers": "114"
-      }
-    ]
+    "startedAt": "2026-05-06T07:30:44.960Z",
+    "finishedAt": "2026-05-06T07:30:45.148Z",
+    "latencyMs": 188,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight stargazer-history fastify/fastify --limit 5 -f json\nok: false\nerror:\n  code: INVALID_ARGUMENT\n  message: repo 必须是 owner/name 格式，例如 pingcap/tidb\n  exitCode: 1\n",
+    "helpOutput": "Usage: opencli ossinsight stargazer-history [options] <repo>\n\n[read] 查看 stargazer 趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight stargazer-history <repo> -f yaml\nOutput columns: date, stargazers",
+    "payload": []
   },
   {
     "source": "ossinsight",
@@ -525,34 +1817,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:48.328Z",
-    "finishedAt": "2026-05-01T13:48:51.092Z",
-    "latencyMs": 2764,
-    "status": "success",
-    "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight issue-creator-history [options] <repo>\n\n查看 issue 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, issue_creators",
-    "payload": [
-      {
-        "date": "2022-10-01",
-        "issue_creators": "1"
-      },
-      {
-        "date": "2022-11-01",
-        "issue_creators": "12"
-      },
-      {
-        "date": "2022-12-01",
-        "issue_creators": "28"
-      },
-      {
-        "date": "2023-01-01",
-        "issue_creators": "76"
-      },
-      {
-        "date": "2023-02-01",
-        "issue_creators": "178"
-      }
-    ]
+    "startedAt": "2026-05-06T07:30:45.148Z",
+    "finishedAt": "2026-05-06T07:30:45.330Z",
+    "latencyMs": 182,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight issue-creator-history langchain-ai/langchain --limit 5 -f json\nok: false\nerror:\n  code: INVALID_ARGUMENT\n  message: repo 必须是 owner/name 格式，例如 pingcap/tidb\n  exitCode: 1\n",
+    "helpOutput": "Usage: opencli ossinsight issue-creator-history [options] <repo>\n\n[read] 查看 issue 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight issue-creator-history <repo> -f yaml\nOutput columns: date, issue_creators",
+    "payload": []
   },
   {
     "source": "ossinsight",
@@ -572,33 +1843,12 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:48:51.092Z",
-    "finishedAt": "2026-05-01T13:48:52.764Z",
-    "latencyMs": 1672,
-    "status": "success",
-    "errorText": null,
-    "helpOutput": "Usage: opencli ossinsight pr-creator-history [options] <repo>\n\n查看 Pull Request 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: ossinsight.io\nOutput columns: date, pull_request_creators",
-    "payload": [
-      {
-        "date": "2021-04-01",
-        "pull_request_creators": "1"
-      },
-      {
-        "date": "2021-07-01",
-        "pull_request_creators": "2"
-      },
-      {
-        "date": "2021-11-01",
-        "pull_request_creators": "3"
-      },
-      {
-        "date": "2022-03-01",
-        "pull_request_creators": "4"
-      },
-      {
-        "date": "2022-12-01",
-        "pull_request_creators": "5"
-      }
-    ]
+    "startedAt": "2026-05-06T07:30:45.330Z",
+    "finishedAt": "2026-05-06T07:30:45.500Z",
+    "latencyMs": 170,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli ossinsight pr-creator-history pgvector/pgvector --limit 5 -f json\nok: false\nerror:\n  code: INVALID_ARGUMENT\n  message: repo 必须是 owner/name 格式，例如 pingcap/tidb\n  exitCode: 1\n",
+    "helpOutput": "Usage: opencli ossinsight pr-creator-history [options] <repo>\n\n[read] 查看 Pull Request 创建者趋势\n\nArguments:\n  repo                仓库，格式 owner/name，例如 pingcap/tidb\n\nOptions:\n  --from [value]      开始日期，格式 YYYY-MM-DD\n  --to [value]        结束日期，格式 YYYY-MM-DD\n  --per [value]       聚合粒度，例如 day、week、month (default: \"month\")\n  --limit [value]     返回数量，默认 120 (default: \"120\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: ossinsight.io\nExample: opencli ossinsight pr-creator-history <repo> -f yaml\nOutput columns: date, pull_request_creators",
+    "payload": []
   }
 ]

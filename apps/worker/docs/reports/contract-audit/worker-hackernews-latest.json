@@ -16,9 +16,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-06T03:20:04.446Z",
-    "finishedAt": "2026-05-06T03:20:10.666Z",
-    "latencyMs": 6220,
+    "startedAt": "2026-05-06T07:30:11.471Z",
+    "finishedAt": "2026-05-06T07:30:22.889Z",
+    "latencyMs": 11418,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli hackernews ask [options]\n\n[read] Hacker News Ask HN posts\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews ask -f yaml\nOutput columns: rank, id, title, score, author, comments, url",
@@ -27,41 +27,41 @@
         "rank": 1,
         "id": 48029559,
         "title": ".de TLD Issue Solved",
-        "score": 10,
+        "score": 12,
         "author": "kaltsturm",
         "comments": 0
       },
       {
         "rank": 2,
-        "id": 48030302,
-        "title": "Codex's precision and attention to detail is *crazy* when set up correctly",
-        "score": 4,
-        "author": "ditchfieldcaleb",
-        "comments": 10
-      },
-      {
-        "rank": 3,
-        "id": 47975676,
-        "title": "I'm Peter Roberts, immigration attorney who does work for YC and startups. AMA",
-        "score": 206,
-        "author": "proberts",
-        "comments": 249
-      },
-      {
-        "rank": 4,
-        "id": 48022948,
-        "title": "Looking for Technical Co-Founder",
-        "score": 10,
-        "author": "pinarsaas",
-        "comments": 0
-      },
-      {
-        "rank": 5,
         "id": 48026211,
         "title": "Ask HN: Is there a term for feeling sad about forced AI adoption?",
         "score": 16,
         "author": "ge96",
-        "comments": 14
+        "comments": 17
+      },
+      {
+        "rank": 3,
+        "id": 48017668,
+        "title": "Ask HN: Best Embedding Models?",
+        "score": 15,
+        "author": "devstein",
+        "comments": 17
+      },
+      {
+        "rank": 4,
+        "id": 47988268,
+        "title": "Ask HN: Is the Job Market Actually Bad?",
+        "score": 125,
+        "author": "idontwantthis",
+        "comments": 199
+      },
+      {
+        "rank": 5,
+        "id": 48016031,
+        "title": "Ask HN: Where are you getting your AI news from?",
+        "score": 9,
+        "author": "baetylus",
+        "comments": 11
       }
     ]
   },
@@ -82,59 +82,13 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-06T03:20:10.666Z",
-    "finishedAt": "2026-05-06T03:20:16.653Z",
-    "latencyMs": 5987,
-    "status": "success",
-    "errorText": null,
+    "startedAt": "2026-05-06T07:30:22.889Z",
+    "finishedAt": "2026-05-06T07:30:33.616Z",
+    "latencyMs": 10727,
+    "status": "failed",
+    "errorText": "Error: Command failed: opencli hackernews top --limit 5 -f json\nok: false\nerror:\n  code: UNKNOWN\n  message: fetch failed\n  exitCode: 1\n  cause: >-\n    Connect Timeout Error (attempted addresses: 34.120.206.254:443, 2600:1901:0:4d00:::443, 34.120.160.131:443,\n    35.190.39.113:443, 35.201.97.85:443, timeout: 10000ms)\n# AutoFix: re-run with --trace=retain-on-failure for trace artifact\n# opencli hackernews top --trace retain-on-failure\n",
     "helpOutput": "Usage: opencli hackernews top [options]\n\n[read] Hacker News top stories\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews top -f yaml\nOutput columns: rank, id, title, score, author, comments, url",
-    "payload": [
-      {
-        "rank": 1,
-        "id": 48031261,
-        "title": "StarFighter 16-Inch",
-        "score": 59,
-        "author": "signa11",
-        "comments": 39,
-        "url": "https://us.starlabs.systems/pages/starfighter"
-      },
-      {
-        "rank": 2,
-        "id": 48027897,
-        "title": ".de TLD offline due to DNSSEC?",
-        "score": 554,
-        "author": "warpspin",
-        "comments": 267,
-        "url": "https://dnssec-analyzer.verisignlabs.com/nic.de"
-      },
-      {
-        "rank": 3,
-        "id": 48031109,
-        "title": "Telus Uses AI to Alter Call-Agent Accents",
-        "score": 34,
-        "author": "debo_",
-        "comments": 9,
-        "url": "https://letsdatascience.com/news/telus-uses-ai-to-alter-call-agent-accents-a3868f63"
-      },
-      {
-        "rank": 4,
-        "id": 48024540,
-        "title": "Accelerating Gemma 4: faster inference with multi-token prediction drafters",
-        "score": 471,
-        "author": "amrrs",
-        "comments": 210,
-        "url": "https://blog.google/innovation-and-ai/technology/developers-tools/multi-token-prediction-gemma-4/"
-      },
-      {
-        "rank": 5,
-        "id": 48028842,
-        "title": "Write some software, give it away for free",
-        "score": 156,
-        "author": "nohell",
-        "comments": 117,
-        "url": "https://nonogra.ph/write-some-software-give-it-away-for-free-05-05-2026"
-      }
-    ]
+    "payload": []
   },
   {
     "source": "hackernews",
@@ -154,9 +108,9 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-06T03:20:16.653Z",
-    "finishedAt": "2026-05-06T03:20:18.103Z",
-    "latencyMs": 1450,
+    "startedAt": "2026-05-06T07:30:33.616Z",
+    "finishedAt": "2026-05-06T07:30:35.006Z",
+    "latencyMs": 1390,
     "status": "success",
     "errorText": null,
     "helpOutput": "Usage: opencli hackernews search [options] <query>\n\n[read] Search Hacker News stories\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Number of results (default: \"20\")\n  --sort [value]      Sort by relevance or date (default: \"relevance\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\n  --sort: relevance, date  (default: relevance)\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews search <query> -f yaml\nOutput columns: rank, id, title, score, author, comments, url",

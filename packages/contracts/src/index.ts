@@ -31,6 +31,7 @@ export const RuntimeTopicSeedSourceLabelSchema = Type.Union([
   Type.Literal("ossinsight-hot"),
   Type.Literal("ossinsight-collections"),
   Type.Literal("devto-top"),
+  Type.Literal("topic-cluster"),
   Type.Literal("fallback-topics"),
 ]);
 
@@ -239,6 +240,100 @@ export const EmbeddingRecordSchema = Type.Object({
 });
 
 export type EmbeddingRecord = Static<typeof EmbeddingRecordSchema>;
+
+export const TopicClusterStatusSchema = Type.Union([
+  Type.Literal("active"),
+  Type.Literal("superseded"),
+]);
+
+export type TopicClusterStatus = Static<typeof TopicClusterStatusSchema>;
+
+export const RuntimeTopicFallbackReasonSchema = Type.Union([
+  Type.Literal("missing-cluster"),
+  Type.Literal("low-confidence"),
+  Type.Literal("embedding-missing"),
+  Type.Literal("candidate-conflict"),
+  Type.Literal("insufficient-keywords"),
+  Type.Literal("worker-error"),
+]);
+
+export type RuntimeTopicFallbackReason = Static<
+  typeof RuntimeTopicFallbackReasonSchema
+>;
+
+export const TopicClusterEvidenceRoleSchema = Type.Union([
+  Type.Literal("primary"),
+  Type.Literal("supporting"),
+]);
+
+export type TopicClusterEvidenceRole = Static<
+  typeof TopicClusterEvidenceRoleSchema
+>;
+
+export const TopicClusterRepresentativeEvidenceSchema = Type.Object({
+  canonicalId: Type.String(),
+  itemId: Type.String({ format: "uuid" }),
+  source: SourceKeySchema,
+  title: Type.String(),
+  url: Type.String(),
+  publishedAt: Type.String({ format: "date-time" }),
+  collectedAt: Type.String({ format: "date-time" }),
+  membershipConfidence: Type.Number({ minimum: 0, maximum: 1 }),
+  role: TopicClusterEvidenceRoleSchema,
+});
+
+export type TopicClusterRepresentativeEvidence = Static<
+  typeof TopicClusterRepresentativeEvidenceSchema
+>;
+
+export const TopicClusterSourceMixSchema = Type.Object({
+  source: SourceKeySchema,
+  count: Type.Integer({ minimum: 0 }),
+  ratio: Type.Number({ minimum: 0, maximum: 1 }),
+});
+
+export type TopicClusterSourceMix = Static<typeof TopicClusterSourceMixSchema>;
+
+export const TopicClusterMembershipSchema = Type.Object({
+  topicClusterId: Type.String({ format: "uuid" }),
+  clusterVersion: Type.String(),
+  canonicalId: Type.String(),
+  itemId: Type.String({ format: "uuid" }),
+  embeddingRecordId: Type.Optional(Type.String({ format: "uuid" })),
+  source: SourceKeySchema,
+  membershipConfidence: Type.Number({ minimum: 0, maximum: 1 }),
+  primaryEvidence: Type.Boolean(),
+  evidenceRank: Type.Integer({ minimum: 1 }),
+  reasoningTags: Type.Array(Type.String()),
+  metadata: Type.Record(Type.String(), Type.Unknown()),
+});
+
+export type TopicClusterMembership = Static<
+  typeof TopicClusterMembershipSchema
+>;
+
+export const TopicClusterSchema = Type.Object({
+  topicClusterId: Type.String({ format: "uuid" }),
+  stableKey: Type.String(),
+  clusterVersion: Type.String(),
+  ruleVersion: Type.String(),
+  status: TopicClusterStatusSchema,
+  slug: Type.String(),
+  displayName: Type.String(),
+  summary: Type.String(),
+  keywords: Type.Array(Type.String()),
+  anchorCanonicalId: Type.String(),
+  representativeEvidence: Type.Array(TopicClusterRepresentativeEvidenceSchema),
+  sourceMix: Type.Array(TopicClusterSourceMixSchema),
+  relatedRepos: Type.Array(Type.String()),
+  relatedEntities: Type.Array(Type.String()),
+  itemCount: Type.Integer({ minimum: 0 }),
+  clusterConfidence: Type.Number({ minimum: 0, maximum: 1 }),
+  runtimeFallbackReason: Type.Optional(RuntimeTopicFallbackReasonSchema),
+  metadata: Type.Record(Type.String(), Type.Unknown()),
+});
+
+export type TopicCluster = Static<typeof TopicClusterSchema>;
 
 export const FeedItemSchema = Type.Composite([
   NormalizedItemSchema,

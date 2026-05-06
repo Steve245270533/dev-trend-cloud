@@ -98,3 +98,25 @@ test("embedding migration defines pgvector table constraints and dedupe index", 
   );
   assert.match(migrationSql, /先不创建 ANN 向量索引/);
 });
+
+test("topic cluster migration defines versioned cluster and membership tables", async () => {
+  const migrationSql = await readFile(
+    join(repoRoot, "packages/db/migrations/005_topic_clusters.sql"),
+    "utf8",
+  );
+
+  assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS topic_clusters/);
+  assert.match(migrationSql, /cluster_version TEXT NOT NULL/);
+  assert.match(
+    migrationSql,
+    /runtime_fallback_reason IN \(\s*'missing-cluster',\s*'low-confidence'/,
+  );
+  assert.match(
+    migrationSql,
+    /CREATE TABLE IF NOT EXISTS topic_cluster_memberships/,
+  );
+  assert.match(
+    migrationSql,
+    /UNIQUE \(topic_cluster_id, canonical_id, cluster_version\)/,
+  );
+});

@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   EmbeddingRecordSchema,
+  RuntimeTopicFallbackReasonSchema,
   SourceFeaturesSchema,
   TimestampOriginSchema,
+  TopicClusterMembershipSchema,
+  TopicClusterSchema,
   UnifiedContentRecordSchema,
 } from "../../../packages/contracts/src/index.js";
 
@@ -40,4 +43,47 @@ test("embedding record contract includes vector and provider", () => {
   assert.ok(required.includes("provider"));
   assert.ok(required.includes("vector"));
   assert.equal(EmbeddingRecordSchema.type, "object");
+});
+
+test("topic cluster contract includes versioned runtime fields", () => {
+  const required = TopicClusterSchema.required ?? [];
+  assert.ok(required.includes("topicClusterId"));
+  assert.ok(required.includes("clusterVersion"));
+  assert.ok(required.includes("ruleVersion"));
+  assert.ok(required.includes("representativeEvidence"));
+  assert.ok(required.includes("sourceMix"));
+});
+
+test("topic cluster membership contract keeps evidence ranking", () => {
+  const required = TopicClusterMembershipSchema.required ?? [];
+  assert.ok(required.includes("topicClusterId"));
+  assert.ok(required.includes("canonicalId"));
+  assert.ok(required.includes("membershipConfidence"));
+  assert.ok(required.includes("evidenceRank"));
+});
+
+test("runtime topic fallback reason remains constrained", () => {
+  const variants = Array.isArray(RuntimeTopicFallbackReasonSchema.anyOf)
+    ? RuntimeTopicFallbackReasonSchema.anyOf
+        .map((entry) => ("const" in entry ? entry.const : undefined))
+        .filter(
+          (
+            value,
+          ): value is
+            | "candidate-conflict"
+            | "embedding-missing"
+            | "insufficient-keywords"
+            | "low-confidence"
+            | "missing-cluster"
+            | "worker-error" => typeof value === "string",
+        )
+    : [];
+  assert.deepEqual(variants.sort(), [
+    "candidate-conflict",
+    "embedding-missing",
+    "insufficient-keywords",
+    "low-confidence",
+    "missing-cluster",
+    "worker-error",
+  ]);
 });
