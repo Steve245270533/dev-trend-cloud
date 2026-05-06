@@ -16,47 +16,52 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:50:08.746Z",
-    "finishedAt": "2026-05-01T13:50:15.590Z",
-    "latencyMs": 6844,
+    "startedAt": "2026-05-06T03:20:04.446Z",
+    "finishedAt": "2026-05-06T03:20:10.666Z",
+    "latencyMs": 6220,
     "status": "success",
     "errorText": null,
-    "helpOutput": "Usage: opencli hackernews ask [options]\n\nHacker News Ask HN posts\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments",
+    "helpOutput": "Usage: opencli hackernews ask [options]\n\n[read] Hacker News Ask HN posts\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews ask -f yaml\nOutput columns: rank, id, title, score, author, comments, url",
     "payload": [
       {
         "rank": 1,
-        "title": "SlothDB a 5X Faster Alternative to DuckDB, ClickHouse DB",
-        "score": 7,
-        "author": "souravroy78",
-        "comments": 1
+        "id": 48029559,
+        "title": ".de TLD Issue Solved",
+        "score": 10,
+        "author": "kaltsturm",
+        "comments": 0
       },
       {
         "rank": 2,
-        "title": "Tell HN: VS Code v1.117.0 automatically adds GitHub Copilot as your co author",
-        "score": 70,
-        "author": "adithyassekhar",
-        "comments": 32
+        "id": 48030302,
+        "title": "Codex's precision and attention to detail is *crazy* when set up correctly",
+        "score": 4,
+        "author": "ditchfieldcaleb",
+        "comments": 10
       },
       {
         "rank": 3,
-        "title": "Claude Code dies with ANTHROPIC_API_KEY in cloud environment",
-        "score": 12,
-        "author": "sroussey",
-        "comments": 2
+        "id": 47975676,
+        "title": "I'm Peter Roberts, immigration attorney who does work for YC and startups. AMA",
+        "score": 206,
+        "author": "proberts",
+        "comments": 249
       },
       {
         "rank": 4,
-        "title": "Ask HN: Does Claude use 'prior' in a Bayesian sense more than English?",
-        "score": 3,
-        "author": "slake",
-        "comments": 5
+        "id": 48022948,
+        "title": "Looking for Technical Co-Founder",
+        "score": 10,
+        "author": "pinarsaas",
+        "comments": 0
       },
       {
         "rank": 5,
-        "title": "What do you think of people buying Mac mini's to run AI?",
-        "score": 3,
-        "author": "namegulf",
-        "comments": 9
+        "id": 48026211,
+        "title": "Ask HN: Is there a term for feeling sad about forced AI adoption?",
+        "score": 16,
+        "author": "ge96",
+        "comments": 14
       }
     ]
   },
@@ -77,51 +82,57 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:50:15.590Z",
-    "finishedAt": "2026-05-01T13:50:21.938Z",
-    "latencyMs": 6348,
+    "startedAt": "2026-05-06T03:20:10.666Z",
+    "finishedAt": "2026-05-06T03:20:16.653Z",
+    "latencyMs": 5987,
     "status": "success",
     "errorText": null,
-    "helpOutput": "Usage: opencli hackernews top [options]\n\nHacker News top stories\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments",
+    "helpOutput": "Usage: opencli hackernews top [options]\n\n[read] Hacker News top stories\n\nOptions:\n  --limit [value]     Number of stories (default: \"20\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews top -f yaml\nOutput columns: rank, id, title, score, author, comments, url",
     "payload": [
       {
         "rank": 1,
-        "title": "Your Website Is Not for You",
-        "score": 113,
-        "author": "pumbaa",
-        "comments": 66,
-        "url": "https://websmith.studio/blog/your-website-is-not-for-you/"
+        "id": 48031261,
+        "title": "StarFighter 16-Inch",
+        "score": 59,
+        "author": "signa11",
+        "comments": 39,
+        "url": "https://us.starlabs.systems/pages/starfighter"
       },
       {
         "rank": 2,
-        "title": "Running Adobe's 1991 PostScript Interpreter in the Browser",
-        "score": 39,
-        "author": "ingve",
-        "comments": 12,
-        "url": "https://www.pagetable.com/?p=1854"
+        "id": 48027897,
+        "title": ".de TLD offline due to DNSSEC?",
+        "score": 554,
+        "author": "warpspin",
+        "comments": 267,
+        "url": "https://dnssec-analyzer.verisignlabs.com/nic.de"
       },
       {
         "rank": 3,
-        "title": "Apple accidentally left Claude.md files Apple Support app",
-        "score": 138,
-        "author": "andruby",
-        "comments": 82,
-        "url": "https://xcancel.com/aaronp613/status/2049986504617820551"
+        "id": 48031109,
+        "title": "Telus Uses AI to Alter Call-Agent Accents",
+        "score": 34,
+        "author": "debo_",
+        "comments": 9,
+        "url": "https://letsdatascience.com/news/telus-uses-ai-to-alter-call-agent-accents-a3868f63"
       },
       {
         "rank": 4,
-        "title": "Show HN: Perfect Bluetooth MIDI for Windows",
-        "score": 58,
-        "author": "mayerwin",
-        "comments": 12
+        "id": 48024540,
+        "title": "Accelerating Gemma 4: faster inference with multi-token prediction drafters",
+        "score": 471,
+        "author": "amrrs",
+        "comments": 210,
+        "url": "https://blog.google/innovation-and-ai/technology/developers-tools/multi-token-prediction-gemma-4/"
       },
       {
         "rank": 5,
-        "title": "How Mark Klein told the EFF about Room 641A [book excerpt]",
-        "score": 643,
-        "author": "the-mitr",
-        "comments": 215,
-        "url": "https://thereader.mitpress.mit.edu/the-whistleblower-who-uncovered-the-nsas-big-brother-machine/"
+        "id": 48028842,
+        "title": "Write some software, give it away for free",
+        "score": 156,
+        "author": "nohell",
+        "comments": 117,
+        "url": "https://nonogra.ph/write-some-software-give-it-away-for-free-05-05-2026"
       }
     ]
   },
@@ -143,15 +154,16 @@
       "-f",
       "json"
     ],
-    "startedAt": "2026-05-01T13:50:21.938Z",
-    "finishedAt": "2026-05-01T13:50:23.321Z",
-    "latencyMs": 1383,
+    "startedAt": "2026-05-06T03:20:16.653Z",
+    "finishedAt": "2026-05-06T03:20:18.103Z",
+    "latencyMs": 1450,
     "status": "success",
     "errorText": null,
-    "helpOutput": "Usage: opencli hackernews search [options] <query>\n\nSearch Hacker News stories\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Number of results (default: \"20\")\n  --sort [value]      Sort by relevance or date (default: \"relevance\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\n  --sort: relevance, date  (default: relevance)\nStrategy: public | Browser: no | Domain: news.ycombinator.com\nOutput columns: rank, title, score, author, comments, url",
+    "helpOutput": "Usage: opencli hackernews search [options] <query>\n\n[read] Search Hacker News stories\n\nArguments:\n  query               Search query\n\nOptions:\n  --limit [value]     Number of results (default: \"20\")\n  --sort [value]      Sort by relevance or date (default: \"relevance\")\n  -f, --format <fmt>  Output format: table, plain, json, yaml, md, csv (default:\n                      \"table\")\n  --trace <mode>      Trace capture: off, on, retain-on-failure (default: \"off\")\n  -v, --verbose       Debug output (default: false)\n  -h, --help          display help for command\n\n  --sort: relevance, date  (default: relevance)\nAccess: read | Browser: no | Domain: news.ycombinator.com\nExample: opencli hackernews search <query> -f yaml\nOutput columns: rank, id, title, score, author, comments, url",
     "payload": [
       {
         "rank": 1,
+        "id": "44412773",
         "title": "Ask HN: Will MCP replace GUI interacting with back end via RESTful APIs?",
         "score": 7,
         "author": "kwancloudli",
@@ -159,6 +171,7 @@
       },
       {
         "rank": 2,
+        "id": "43611739",
         "title": "Ask HN: Is MCP mature enough to use safely?",
         "score": 6,
         "author": "Rooster61",
@@ -166,6 +179,7 @@
       },
       {
         "rank": 3,
+        "id": "44957735",
         "title": "Ask HN: MCP/API search vs. vector search – what's winning for you?",
         "score": 4,
         "author": "ngkw",
@@ -173,6 +187,7 @@
       },
       {
         "rank": 4,
+        "id": "43379525",
         "title": "Ask HN: Why MCP instead of just HTTP?",
         "score": 3,
         "author": "bschmidt44",
@@ -180,6 +195,7 @@
       },
       {
         "rank": 5,
+        "id": "44561995",
         "title": "Ask HN: What MCP servers/apps are you using as a dev?",
         "score": 3,
         "author": "trevorLane",

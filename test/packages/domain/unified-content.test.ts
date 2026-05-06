@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  buildEmbeddingInput,
+  buildEmbeddingInputFromUnifiedContent,
+  isEmbeddingInputRecord,
   isUnifiedContentRecord,
   isValidSourceFeatures,
 } from "../../../packages/domain/src/index.js";
@@ -112,4 +115,106 @@ test("unified content validator rejects non-layered feature payload", () => {
   };
 
   assert.equal(isUnifiedContentRecord(invalidRecord), false);
+});
+
+test("embedding input guard accepts required whitelist fields", () => {
+  const payload = {
+    canonicalId: "devto:123",
+    source: "devto",
+    title: "  Stable   Embedding Input  ",
+    summary: "Keep deterministic guardrails in the pipeline.",
+    bodyExcerpt: "Only selected fields should be embedded.",
+    tags: ["MCP", "contracts", "mcp"],
+  };
+
+  assert.equal(isEmbeddingInputRecord(payload), true);
+});
+
+test("embedding input builder keeps deterministic order and stable fingerprint", () => {
+  const first = buildEmbeddingInput({
+    canonicalId: "devto:123",
+    source: "devto",
+    title: "  Stable   Embedding Input  ",
+    summary: "Keep deterministic guardrails in the pipeline.",
+    bodyExcerpt: "Only selected fields should be embedded.",
+    tags: ["MCP", "contracts", "mcp"],
+  });
+  const second = buildEmbeddingInput({
+    canonicalId: "devto:123",
+    source: "devto",
+    title: "Stable Embedding Input",
+    summary: "Keep deterministic guardrails in the pipeline.",
+    bodyExcerpt: "Only selected fields should be embedded.",
+    tags: ["contracts", "mcp"],
+  });
+
+  assert.equal(
+    first.input,
+    [
+      "source:devto",
+      "title:Stable Embedding Input",
+      "summary:Keep deterministic guardrails in the pipeline.",
+      "bodyExcerpt:Only selected fields should be embedded.",
+      "tags:contracts,mcp",
+    ].join("\n"),
+  );
+  assert.equal(first.inputFingerprint, second.inputFingerprint);
+  assert.equal(first.inputFingerprint.startsWith("sha256:"), true);
+});
+
+test("embedding input builder excludes rawMeta and legacyRefs fields", () => {
+  const payload = buildEmbeddingInputFromUnifiedContent({
+    canonicalId: "hackernews:456",
+    source: "hackernews",
+    sourceItemId: "456",
+    title: "Ask HN: guardrails for embedding payload?",
+    summary: "Should include source/title/summary/body/tags only.",
+    bodyExcerpt: "Exclude legacy references and raw metadata.",
+    url: "https://news.ycombinator.com/item?id=456",
+    publishedAt: "2026-05-05T08:00:00.000Z",
+    collectedAt: "2026-05-05T08:10:00.000Z",
+    timestampOrigin: "source",
+    tags: ["guardrails", "embedding"],
+    sourceFeatures: validSourceFeatures,
+    fingerprint: "sha256:origin-fingerprint",
+    evidenceRefs: ["https://news.ycombinator.com/item?id=456"],
+    legacyRefs: {
+      itemId: "11111111-1111-5111-8111-111111111111",
+      itemSourceId: null,
+    },
+    rawMeta: {
+      secretToken: "do-not-leak",
+      internalDebugOnly: true,
+    },
+  });
+
+  assert.notEqual(payload, null);
+  assert.equal(payload?.input.includes("legacyRefs"), false);
+  assert.equal(payload?.input.includes("rawMeta"), false);
+  assert.equal(payload?.input.includes("secretToken"), false);
+  assert.equal(payload?.input.includes("source:hackernews"), true);
+});
+
+test("embedding input guard rejects invalid source and empty summary", () => {
+  assert.equal(
+    isEmbeddingInputRecord({
+      canonicalId: "invalid:1",
+      source: "invalid-source",
+      title: "x",
+      summary: "y",
+      tags: [],
+    }),
+    false,
+  );
+
+  assert.equal(
+    isEmbeddingInputRecord({
+      canonicalId: "devto:123",
+      source: "devto",
+      title: "x",
+      summary: "   ",
+      tags: [],
+    }),
+    false,
+  );
 });

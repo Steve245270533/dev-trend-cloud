@@ -28,6 +28,10 @@ export const AppConfigSchema = Type.Object({
   SOURCE_POLL_DEVTO_CRON: Type.String({ default: "*/30 * * * *" }),
   SOURCE_POLL_OSSINSIGHT_CRON: Type.String({ default: "*/30 * * * *" }),
   TOPIC_SEED_REFRESH_CRON: Type.String({ default: "0 * * * *" }),
+  OLLAMA_EMBEDDING_BASE_URL: Type.String({ default: "http://127.0.0.1:11434" }),
+  OLLAMA_EMBEDDING_MODEL: Type.String({ default: "nomic-embed-text-v2-moe" }),
+  OLLAMA_EMBEDDING_DIMENSIONS: Type.Number({ default: 768 }),
+  OLLAMA_EMBEDDING_TIMEOUT_MS: Type.Number({ default: 30000 }),
 });
 
 export type AppConfig = Static<typeof AppConfigSchema>;

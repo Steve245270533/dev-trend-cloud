@@ -224,6 +224,22 @@ export const UnifiedContentRecordSchema = Type.Object({
 
 export type UnifiedContentRecord = Static<typeof UnifiedContentRecordSchema>;
 
+export const EmbeddingProviderSchema = Type.Union([Type.Literal("ollama")]);
+
+export type EmbeddingProvider = Static<typeof EmbeddingProviderSchema>;
+
+export const EmbeddingRecordSchema = Type.Object({
+  id: Type.String({ format: "uuid" }),
+  canonicalId: Type.String(),
+  provider: EmbeddingProviderSchema,
+  model: Type.String(),
+  dimensions: Type.Integer({ minimum: 1 }),
+  vector: Type.Array(Type.Number()),
+  createdAt: Type.String({ format: "date-time" }),
+});
+
+export type EmbeddingRecord = Static<typeof EmbeddingRecordSchema>;
+
 export const FeedItemSchema = Type.Composite([
   NormalizedItemSchema,
   Type.Object({

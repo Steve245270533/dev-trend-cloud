@@ -15,7 +15,7 @@
 
 以下能力仍属于下一阶段规划，而不是当前运行说明：
 
-- embedding pipeline
+- embedding pipeline（完整链路）
 - topic clustering / topic persistence
 - LLM topic naming
 - topic taxonomy（L1 / L2 / L3）
@@ -59,7 +59,7 @@
 说明：
 
 - `pgvector` 已在数据库层启用，但当前主链路仍不是 embedding-first。
-- 当前仓库还没有 embedding pipeline、LLM naming worker、topic taxonomy persistence job。
+- 当前仓库已预留 embedding DTO 与 Ollama embedding 配置；但还没有完整 embedding pipeline、LLM naming worker、topic taxonomy persistence job。
 - 这些能力属于 `Phase 2 / Topic Layer` 规划，不应写成当前可运行命令。
 
 ## 环境变量
@@ -82,8 +82,12 @@
 - `SOURCE_POLL_DEVTO_CRON`
 - `SOURCE_POLL_OSSINSIGHT_CRON`
 - `TOPIC_SEED_REFRESH_CRON`
+- `OLLAMA_EMBEDDING_BASE_URL`
+- `OLLAMA_EMBEDDING_MODEL`
+- `OLLAMA_EMBEDDING_DIMENSIONS`
+- `OLLAMA_EMBEDDING_TIMEOUT_MS`
 
-计划中的下一阶段可能新增 embedding / topic jobs 相关配置，但在相关实现落地前，不应在此文档中宣称这些变量已存在。
+embedding / topic jobs 的其余配置仍属下一阶段，未落地前不应在此文档中宣称已存在。
 
 当前共享 Docker baseline 中，Redis 通过 `/Users/lehuaixiaochen/Downloads/Project/Docker/redis/redis.conf` 启用认证，因此本地默认 URL 为：
 

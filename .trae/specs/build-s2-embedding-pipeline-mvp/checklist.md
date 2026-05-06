@@ -1,0 +1,10 @@
+- [x] `packages/config` 已支持 embedding provider/model/timeout 等配置，并可默认使用 Ollama + `nomic-embed-text-v2-moe`
+- [x] `packages/contracts` 已新增 embedding record 相关 schema，且字段覆盖 provider/model/version/fingerprint/status/vector
+- [x] migration 已新增 embedding 表与 pgvector 索引，且可执行回滚
+- [x] repository 已支持 embedding 幂等写入、回填查询、重算状态更新与去重
+- [x] domain 已实现 deterministic embedding input builder，并覆盖字段排除规则
+- [x] worker 已新增 embedding 增量任务与 backfill 任务，并接入 provider 调用与持久化
+- [x] provider 失败降级已验证：embedding 失败不会破坏现有 question pressure 管道
+- [x] 已完成 embedding input builder 单测、repository 测试、worker job 集成测试与 provider mock 测试
+- [x] 已完成无 embedding 场景降级测试与回归验证（`feed/question-pressure/evidence` 行为不变）
+- [x] 相关文档与规格已同步，且仅覆盖 S2 范围（未提前实现 S3+ 功能）

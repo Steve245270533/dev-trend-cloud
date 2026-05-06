@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import pino from "pino";
 
@@ -41,7 +42,9 @@ export function createWorkerLogger(
   const level = options.level ?? "info";
   const now = options.now ?? (() => new Date());
   const rootDir = options.rootDir ?? process.cwd();
-  const logFilePath = resolve(rootDir, "logs", "worker.log");
+  const logsDir = resolve(rootDir, "logs");
+  mkdirSync(logsDir, { recursive: true });
+  const logFilePath = resolve(logsDir, "worker.log");
 
   const transport = pino.transport({
     target: "pino-roll",

@@ -75,3 +75,26 @@ test("unified content migration keeps executable safety guards", async () => {
     /legacy_item_id UUID NOT NULL REFERENCES items \(id\) ON DELETE CASCADE/,
   );
 });
+
+test("embedding migration defines pgvector table constraints and dedupe index", async () => {
+  const migrationSql = await readFile(
+    join(repoRoot, "packages/db/migrations/004_embedding_records.sql"),
+    "utf8",
+  );
+
+  assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS embedding_records/);
+  assert.match(migrationSql, /embedding_vector VECTOR NOT NULL/);
+  assert.match(
+    migrationSql,
+    /status IN \('pending', 'processing', 'succeeded', 'failed', 'superseded'\)/,
+  );
+  assert.match(
+    migrationSql,
+    /ON embedding_records \(source, content_fingerprint, model, input_schema_version\)/,
+  );
+  assert.doesNotMatch(
+    migrationSql,
+    /USING ivfflat \(embedding_vector vector_cosine_ops\)/,
+  );
+  assert.match(migrationSql, /先不创建 ANN 向量索引/);
+});

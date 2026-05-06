@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type {
+  EmbeddingProvider,
   FeedItem,
   FeedQuery,
   MatchedEntity,
@@ -99,12 +100,131 @@ export interface UnifiedModelCompatibilityReport {
   sourceItemIdMismatchCount: number;
 }
 
+export type EmbeddingStatus =
+  | "pending"
+  | "processing"
+  | "succeeded"
+  | "failed"
+  | "superseded";
+
+interface EmbeddingRow {
+  id: string;
+  canonical_id: string;
+  source: string;
+  content_fingerprint: string;
+  input_schema_version: string;
+  provider: string;
+  model: string;
+  model_version: string;
+  dimensions: number;
+  embedding_vector_text: string;
+  status: EmbeddingStatus;
+  error_text: string | null;
+  retry_count: number;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  succeeded_at: string | null;
+}
+
+export interface EmbeddingRecordPersisted {
+  id: string;
+  canonicalId: string;
+  source: UnifiedContentRecord["source"];
+  contentFingerprint: string;
+  inputSchemaVersion: string;
+  provider: EmbeddingProvider;
+  model: string;
+  modelVersion: string;
+  dimensions: number;
+  vector: number[];
+  status: EmbeddingStatus;
+  errorText: string | null;
+  retryCount: number;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+  succeededAt: string | null;
+}
+
+export interface UpsertEmbeddingRecordInput {
+  canonicalId: string;
+  source: UnifiedContentRecord["source"];
+  contentFingerprint: string;
+  inputSchemaVersion: string;
+  provider: EmbeddingProvider;
+  model: string;
+  modelVersion: string;
+  vector: number[];
+  metadata?: Record<string, unknown>;
+}
+
+export interface ListEmbeddingRecordsQuery {
+  canonicalId?: string;
+  source?: UnifiedContentRecord["source"];
+  model?: string;
+  status?: EmbeddingStatus;
+  limit?: number;
+}
+
+export interface ListEmbeddingBackfillQuery {
+  source?: UnifiedContentRecord["source"];
+  model: string;
+  inputSchemaVersion: string;
+  limit?: number;
+  includeFailed?: boolean;
+}
+
+export interface EmbeddingBackfillCandidate {
+  canonicalId: string;
+  source: UnifiedContentRecord["source"];
+  contentFingerprint: string;
+  collectedAt: string;
+}
+
+export interface UpdateEmbeddingStatusInput {
+  id: string;
+  status: Exclude<EmbeddingStatus, "superseded">;
+  errorText?: string | null;
+  retryCount?: number;
+}
+
 type PersistedSourceStatus = SourceStatus & {
   metadata?: Record<string, unknown>;
 };
 
 function isObjectLike(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function sanitizeEmbeddingVector(vector: number[]): number[] {
+  return vector.map((value) => {
+    if (!Number.isFinite(value)) {
+      throw new Error("Embedding vector contains non-finite values.");
+    }
+    return value;
+  });
+}
+
+function toVectorLiteral(vector: number[]): string {
+  return `[${vector.join(",")}]`;
+}
+
+function parseVectorText(text: string): number[] {
+  const normalized = text.trim();
+  if (!normalized.startsWith("[") || !normalized.endsWith("]")) {
+    return [];
+  }
+
+  const payload = normalized.slice(1, -1).trim();
+  if (payload.length === 0) {
+    return [];
+  }
+
+  return payload
+    .split(",")
+    .map((value) => Number(value.trim()))
+    .filter((value) => Number.isFinite(value));
 }
 
 function canonicalKey(item: NormalizedItem): string {
@@ -263,6 +383,30 @@ function mapUnifiedContentRow(row: UnifiedContentRow): UnifiedContentRecord {
       itemSourceId: row.legacy_item_source_id,
     },
     rawMeta: row.raw_meta ?? {},
+  };
+}
+
+function mapEmbeddingRow(row: EmbeddingRow): EmbeddingRecordPersisted {
+  return {
+    id: row.id,
+    canonicalId: row.canonical_id,
+    source: row.source as UnifiedContentRecord["source"],
+    contentFingerprint: row.content_fingerprint,
+    inputSchemaVersion: row.input_schema_version,
+    provider: row.provider as EmbeddingProvider,
+    model: row.model,
+    modelVersion: row.model_version,
+    dimensions: Number(row.dimensions),
+    vector: parseVectorText(row.embedding_vector_text),
+    status: row.status,
+    errorText: row.error_text,
+    retryCount: Number(row.retry_count),
+    metadata: row.metadata ?? {},
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+    succeededAt: row.succeeded_at
+      ? new Date(row.succeeded_at).toISOString()
+      : null,
   };
 }
 
@@ -1234,6 +1378,47 @@ export async function listUnifiedContentRecords(
   );
 }
 
+export async function listUnifiedContentRecordsByCanonicalIds(
+  db: Queryable,
+  canonicalIds: string[],
+): Promise<UnifiedContentRecord[]> {
+  if (canonicalIds.length === 0) {
+    return [];
+  }
+
+  const result = await db.query(
+    `
+      SELECT
+        canonical_id,
+        source,
+        source_item_id,
+        title,
+        summary,
+        body_excerpt,
+        url,
+        author,
+        published_at,
+        collected_at,
+        timestamp_origin,
+        tags,
+        source_features,
+        fingerprint,
+        evidence_refs,
+        legacy_item_id,
+        legacy_item_source_id,
+        raw_meta
+      FROM unified_contents
+      WHERE canonical_id = ANY($1::text[])
+      ORDER BY collected_at DESC
+    `,
+    [canonicalIds],
+  );
+
+  return result.rows.map((row: unknown) =>
+    mapUnifiedContentRow(row as UnifiedContentRow),
+  );
+}
+
 export async function getUnifiedModelCompatibilityReport(
   db: Queryable,
 ): Promise<UnifiedModelCompatibilityReport> {
@@ -1288,6 +1473,239 @@ export async function rollbackUnifiedContentBySources(
   );
 
   return result.rows.length;
+}
+
+export async function markSupersededEmbeddings(
+  db: Queryable,
+  query: {
+    canonicalId: string;
+    source: UnifiedContentRecord["source"];
+    model: string;
+    inputSchemaVersion: string;
+    keepFingerprint?: string;
+  },
+): Promise<number> {
+  const result = await db.query(
+    `
+      UPDATE embedding_records
+      SET status = 'superseded',
+          updated_at = NOW()
+      WHERE canonical_id = $1
+        AND source = $2
+        AND model = $3
+        AND input_schema_version = $4
+        AND status <> 'superseded'
+        AND ($5::text IS NULL OR content_fingerprint <> $5)
+      RETURNING id
+    `,
+    [
+      query.canonicalId,
+      query.source,
+      query.model,
+      query.inputSchemaVersion,
+      query.keepFingerprint ?? null,
+    ],
+  );
+
+  return result.rows.length;
+}
+
+export async function upsertEmbeddingRecord(
+  db: Queryable,
+  input: UpsertEmbeddingRecordInput,
+): Promise<string> {
+  const vector = sanitizeEmbeddingVector(input.vector);
+  if (vector.length === 0) {
+    throw new Error("Embedding vector cannot be empty.");
+  }
+
+  await markSupersededEmbeddings(db, {
+    canonicalId: input.canonicalId,
+    source: input.source,
+    model: input.model,
+    inputSchemaVersion: input.inputSchemaVersion,
+    keepFingerprint: input.contentFingerprint,
+  });
+
+  const vectorLiteral = toVectorLiteral(vector);
+  const result = await db.query(
+    `
+      INSERT INTO embedding_records (
+        canonical_id,
+        source,
+        content_fingerprint,
+        input_schema_version,
+        provider,
+        model,
+        model_version,
+        dimensions,
+        embedding_vector,
+        status,
+        error_text,
+        retry_count,
+        metadata,
+        succeeded_at
+      )
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9::vector,
+        'succeeded', NULL, 0, $10::jsonb, NOW()
+      )
+      ON CONFLICT (source, content_fingerprint, model, input_schema_version)
+      WHERE status <> 'superseded'
+      DO UPDATE
+      SET canonical_id = EXCLUDED.canonical_id,
+          provider = EXCLUDED.provider,
+          model_version = EXCLUDED.model_version,
+          dimensions = EXCLUDED.dimensions,
+          embedding_vector = EXCLUDED.embedding_vector,
+          status = 'succeeded',
+          error_text = NULL,
+          retry_count = 0,
+          metadata = EXCLUDED.metadata,
+          succeeded_at = NOW(),
+          updated_at = NOW()
+      RETURNING id
+    `,
+    [
+      input.canonicalId,
+      input.source,
+      input.contentFingerprint,
+      input.inputSchemaVersion,
+      input.provider,
+      input.model,
+      input.modelVersion,
+      vector.length,
+      vectorLiteral,
+      JSON.stringify(input.metadata ?? {}),
+    ],
+  );
+
+  const id = result.rows[0]?.id;
+  if (typeof id !== "string") {
+    throw new Error("Failed to upsert embedding record.");
+  }
+  return id;
+}
+
+export async function listEmbeddingRecords(
+  db: Queryable,
+  query: ListEmbeddingRecordsQuery = {},
+): Promise<EmbeddingRecordPersisted[]> {
+  const result = await db.query(
+    `
+      SELECT
+        id,
+        canonical_id,
+        source,
+        content_fingerprint,
+        input_schema_version,
+        provider,
+        model,
+        model_version,
+        dimensions,
+        embedding_vector::text AS embedding_vector_text,
+        status,
+        error_text,
+        retry_count,
+        metadata,
+        created_at,
+        updated_at,
+        succeeded_at
+      FROM embedding_records
+      WHERE ($1::text IS NULL OR canonical_id = $1)
+        AND ($2::text IS NULL OR source = $2)
+        AND ($3::text IS NULL OR model = $3)
+        AND ($4::text IS NULL OR status = $4)
+      ORDER BY updated_at DESC, created_at DESC
+      LIMIT $5
+    `,
+    [
+      query.canonicalId ?? null,
+      query.source ?? null,
+      query.model ?? null,
+      query.status ?? null,
+      query.limit ?? 50,
+    ],
+  );
+
+  return result.rows.map((row: unknown) =>
+    mapEmbeddingRow(row as EmbeddingRow),
+  );
+}
+
+export async function listEmbeddingBackfillCandidates(
+  db: Queryable,
+  query: ListEmbeddingBackfillQuery,
+): Promise<EmbeddingBackfillCandidate[]> {
+  const statusFilter = query.includeFailed ? ["failed"] : [];
+  const result = await db.query(
+    `
+      SELECT
+        uc.canonical_id,
+        uc.source,
+        uc.fingerprint,
+        uc.collected_at
+      FROM unified_contents uc
+      LEFT JOIN embedding_records er
+        ON er.source = uc.source
+       AND er.content_fingerprint = uc.fingerprint
+       AND er.model = $2
+       AND er.input_schema_version = $3
+       AND er.status <> 'superseded'
+      WHERE ($1::text IS NULL OR uc.source = $1)
+        AND (
+          er.id IS NULL
+          OR (
+            COALESCE(array_length($4::text[], 1), 0) > 0
+            AND er.status = ANY($4::text[])
+          )
+        )
+      ORDER BY uc.collected_at DESC
+      LIMIT $5
+    `,
+    [
+      query.source ?? null,
+      query.model,
+      query.inputSchemaVersion,
+      statusFilter,
+      query.limit ?? 100,
+    ],
+  );
+
+  return result.rows.map((row: Record<string, unknown>) => ({
+    canonicalId: String(row.canonical_id),
+    source: String(row.source) as UnifiedContentRecord["source"],
+    contentFingerprint: String(row.fingerprint),
+    collectedAt: new Date(String(row.collected_at)).toISOString(),
+  }));
+}
+
+export async function updateEmbeddingRecordStatus(
+  db: Queryable,
+  input: UpdateEmbeddingStatusInput,
+): Promise<boolean> {
+  const result = await db.query(
+    `
+      UPDATE embedding_records
+      SET status = $2,
+          error_text = CASE
+            WHEN $2 = 'failed' THEN $3
+            ELSE NULL
+          END,
+          retry_count = $4,
+          succeeded_at = CASE
+            WHEN $2 = 'succeeded' THEN NOW()
+            ELSE succeeded_at
+          END,
+          updated_at = NOW()
+      WHERE id = $1
+        AND status <> 'superseded'
+      RETURNING id
+    `,
+    [input.id, input.status, input.errorText ?? null, input.retryCount ?? 0],
+  );
+
+  return result.rows.length > 0;
 }
 
 export async function listFeed(

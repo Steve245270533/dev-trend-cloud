@@ -12,13 +12,22 @@ import { clusterQuestionItems } from "./questions/cluster.js";
 import { extractQuestionFeatures } from "./questions/extract.js";
 import { scoreClusters } from "./scoring/question-pressure.js";
 import {
+  buildEmbeddingInput,
+  buildEmbeddingInputFromUnifiedContent,
+  isEmbeddingInputRecord,
   isUnifiedContentRecord,
   isValidSourceFeatures,
 } from "./unified-content.js";
 
 export { entitySeeds, topicSeeds, watchlistSeeds } from "./matching/catalog.js";
 export type { SourceFeatures, UnifiedContentRecord };
-export { isUnifiedContentRecord, isValidSourceFeatures };
+export {
+  buildEmbeddingInput,
+  buildEmbeddingInputFromUnifiedContent,
+  isEmbeddingInputRecord,
+  isUnifiedContentRecord,
+  isValidSourceFeatures,
+};
 
 export interface PipelineOutput {
   feed: FeedItem[];

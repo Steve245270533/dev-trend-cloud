@@ -17,15 +17,19 @@ import {
   listActiveRuntimeTopicSeeds,
   listAllNormalizedItems,
   listCatalogTopics,
+  listEmbeddingBackfillCandidates,
+  listUnifiedContentRecordsByCanonicalIds,
   recordCollectionArtifacts,
   replaceDerivedPipelineOutput,
   replaceRuntimeTopicSeeds,
   replaceSourceItems,
   upsertCatalog,
+  upsertEmbeddingRecord,
   upsertUnifiedContentRecords,
   withTransaction,
 } from "@devtrend/db";
 import {
+  buildEmbeddingInputFromUnifiedContent,
   buildQuestionPressurePipeline,
   entitySeeds,
   isValidSourceFeatures,
@@ -51,6 +55,35 @@ export interface WorkerBootstrapPlan {
   collectSources: SourceKey[];
 }
 
+export interface EmbeddingPipelineConfig {
+  baseUrl: string;
+  model: string;
+  dimensions: number;
+  timeoutMs: number;
+}
+
+export interface EmbeddingJobOptions {
+  source?: SourceKey;
+  limit?: number;
+  includeFailed?: boolean;
+}
+
+export interface EmbeddingJobResult {
+  candidates: number;
+  processed: number;
+  succeeded: number;
+  failed: number;
+  skipped: number;
+}
+
+export type EmbeddingVectorGenerator = (
+  config: EmbeddingPipelineConfig,
+  input: string,
+) => Promise<number[]>;
+
+const EMBEDDING_INPUT_SCHEMA_VERSION = "embedding-input-v1";
+const DEFAULT_EMBEDDING_BATCH_LIMIT = 50;
+
 function buildPayloadKey(source: string, commandName: string): string {
   return `${source}:${commandName}`;
 }
@@ -67,6 +100,69 @@ function toNonNegativeInteger(value: unknown): number | undefined {
 
 function toNumber(value: unknown): number | undefined {
   return typeof value === "number" ? value : undefined;
+}
+
+function resolveEmbeddingLimit(value: number | undefined): number {
+  if (typeof value !== "number") {
+    return DEFAULT_EMBEDDING_BATCH_LIMIT;
+  }
+  return Math.max(1, Math.min(value, 500));
+}
+
+function resolveEmbeddingEndpoint(baseUrl: string): string {
+  return `${baseUrl.replace(/\/+$/, "")}/api/embeddings`;
+}
+
+function parseEmbeddingVector(payload: unknown): number[] {
+  if (!isObjectLike(payload) || !Array.isArray(payload.embedding)) {
+    throw new Error("Embedding provider response does not include embedding.");
+  }
+
+  const vector = payload.embedding
+    .map((value) => (typeof value === "number" ? value : Number.NaN))
+    .filter((value) => Number.isFinite(value));
+  if (vector.length === 0) {
+    throw new Error("Embedding provider returned an empty vector.");
+  }
+  return vector;
+}
+
+export async function requestOllamaEmbedding(
+  config: EmbeddingPipelineConfig,
+  input: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<number[]> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
+
+  try {
+    const response = await fetchImpl(resolveEmbeddingEndpoint(config.baseUrl), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: config.model,
+        prompt: input,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Embedding provider HTTP ${response.status}`);
+    }
+
+    const payload = (await response.json()) as unknown;
+    const vector = parseEmbeddingVector(payload);
+    if (config.dimensions > 0 && vector.length !== config.dimensions) {
+      throw new Error(
+        `Embedding vector dimension mismatch: expected ${config.dimensions}, got ${vector.length}`,
+      );
+    }
+    return vector;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function toStringArray(value: unknown): string[] {
@@ -571,6 +667,148 @@ export async function persistCollectedPayloads(
     items: persistedItems,
     signals: persistedSignals,
   };
+}
+
+async function runEmbeddingBatch(
+  pool: Pool,
+  config: EmbeddingPipelineConfig,
+  options: EmbeddingJobOptions,
+  logger: WorkerLogger,
+  embed: EmbeddingVectorGenerator = requestOllamaEmbedding,
+): Promise<EmbeddingJobResult> {
+  const startedAt = Date.now();
+  const limit = resolveEmbeddingLimit(options.limit);
+  const candidates = await withTransaction(pool, (client) =>
+    listEmbeddingBackfillCandidates(client, {
+      source: options.source,
+      model: config.model,
+      inputSchemaVersion: EMBEDDING_INPUT_SCHEMA_VERSION,
+      limit,
+      includeFailed: options.includeFailed,
+    }),
+  );
+
+  await logger.info("pipeline.embedding.batch.start", {
+    source: options.source ?? null,
+    limit,
+    includeFailed: options.includeFailed === true,
+    candidateCount: candidates.length,
+  });
+
+  if (candidates.length === 0) {
+    return {
+      candidates: 0,
+      processed: 0,
+      succeeded: 0,
+      failed: 0,
+      skipped: 0,
+    };
+  }
+
+  const candidateIds = candidates.map((candidate) => candidate.canonicalId);
+  const recordList = await withTransaction(pool, (client) =>
+    listUnifiedContentRecordsByCanonicalIds(client, candidateIds),
+  );
+  const recordByCanonicalId = new Map(
+    recordList.map((record) => [record.canonicalId, record]),
+  );
+
+  let processed = 0;
+  let succeeded = 0;
+  let failed = 0;
+  let skipped = 0;
+
+  for (const candidate of candidates) {
+    const record = recordByCanonicalId.get(candidate.canonicalId);
+    if (!record) {
+      skipped += 1;
+      await logger.warn("pipeline.embedding.record.skipped", {
+        canonicalId: candidate.canonicalId,
+        source: candidate.source,
+        reason: "missing-unified-content",
+      });
+      continue;
+    }
+
+    const payload = buildEmbeddingInputFromUnifiedContent(record);
+    if (!payload) {
+      skipped += 1;
+      await logger.warn("pipeline.embedding.record.skipped", {
+        canonicalId: record.canonicalId,
+        source: record.source,
+        reason: "invalid-embedding-input",
+      });
+      continue;
+    }
+
+    processed += 1;
+    try {
+      const vector = await embed(config, payload.input);
+      await withTransaction(pool, async (client) => {
+        await upsertEmbeddingRecord(client, {
+          canonicalId: record.canonicalId,
+          source: record.source,
+          contentFingerprint: record.fingerprint,
+          inputSchemaVersion: EMBEDDING_INPUT_SCHEMA_VERSION,
+          provider: "ollama",
+          model: config.model,
+          modelVersion: config.model,
+          vector,
+          metadata: {
+            inputFingerprint: payload.inputFingerprint,
+            generatedAt: new Date().toISOString(),
+          },
+        });
+      });
+      succeeded += 1;
+    } catch (error) {
+      failed += 1;
+      await logger.warn("pipeline.embedding.record.failed", {
+        canonicalId: record.canonicalId,
+        source: record.source,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const result: EmbeddingJobResult = {
+    candidates: candidates.length,
+    processed,
+    succeeded,
+    failed,
+    skipped,
+  };
+  await logger.info("pipeline.embedding.batch.done", {
+    ...result,
+    durationMs: Date.now() - startedAt,
+  });
+  return result;
+}
+
+export async function runIncrementalEmbeddingJob(
+  pool: Pool,
+  config: EmbeddingPipelineConfig,
+  options: Omit<EmbeddingJobOptions, "includeFailed"> = {},
+  logger: WorkerLogger = noopWorkerLogger(),
+  embed: EmbeddingVectorGenerator = requestOllamaEmbedding,
+): Promise<EmbeddingJobResult> {
+  return runEmbeddingBatch(
+    pool,
+    config,
+    { ...options, includeFailed: false },
+    logger,
+    embed,
+  );
+}
+
+export async function runEmbeddingBackfillJob(
+  pool: Pool,
+  config: EmbeddingPipelineConfig,
+  options: EmbeddingJobOptions = {},
+  logger: WorkerLogger = noopWorkerLogger(),
+  embed: EmbeddingVectorGenerator = requestOllamaEmbedding,
+): Promise<EmbeddingJobResult> {
+  return runEmbeddingBatch(pool, config, options, logger, embed);
 }
 
 function runtimeTopicRunStatus(

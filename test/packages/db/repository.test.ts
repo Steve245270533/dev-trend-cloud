@@ -4,12 +4,17 @@ import {
   getUnifiedModelCompatibilityReport,
   getWorkerBootstrapState,
   listActiveRuntimeTopicSeeds,
+  listEmbeddingBackfillCandidates,
+  listEmbeddingRecords,
   listFeed,
   listQuestionPressureSignals,
   listUnifiedContentRecords,
+  markSupersededEmbeddings,
   replaceRuntimeTopicSeeds,
   replaceSourceItems,
   rollbackUnifiedContentBySources,
+  updateEmbeddingRecordStatus,
+  upsertEmbeddingRecord,
   upsertUnifiedContentRecords,
 } from "@devtrend/db";
 import type { QueryResult } from "pg";
@@ -341,4 +346,197 @@ test("rollbackUnifiedContentBySources deletes only requested sources", async () 
   assert.match(calls[0].text, /DELETE FROM unified_contents/);
   assert.deepEqual(calls[0].params, [["devto"]]);
   assert.equal(deletedCount, 2);
+});
+
+test("upsertEmbeddingRecord supersedes stale records and upserts by dedupe key", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      if (text.includes("RETURNING id")) {
+        return { rows: [{ id: "44444444-4444-5444-8444-444444444444" }] };
+      }
+      return { rows: [] };
+    },
+  };
+
+  const id = await upsertEmbeddingRecord(db as never, {
+    canonicalId: "stackoverflow:123",
+    source: "stackoverflow",
+    contentFingerprint: "fp-v2",
+    inputSchemaVersion: "embedding-input-v1",
+    provider: "ollama",
+    model: "nomic-embed-text-v2-moe",
+    modelVersion: "2026-05-06",
+    vector: [0.1, 0.2, 0.3],
+    metadata: { traceId: "trace-1" },
+  });
+
+  assert.equal(calls.length, 2);
+  assert.match(calls[0]?.text ?? "", /UPDATE embedding_records/);
+  assert.match(calls[0]?.text ?? "", /status = 'superseded'/);
+  assert.deepEqual(calls[0]?.params, [
+    "stackoverflow:123",
+    "stackoverflow",
+    "nomic-embed-text-v2-moe",
+    "embedding-input-v1",
+    "fp-v2",
+  ]);
+  assert.match(calls[1]?.text ?? "", /INSERT INTO embedding_records/);
+  assert.match(
+    calls[1]?.text ?? "",
+    /ON CONFLICT \(source, content_fingerprint, model, input_schema_version\)/,
+  );
+  assert.equal(calls[1]?.params?.[8], "[0.1,0.2,0.3]");
+  assert.equal(id, "44444444-4444-5444-8444-444444444444");
+});
+
+test("listEmbeddingRecords maps vector text and query filters", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      return {
+        rows: [
+          {
+            id: "55555555-5555-5555-8555-555555555555",
+            canonical_id: "devto:post-1",
+            source: "devto",
+            content_fingerprint: "fp-devto-1",
+            input_schema_version: "embedding-input-v1",
+            provider: "ollama",
+            model: "nomic-embed-text-v2-moe",
+            model_version: "2026-05-06",
+            dimensions: 3,
+            embedding_vector_text: "[1,2,3]",
+            status: "succeeded",
+            error_text: null,
+            retry_count: 0,
+            metadata: { region: "local" },
+            created_at: "2026-05-06T00:00:00.000Z",
+            updated_at: "2026-05-06T00:10:00.000Z",
+            succeeded_at: "2026-05-06T00:10:01.000Z",
+          },
+        ],
+      } as unknown as QueryResult;
+    },
+  };
+
+  const records = await listEmbeddingRecords(db, {
+    source: "devto",
+    model: "nomic-embed-text-v2-moe",
+    status: "succeeded",
+    limit: 5,
+  });
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0]?.text ?? "", /FROM embedding_records/);
+  assert.deepEqual(calls[0]?.params, [
+    null,
+    "devto",
+    "nomic-embed-text-v2-moe",
+    "succeeded",
+    5,
+  ]);
+  assert.equal(records[0]?.canonicalId, "devto:post-1");
+  assert.deepEqual(records[0]?.vector, [1, 2, 3]);
+});
+
+test("listEmbeddingBackfillCandidates supports includeFailed mode", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      return {
+        rows: [
+          {
+            canonical_id: "stackoverflow:123",
+            source: "stackoverflow",
+            fingerprint: "fp-v2",
+            collected_at: "2026-05-06T01:00:00.000Z",
+          },
+        ],
+      } as unknown as QueryResult;
+    },
+  };
+
+  const candidates = await listEmbeddingBackfillCandidates(db, {
+    source: "stackoverflow",
+    model: "nomic-embed-text-v2-moe",
+    inputSchemaVersion: "embedding-input-v1",
+    includeFailed: true,
+    limit: 20,
+  });
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0]?.text ?? "", /LEFT JOIN embedding_records er/);
+  assert.deepEqual(calls[0]?.params, [
+    "stackoverflow",
+    "nomic-embed-text-v2-moe",
+    "embedding-input-v1",
+    ["failed"],
+    20,
+  ]);
+  assert.equal(candidates[0]?.canonicalId, "stackoverflow:123");
+  assert.equal(candidates[0]?.contentFingerprint, "fp-v2");
+});
+
+test("updateEmbeddingRecordStatus updates retry and failure info", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      return {
+        rows: [{ id: "66666666-6666-5666-8666-666666666666" }],
+      } as unknown as QueryResult;
+    },
+  };
+
+  const updated = await updateEmbeddingRecordStatus(db, {
+    id: "66666666-6666-5666-8666-666666666666",
+    status: "failed",
+    errorText: "timeout",
+    retryCount: 2,
+  });
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0]?.text ?? "", /UPDATE embedding_records/);
+  assert.deepEqual(calls[0]?.params, [
+    "66666666-6666-5666-8666-666666666666",
+    "failed",
+    "timeout",
+    2,
+  ]);
+  assert.equal(updated, true);
+});
+
+test("markSupersededEmbeddings applies dedupe superseded rule", async () => {
+  const calls: { text: string; params?: unknown[] }[] = [];
+  const db = {
+    async query(text: string, params?: unknown[]) {
+      calls.push({ text, params });
+      return {
+        rows: [{ id: "a" }, { id: "b" }],
+      } as unknown as QueryResult;
+    },
+  };
+
+  const count = await markSupersededEmbeddings(db, {
+    canonicalId: "hackernews:1",
+    source: "hackernews",
+    model: "nomic-embed-text-v2-moe",
+    inputSchemaVersion: "embedding-input-v1",
+    keepFingerprint: "fp-latest",
+  });
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0]?.text ?? "", /status = 'superseded'/);
+  assert.deepEqual(calls[0]?.params, [
+    "hackernews:1",
+    "hackernews",
+    "nomic-embed-text-v2-moe",
+    "embedding-input-v1",
+    "fp-latest",
+  ]);
+  assert.equal(count, 2);
 });

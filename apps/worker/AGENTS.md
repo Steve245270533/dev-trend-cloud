@@ -13,6 +13,7 @@
 - contract audit
 - source collect / fallback / source health rollup
 - normalize / match / question cluster / score
+- embedding incremental / backfill（provider 调用 + 持久化 + 失败降级日志）
 - bootstrap enqueue on cold start
 
 ## 下一阶段目标

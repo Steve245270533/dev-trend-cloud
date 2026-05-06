@@ -6,6 +6,8 @@ import {
   persistCollectedPayloads,
   planWorkerBootstrap,
   refreshRuntimeTopicSeeds,
+  runEmbeddingBackfillJob,
+  runIncrementalEmbeddingJob,
 } from "@devtrend/worker";
 import type { Pool, PoolClient, QueryResult } from "pg";
 import type { WorkerLogger } from "../../../apps/worker/src/services/logger.js";
@@ -103,8 +105,24 @@ interface FakeUnifiedContentRow {
   canonical_id: string;
   source: string;
   source_item_id: string;
+  title: string;
+  summary: string;
+  body_excerpt: string | null;
+  tags: string[];
+  fingerprint: string;
+  collected_at: string;
   source_features: Record<string, unknown>;
   legacy_item_id: string;
+}
+
+interface FakeEmbeddingRow {
+  id: string;
+  canonical_id: string;
+  source: string;
+  content_fingerprint: string;
+  input_schema_version: string;
+  model: string;
+  status: "succeeded" | "failed" | "superseded";
 }
 
 interface StatefulPool {
@@ -118,6 +136,7 @@ interface StatefulPool {
   runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[];
   runtimeTopicSeeds: FakeRuntimeTopicSeedRow[];
   unifiedContents: FakeUnifiedContentRow[];
+  embeddingRecords: FakeEmbeddingRow[];
   pool: Pool;
 }
 
@@ -200,6 +219,7 @@ function createStatefulPool(): StatefulPool {
   const itemSources = new Map<string, FakeItemSourceRow>();
   const topics = new Map<string, FakeTopicRow>();
   const unifiedContents = new Map<string, FakeUnifiedContentRow>();
+  const embeddingRecords = new Map<string, FakeEmbeddingRow>();
   let runtimeTopicSeeds: FakeRuntimeTopicSeedRow[] = [];
   const runtimeTopicSeedRuns: FakeRuntimeTopicSeedRunRow[] = [];
   let signalPayloads: Record<string, unknown>[] = [];
@@ -475,6 +495,13 @@ function createStatefulPool(): StatefulPool {
           canonical_id: String(params?.[0]),
           source: String(params?.[1]),
           source_item_id: String(params?.[2]),
+          title: String(params?.[3]),
+          summary: String(params?.[4]),
+          body_excerpt:
+            typeof params?.[5] === "string" ? String(params[5]) : null,
+          tags: Array.isArray(params?.[11]) ? params[11].map(String) : [],
+          fingerprint: String(params?.[13]),
+          collected_at: String(params?.[9]),
           source_features:
             typeof params?.[12] === "string"
               ? (JSON.parse(String(params[12])) as Record<string, unknown>)
@@ -482,6 +509,104 @@ function createStatefulPool(): StatefulPool {
           legacy_item_id: String(params?.[15]),
         });
         return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (
+        text.includes("FROM unified_contents uc") &&
+        text.includes("LEFT JOIN embedding_records er")
+      ) {
+        const sourceFilter =
+          typeof params?.[0] === "string" ? String(params[0]) : null;
+        const model = String(params?.[1]);
+        const inputSchemaVersion = String(params?.[2]);
+        const failedStatuses = Array.isArray(params?.[3])
+          ? params[3].map(String)
+          : [];
+        const limit = Number(params?.[4] ?? 100);
+
+        const rows = [...unifiedContents.values()]
+          .filter((record) => !sourceFilter || record.source === sourceFilter)
+          .sort((left, right) =>
+            right.collected_at.localeCompare(left.collected_at),
+          )
+          .filter((record) => {
+            const embedding = [...embeddingRecords.values()].find(
+              (entry) =>
+                entry.source === record.source &&
+                entry.content_fingerprint === record.fingerprint &&
+                entry.model === model &&
+                entry.input_schema_version === inputSchemaVersion &&
+                entry.status !== "superseded",
+            );
+            if (!embedding) {
+              return true;
+            }
+            return failedStatuses.includes(embedding.status);
+          })
+          .slice(0, limit)
+          .map((record) => ({
+            canonical_id: record.canonical_id,
+            source: record.source,
+            fingerprint: record.fingerprint,
+            collected_at: record.collected_at,
+          }));
+
+        return { rows } as unknown as QueryResult;
+      }
+
+      if (
+        text.includes("FROM unified_contents") &&
+        text.includes("WHERE canonical_id = ANY")
+      ) {
+        const canonicalIds = Array.isArray(params?.[0])
+          ? new Set(params[0].map(String))
+          : new Set<string>();
+        const rows = [...unifiedContents.values()]
+          .filter((record) => canonicalIds.has(record.canonical_id))
+          .map((record) => ({
+            canonical_id: record.canonical_id,
+            source: record.source,
+            source_item_id: record.source_item_id,
+            title: record.title,
+            summary: record.summary,
+            body_excerpt: record.body_excerpt,
+            url: `https://example.com/${record.source_item_id}`,
+            author: "author",
+            published_at: "2026-04-29T00:00:00.000Z",
+            collected_at: record.collected_at,
+            timestamp_origin: "source",
+            tags: record.tags,
+            source_features: record.source_features,
+            fingerprint: record.fingerprint,
+            evidence_refs: [],
+            legacy_item_id: record.legacy_item_id,
+            legacy_item_source_id: null,
+            raw_meta: {},
+          }));
+        return { rows } as unknown as QueryResult;
+      }
+
+      if (text.includes("UPDATE embedding_records")) {
+        return { rows: [] } as unknown as QueryResult;
+      }
+
+      if (text.includes("INSERT INTO embedding_records")) {
+        const id = `embedding-${embeddingRecords.size + 1}`;
+        const source = String(params?.[1]);
+        const contentFingerprint = String(params?.[2]);
+        const model = String(params?.[5]);
+        const inputSchemaVersion = String(params?.[3]);
+        const key = `${source}:${contentFingerprint}:${model}:${inputSchemaVersion}`;
+        embeddingRecords.set(key, {
+          id,
+          canonical_id: String(params?.[0]),
+          source,
+          content_fingerprint: contentFingerprint,
+          input_schema_version: inputSchemaVersion,
+          model,
+          status: "succeeded",
+        });
+        return { rows: [{ id }] } as unknown as QueryResult;
       }
 
       if (text.includes("SELECT i.*") && text.includes("FROM items i")) {
@@ -557,6 +682,9 @@ function createStatefulPool(): StatefulPool {
     },
     get unifiedContents() {
       return [...unifiedContents.values()];
+    },
+    get embeddingRecords() {
+      return [...embeddingRecords.values()];
     },
     pool: {
       async connect() {
@@ -999,5 +1127,91 @@ test("refreshRuntimeTopicSeeds keeps the prior active snapshot when discovery fu
     logs.some(
       (entry) => entry.event === "pipeline.runtime-topics.refresh.done",
     ),
+  );
+});
+
+test("runIncrementalEmbeddingJob persists embeddings without blocking pipeline flow", async () => {
+  const state = createStatefulPool();
+  const logs: TestLogEntry[] = [];
+  const logger = createTestLogger(logs);
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("stackoverflow", "hot", [
+      {
+        title: "How do I route Fastify MCP tools in worker pipeline?",
+        score: 18,
+        answers: 1,
+        url: "https://stackoverflow.com/questions/10000002/fastify-mcp-worker",
+      },
+    ]),
+  ]);
+
+  const result = await runIncrementalEmbeddingJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { source: "stackoverflow", limit: 10 },
+    logger,
+    async () => [0.1, 0.2, 0.3],
+  );
+
+  assert.equal(result.candidates, 1);
+  assert.equal(result.succeeded, 1);
+  assert.equal(state.embeddingRecords.length, 1);
+  assert.ok(
+    logs.some((entry) => entry.event === "pipeline.embedding.batch.start"),
+  );
+  assert.ok(
+    logs.some((entry) => entry.event === "pipeline.embedding.batch.done"),
+  );
+});
+
+test("runEmbeddingBackfillJob degrades on provider failure and continues processing", async () => {
+  const state = createStatefulPool();
+  const logs: TestLogEntry[] = [];
+  const logger = createTestLogger(logs);
+
+  await persistCollectedPayloads(state.pool, [
+    buildCollectedPayload("devto", "top", [
+      {
+        title: "Build deterministic embedding pipelines in TypeScript",
+        author: "alice",
+        reactions: 42,
+        comments: 9,
+        tags: ["typescript", "pipeline"],
+        url: "https://dev.to/example/deterministic-embedding",
+        published_at: "2026-04-28T10:00:00.000Z",
+      },
+    ]),
+  ]);
+
+  const result = await runEmbeddingBackfillJob(
+    state.pool,
+    {
+      baseUrl: "http://127.0.0.1:11434",
+      model: "nomic-embed-text-v2-moe",
+      dimensions: 3,
+      timeoutMs: 1000,
+    },
+    { source: "devto", limit: 10, includeFailed: true },
+    logger,
+    async () => {
+      throw new Error("ollama unavailable");
+    },
+  );
+
+  assert.equal(result.candidates, 1);
+  assert.equal(result.failed, 1);
+  assert.equal(result.succeeded, 0);
+  assert.equal(state.embeddingRecords.length, 0);
+  assert.ok(
+    logs.some((entry) => entry.event === "pipeline.embedding.record.failed"),
+  );
+  assert.ok(
+    logs.some((entry) => entry.event === "pipeline.embedding.batch.done"),
   );
 });

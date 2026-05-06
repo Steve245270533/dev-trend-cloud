@@ -10,6 +10,8 @@ import {
   type CollectJobData,
   type ContractAuditJobData,
   createPipelineStageJobData,
+  type EmbeddingBackfillJobData,
+  type EmbeddingJobData,
   type PipelineStageJobData,
   QUEUES,
   type TopicSeedRefreshJobData,
@@ -21,6 +23,8 @@ import {
   persistCollectedPayloads,
   planWorkerBootstrap,
   refreshRuntimeTopicSeeds,
+  runEmbeddingBackfillJob,
+  runIncrementalEmbeddingJob,
 } from "./services/pipeline.js";
 import { RedisCircuitBreakerStore } from "./services/source-breaker.js";
 
@@ -60,6 +64,21 @@ const scoreQueue = new Queue(QUEUES.score, {
   connection: redis,
   prefix: config.QUEUE_PREFIX,
 });
+const embeddingQueue = new Queue(QUEUES.embedding, {
+  connection: redis,
+  prefix: config.QUEUE_PREFIX,
+});
+const _embeddingBackfillQueue = new Queue(QUEUES.embeddingBackfill, {
+  connection: redis,
+  prefix: config.QUEUE_PREFIX,
+});
+
+const embeddingConfig = {
+  baseUrl: config.OLLAMA_EMBEDDING_BASE_URL,
+  model: config.OLLAMA_EMBEDDING_MODEL,
+  dimensions: config.OLLAMA_EMBEDDING_DIMENSIONS,
+  timeoutMs: config.OLLAMA_EMBEDDING_TIMEOUT_MS,
+};
 
 const sourcePollCrons: Record<SourceKey, string> = {
   stackoverflow: config.SOURCE_POLL_SO_CRON,
@@ -416,8 +435,59 @@ new Worker(
       await jobLogger.info("redis.cache.invalidate.done", {
         deleted,
       });
+      try {
+        await embeddingQueue.add("embedding", {
+          source: job.data.source,
+          limit: 50,
+          bootstrap: job.data.bootstrap,
+          reason: "score-stage",
+        } satisfies EmbeddingJobData);
+        await jobLogger.info("pipeline.score.enqueue.embedding", {
+          source: job.data.source ?? null,
+          limit: 50,
+        });
+      } catch (error) {
+        await jobLogger.warn("pipeline.score.enqueue.embedding.failed", {
+          error: toErrorContext(error),
+        });
+      }
       return result;
     }),
+  { connection: redis, prefix: config.QUEUE_PREFIX },
+);
+
+new Worker(
+  QUEUES.embedding,
+  async (job: Job<EmbeddingJobData>) =>
+    runJobWithLogging(QUEUES.embedding, job, async (jobLogger) =>
+      runIncrementalEmbeddingJob(
+        pool,
+        embeddingConfig,
+        {
+          source: job.data.source,
+          limit: job.data.limit,
+        },
+        jobLogger.child({ stage: "embedding.incremental" }),
+      ),
+    ),
+  { connection: redis, prefix: config.QUEUE_PREFIX },
+);
+
+new Worker(
+  QUEUES.embeddingBackfill,
+  async (job: Job<EmbeddingBackfillJobData>) =>
+    runJobWithLogging(QUEUES.embeddingBackfill, job, async (jobLogger) =>
+      runEmbeddingBackfillJob(
+        pool,
+        embeddingConfig,
+        {
+          source: job.data.source,
+          limit: job.data.limit,
+          includeFailed: job.data.includeFailed,
+        },
+        jobLogger.child({ stage: "embedding.backfill" }),
+      ),
+    ),
   { connection: redis, prefix: config.QUEUE_PREFIX },
 );
 

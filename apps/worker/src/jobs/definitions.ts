@@ -9,6 +9,8 @@ export const QUEUES = {
   match: "match",
   cluster: "cluster",
   score: "score",
+  embedding: "embedding",
+  embeddingBackfill: "embedding-backfill",
 } as const;
 
 export interface ContractAuditJobData {
@@ -30,6 +32,21 @@ export interface PipelineStageJobData {
   bootstrap?: boolean;
   payloads: CollectedSourcePayload[];
   contractVersion: "worker-pipeline-v1";
+}
+
+export interface EmbeddingJobData {
+  source?: SourceKey;
+  limit?: number;
+  bootstrap?: boolean;
+  reason?: "incremental" | "score-stage";
+}
+
+export interface EmbeddingBackfillJobData {
+  source?: SourceKey;
+  limit?: number;
+  includeFailed?: boolean;
+  bootstrap?: boolean;
+  reason?: "manual-backfill" | "retry-failed";
 }
 
 export function createPipelineStageJobData(input: {

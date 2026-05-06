@@ -1,4 +1,18 @@
-import type { SourceFeatures, UnifiedContentRecord } from "@devtrend/contracts";
+import { createHash } from "node:crypto";
+import type {
+  SourceFeatures,
+  SourceKey,
+  UnifiedContentRecord,
+} from "@devtrend/contracts";
+
+const VALID_SOURCES = new Set<SourceKey>([
+  "stackoverflow",
+  "hackernews",
+  "devto",
+  "ossinsight",
+]);
+
+const EMBEDDING_INPUT_MAX_LENGTH = 4_000;
 
 function isObjectLike(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -131,16 +145,10 @@ export function isUnifiedContentRecord(
 
   const source = value.source;
   const timestampOrigin = value.timestampOrigin;
-  const validSources = new Set([
-    "stackoverflow",
-    "hackernews",
-    "devto",
-    "ossinsight",
-  ]);
 
   return (
     typeof value.canonicalId === "string" &&
-    validSources.has(source as string) &&
+    VALID_SOURCES.has(source as SourceKey) &&
     typeof value.sourceItemId === "string" &&
     typeof value.title === "string" &&
     typeof value.summary === "string" &&
@@ -160,4 +168,106 @@ export function isUnifiedContentRecord(
       typeof value.legacyRefs.itemSourceId === "string") &&
     isObjectLike(value.rawMeta)
   );
+}
+
+export interface EmbeddingInputRecord {
+  canonicalId: string;
+  source: SourceKey;
+  title: string;
+  summary: string;
+  bodyExcerpt?: string;
+  tags: string[];
+}
+
+export interface EmbeddingInputPayload {
+  canonicalId: string;
+  source: SourceKey;
+  input: string;
+  inputFingerprint: string;
+}
+
+function normalizeText(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function normalizeTags(tags: string[]): string[] {
+  const normalized = tags
+    .map((tag) => normalizeText(tag).toLowerCase())
+    .filter((tag) => tag.length > 0);
+  return [...new Set(normalized)].sort((left, right) =>
+    left.localeCompare(right),
+  );
+}
+
+function truncateInput(value: string): string {
+  if (value.length <= EMBEDDING_INPUT_MAX_LENGTH) {
+    return value;
+  }
+  return value.slice(0, EMBEDDING_INPUT_MAX_LENGTH);
+}
+
+export function isEmbeddingInputRecord(
+  value: unknown,
+): value is EmbeddingInputRecord {
+  if (!isObjectLike(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.canonicalId === "string" &&
+    value.canonicalId.trim().length > 0 &&
+    VALID_SOURCES.has(value.source as SourceKey) &&
+    typeof value.title === "string" &&
+    value.title.trim().length > 0 &&
+    typeof value.summary === "string" &&
+    value.summary.trim().length > 0 &&
+    (value.bodyExcerpt === undefined ||
+      typeof value.bodyExcerpt === "string") &&
+    isStringArray(value.tags)
+  );
+}
+
+export function buildEmbeddingInput(
+  record: EmbeddingInputRecord,
+): EmbeddingInputPayload {
+  const title = normalizeText(record.title);
+  const summary = normalizeText(record.summary);
+  const bodyExcerpt =
+    typeof record.bodyExcerpt === "string"
+      ? normalizeText(record.bodyExcerpt)
+      : "";
+  const tags = normalizeTags(record.tags);
+  const sections = [
+    `source:${record.source}`,
+    `title:${title}`,
+    `summary:${summary}`,
+    bodyExcerpt.length > 0 ? `bodyExcerpt:${bodyExcerpt}` : "",
+    tags.length > 0 ? `tags:${tags.join(",")}` : "",
+  ].filter((section) => section.length > 0);
+  const input = truncateInput(sections.join("\n"));
+  const inputFingerprint = `sha256:${createHash("sha256").update(input).digest("hex")}`;
+
+  return {
+    canonicalId: record.canonicalId,
+    source: record.source,
+    input,
+    inputFingerprint,
+  };
+}
+
+export function buildEmbeddingInputFromUnifiedContent(
+  value: unknown,
+): EmbeddingInputPayload | null {
+  if (!isEmbeddingInputRecord(value)) {
+    return null;
+  }
+
+  return buildEmbeddingInput({
+    canonicalId: value.canonicalId,
+    source: value.source,
+    title: value.title,
+    summary: value.summary,
+    bodyExcerpt: value.bodyExcerpt,
+    tags: value.tags,
+  });
 }

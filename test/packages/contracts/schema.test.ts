@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  EmbeddingRecordSchema,
   SourceFeaturesSchema,
   TimestampOriginSchema,
   UnifiedContentRecordSchema,
@@ -31,4 +32,12 @@ test("timestamp origin contract remains source|collected", () => {
         )
     : [];
   assert.deepEqual(variants.sort(), ["collected", "source"]);
+});
+
+test("embedding record contract includes vector and provider", () => {
+  const required = EmbeddingRecordSchema.required ?? [];
+  assert.ok(required.includes("canonicalId"));
+  assert.ok(required.includes("provider"));
+  assert.ok(required.includes("vector"));
+  assert.equal(EmbeddingRecordSchema.type, "object");
 });
